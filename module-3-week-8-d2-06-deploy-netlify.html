@@ -1,0 +1,182 @@
+<!-- # Deployment on Netlify -->
+<h2 class="raw">Learning goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Deploy your frontend application to Netlify.</li>
+</ul>
+<h2 class="raw">Netlify</h2>
+<p><strong><a href="https://www.netlify.com">Netlify</a></strong> is an all-in-one platform for automating modern web projects. Netlify supports all modern single-page application (SPA) frameworks: React, Angular, Vue, but you can deploy just a simple HTML/CSS website using Netlify as well.</p>
+<p>The image below is taken from the official Netlify website and summarizes the core of the deployment process.</p>
+<br>
+<p><img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_eebfbbcbc874b3213dd31a1685f03541.png" alt class="raw md-image"></p>
+<br>
+<p>Netlify is a really powerful platform. It supports the whole hosting infrastructure, continuous integration, and deployment pipeline with a single workflow.</p>
+<p>We will take you through the simple process of deploying your front-end application on Netlify, and we leave it up to you to explore all the extra features later on.</p>
+<br>
+<h3 class="raw">Getting started</h3>
+<p>Although we will take you through the step-by-step process, it is important to understand that, from a higher perspective, deploying to Netlify is as simple as <strong>connecting your existing GitHub repo with Netlify</strong>. Here we come to the <em>continuous deployment</em> support - which basically means that all you have to do is push your code and Netlify will do the rest, publishing your website for you.</p>
+<br>
+<h3 class="raw">Step 1 | Create an account on Netlify</h3>
+<br>
+<ol>
+<li class="raw">
+<p>Head to <a href="https://www.netlify.com">Netlify</a>.</p>
+</li>
+<li class="raw">
+<p>Click on the signup button located in the upper right corner.</p>
+ <details style="font-size: 13px; cursor: pointer; outline: none; color: #575d70; padding-left: 20px;">
+   <summary style="outline: none;">Check the visual.</summary> <br />
+     <div>
+         <img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_2544db983f660c36c082d4b4a5d3ca54.png" />
+     </div>
+ </details>
+</li>
+</ol>
+<!-- ![](https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_2544db983f660c36c082d4b4a5d3ca54.png) -->
+<ol start="3">
+<li class="raw">
+<p>Sign up using GitHub by clicking on GitHub (if you do not have a GitHub account stop here and make a GitHub account first).</p>
+ <details style="font-size: 13px; cursor: pointer; outline: none; color: #575d70; padding-left: 20px;">
+   <summary style="outline: none;">Check the visual.</summary> <br />
+     <div>
+         <img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_d8ede0a29d14bc2d2edb0472d6aca226.png" />
+     </div>
+ </details>
+</li>
+</ol>
+<!-- ![](https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_d8ede0a29d14bc2d2edb0472d6aca226.png) -->
+<ol start="4">
+<li class="raw">
+<p>If you don’t have the autocomplete turned on, you will be prompted to enter your GitHub credentials.</p>
+ <details style="font-size: 13px; cursor: pointer; outline: none; color: #575d70; padding-left: 20px;">
+   <summary style="outline: none;">Check the visual.</summary> <br />
+     <div>
+         <img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_6afee59e8ef596a8a9f0f31c665374b3.png" />
+     </div>
+ </details>
+</li>
+</ol>
+<!-- ![](https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_6afee59e8ef596a8a9f0f31c665374b3.png) -->
+<ol start="5">
+<li class="raw">
+<p>It is essential that you click on <em>“Authorize Netlify for GitHub”</em>.</p>
+ <details style="font-size: 13px; cursor: pointer; outline: none; color: #575d70; padding-left: 20px;">
+   <summary style="outline: none;">Check the visual.</summary> <br />
+     <div>
+         <img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_3074dbf6f805d478c4e46da7a2f7aa97.png" />
+     </div>
+ </details>
+</li>
+</ol>
+<!-- ![](https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_3074dbf6f805d478c4e46da7a2f7aa97.png) -->
+<ol start="6">
+<li class="raw">You will be presented with 3 steps and different screens. Click <em>“Next”</em> on the first 2 and <em>“Finished”</em> on the last one.</li>
+</ol>
+<p>You are all set. You can proceed to deploy your first app on Netlify.</p>
+<br>
+<h3 class="raw">Step 2 | Deployment</h3>
+<br>
+<ol start="7">
+<li class="raw">
+<p>After you create an account and finished all the steps mentioned above, you will be taken to <a href="https://app.netlify.com">https://app.netlify.com</a>. On this page, you can choose to create a website without connecting to Git with simple drag and drop or to create a website connecting it with GitHub repo. We will go for the second option since it will allow us to enable continuous deployment - every change we make locally and push to GitHub will be “picked” up by Netlify.</p>
+<p>So, when here, choose <strong>New site from Git</strong>.</p>
+ <details style="font-size: 13px; cursor: pointer; outline: none; color: #575d70; padding-left: 20px;">
+   <summary style="outline: none;">Check the visual.</summary> <br />
+     <div>
+         <img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_89c7d3fd7959580c5eeae7c9bea7a7b4.png" />
+     </div>
+ </details>
+</li>
+</ol>
+<!-- ![](https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_89c7d3fd7959580c5eeae7c9bea7a7b4.png) -->
+<ol start="8">
+<li class="raw">
+<p>Click on GitHub under Continuous Deployment.</p>
+ <details style="font-size: 13px; cursor: pointer; outline: none; color: #575d70; padding-left: 20px;">
+   <summary style="outline: none;">Check the visual.</summary> <br />
+     <div>
+         <img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_ca9046c256c44c5ffe2ad586064b45b8.png" />
+     </div>
+ </details>
+</li>
+</ol>
+<!-- ![](https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_ca9046c256c44c5ffe2ad586064b45b8.png) -->
+<ol start="9">
+<li class="raw">
+<p>A new window will open, and you might be asked to authorize Netlify once more. Click on <strong>Install</strong> and make sure to leave <em>All repositories</em> checked. If you don’t see this window, you will just see the message - <strong>Authorized</strong>.</p>
+ <details style="font-size: 13px; cursor: pointer; outline: none; color: #575d70; padding-left: 20px;">
+   <summary style="outline: none;">Check the visual.</summary> <br />
+     <div>
+         <img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_4da47ef46ff577fdaba1a386a5667079.png" />
+     </div>
+ </details>
+</li>
+</ol>
+<!-- ![](https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_4da47ef46ff577fdaba1a386a5667079.png) -->
+<ol start="10">
+<li class="raw">
+<p>The window will close and you will now be on step 2. Choose the repository you want to deploy.</p>
+<details style="font-size: 13px; cursor: pointer; outline: none; color: #575d70; padding-left: 20px;">
+  <summary style="outline: none;">Check the visual.</summary> <br />
+    <div>
+        <img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_bc3f5b50ff0c71aa5374ba0ea3de4ed8.png" />
+    </div>
+</details>
+</li>
+</ol>
+<!-- ![](https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_bc3f5b50ff0c71aa5374ba0ea3de4ed8.png) -->
+<ol start="11">
+<li class="raw">
+<p>You will now be on step 3. Finish deploying by clicking on the Deploy site.</p>
+<details style="font-size: 13px; cursor: pointer; outline: none; color: #575d70; padding-left: 20px;">
+  <summary style="outline: none;">Check the visual.</summary> <br />
+    <div>
+        <img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_b522f45e74097ac7da8548170e593c53.png" />
+    </div>
+</details>
+</li>
+</ol>
+<!-- ![](https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_b522f45e74097ac7da8548170e593c53.png) -->
+<ol start="12">
+<li class="raw">
+<p>You will be taken to the Overview page and Netlify will take a couple of minutes to finish deploying. The <em>Site deploy in progress</em> notification should be yellow. Once Netlify finishes you will see that the notification is gone and replaced by the link that turned from yellow to green. This means your website is now <strong>live</strong> and you can see the URL of your newly published website. And that is it! You have your app deployed!</p>
+<p>Netlify automatically generates a name for your site. You can update it by visiting the <em>Settings</em> tab and then under <em>General</em> clicking <em>“Change site name”</em>:</p>
+<details style="font-size: 13px; cursor: pointer; outline: none; color: #575d70; padding-left: 20px;">
+  <summary style="outline: none;">Check the visual.</summary> <br />
+    <div>
+        <img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_f5a69766de6ea3749a29d640a865062a.png" />
+    </div>
+</details>
+</li>
+</ol>
+<!-- ![](https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_f5a69766de6ea3749a29d640a865062a.png) -->
+<br>
+<h3 class="raw">Step 3 | Setting up the environment variables</h3>
+<br>
+<p>Go to the Heroku app and in the <em>Settings</em> tab, go under <em>Reveal Config Vars</em> and add the URL to your newly created Netlify app. Make sure you add it under the same name as you used it in your server-side app code. For example - if you set the <code>FRONTEND_URL</code> in the CORS, then use the same name in the Heroku app:</p>
+<pre><code class="javascript hljs raw">// app.js
+
+// Cross-Origin Resource Sharing
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true
+  })
+);
+</code></pre>
+<p>Here is a hypothetical example:</p>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-netlify-deployment/set-config-var-heroku.png" alt class="raw md-image"></p>
+<br>
+<p>And that would be all! Pat yourself on the back for a job well done.</p>
+<br>
+<p><img src="https://media0.giphy.com/media/l1KVbGDWxVr5qw7M4/giphy.gif?cid=790b7611ea443127a6ffa72cf9e6c1221d22ba18b1df554b&amp;rid=giphy.gif" alt class="raw md-image"></p>
+<h2 class="raw">Summary</h2>
+<p>In this learning unit, we covered the deployment process of a React front-end application with Netlify. After successfully deploying the application with Netlify, we updated our server’s CORS configuration to allow network requests coming from our front-end application.</p>
+<br>
+<h2 class="raw">Extra resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://docs.netlify.com/domains-https/custom-domains/#definitions">Set up your custom domain</a></li>
+</ul>

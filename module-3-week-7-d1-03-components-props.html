@@ -1,0 +1,779 @@
+<!-- ![logo_ironhack_blue 7](https://user-images.githubusercontent.com/23629340/40541063-a07a0a8a-601a-11e8-91b5-2f13e4e6b441.png)
+
+# React | Components & Props -->
+<!--
+
+### Instructional Design Goals
+
+**A.** *Explain the* features of `class` and `function` components and exemplify the syntax.
+
+**B.** *Explain* and *illustrate* how the Component tree works.
+
+**C.** *Explain* the props concept in React components and *demonstrate* how to use them in function and class components.
+
+**D.** *Explain* and *demonstrate* how to compose components using props.children.
+
+**E.** *Demonstrate* how to import and use pre-made components from npm
+
+-->
+<h2 class="raw">Learning goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Create components using <code>function</code> and <code>class</code> syntax</li>
+<li class="raw">Interpret the component hierarchy using a Component Tree model</li>
+<li class="raw">Pass the data to a component using <code>props</code></li>
+<li class="raw">Create reusable components</li>
+<li class="raw">Import and use pre-made components from <em>npm</em></li>
+</ul>
+<br>
+<h2 class="raw">Function and Class Components</h2>
+<!--
+
+**A.** *Explain the* features of class and function components and exemplify the syntax.
+
+Student will be able to create components using `function` and `class` syntax
+
+-->
+<blockquote class="raw">
+<p>Components let you split the UI into independent, reusable pieces, and think about each piece in isolation.</p>
+<p><small><cite> – <a href="https://reactjs.org/docs/components-and-props.html">Components and Props –. (n.d.-a). ReactJS Documentation</a> </cite></small></p>
+</blockquote>
+<p>React lets you define components as <em>functions</em> or <em>classes</em>. While these two types of components differ in syntax and use different mechanisms for handling <em>state</em> and <em>updates</em> (more on that later) they can be combined and used together in React applications.</p>
+<br>
+<h3 class="raw">Function vs. Class Components?</h3>
+<p>Function components are the future of React. However, a lot of React applications running today still have a large portion of their React codebase and components written as classes. While the industry is steadily moving towards using only functional components and <em>hooks</em>, class components will still be supported in React for the foreseeable future.</p>
+<blockquote class="raw">
+<p>At Facebook, we have tens of thousands of components written as classes, and we have absolutely no plans to rewrite them. Instead, we are starting to use hooks in the new code side by side with classes.</p>
+<p><small><cite> – <a href="https://reactjs.org/docs/hooks-intro.html#gradual-adoption-strategy">Introducing Hooks, n.d., “Gradual Adoption Strategy” section. ReactJS Documentation</a> </cite></small></p>
+</blockquote>
+<p>So the key point is that you should use functional components when creating your React apps. Still, you should also be familiar with the basics of class components, as navigating and working with the older React codebases may be part of your work in the future.</p>
+<br>
+<h3 class="raw">Function Components</h3>
+<p><strong>Functional components</strong> are just JavaScript functions and they let you <em>return/render</em> JSX content to the DOM. We create a functional component by writing a JavaScript function:</p>
+<pre><code class="jsx hljs raw">function ExampleFuncA() {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt; ExampleFuncA - functional component &lt;/h2&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ExampleFuncA;
+</code></pre>
+<br>
+<p>We can also create a functional components using the arrow function syntax:</p>
+<pre><code class="jsx hljs raw">const ExampleFuncB = () =&gt; {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt; ExampleFuncB - functional (arrow) component &lt;/h2&gt;
+    &lt;/div&gt;
+  );
+};
+
+export default ExampleFuncB;
+</code></pre>
+<br>
+<h3 class="raw">Class Components</h3>
+<p>We create a class component by defining a <code>class</code> that extends <code>React.Component</code>.</p>
+<p><img class="emoji" alt=":star:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/star.png" /> When creating a <code>class</code> component we must import React in the file.</p>
+<p><img class="emoji" alt=":star:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/star.png" /> As well, <code>class</code> component must contain a <code>render(){}</code> method:</p>
+<pre><code class="jsx hljs raw">import React from &#39;react&#39;;
+
+class ExampleClassA extends React.Component {
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;h2&gt; ExampleClassA - class component &lt;/h2&gt;
+      &lt;/div&gt;
+    );
+  }
+}
+
+export default ExampleClassA;
+</code></pre>
+<br>
+<p>You might also see the <code>React.Component</code> class referenced as <code>Component</code> class. If we use this syntax, we must import and destructure component from the <code>react</code> module:</p>
+<pre><code class="jsx hljs raw">import React, { Component } from &#39;react&#39;; // &lt;--
+
+class ExampleClassB extends Component {
+  render() {
+    return (
+      &lt;div&gt;
+        &lt;h2&gt; ExampleClassB - class component &lt;/h2&gt;
+      &lt;/div&gt;
+    );
+  }
+}
+
+export default ExampleClassB;
+</code></pre>
+<p>In the above example, we created our class components by extending React <code>Component</code>. We do this to make our class inherit all the useful built-in properties and methods of a React component. Both of the previous examples are the same, just in the second example, we are using a <a href="https://developer.mozilla.org/pt-PT/docs/Web/JavaScript/Reference/Statements/import">named import</a>.</p>
+<br>
+<div class="alert alert-warning">
+<p><img class="emoji" alt=":warning:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/warning.png" /> Remember! Importing <code>React</code> from the <code>react</code> library is <strong>always</strong> required in every <code>class</code> component. Class components must extend <code>React.Component</code> which requires us to import <code>React</code>.</p>
+</div>
+<br>
+<h3 class="raw">Create class and function Components</h3>
+<p>Let’s go now and create a new React app so that we can actually demo how to write components and later on, how to use props.</p>
+<pre><code class="shell hljs raw">$ npx create-react-app react-components-props-demo
+$ cd react-components-props-demo
+$ npm start
+</code></pre>
+<p>Clean the <code>App.js</code> a bit, so that it has the following structure:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+import &#39;./App.css&#39;;
+
+function App() {
+  return &lt;div className=&quot;App&quot;&gt;&lt;/div&gt;;
+}
+
+export default App;
+</code></pre>
+<p>For now, we will keep working inside the <code>App.js</code> file. We briefly mentioned that there are two main kinds of components in React, <em>class</em> and <em>functional</em>. We will start by creating a <em>class</em> component first.</p>
+<div class="alert alert-info">
+<p>Class components must extend <code>React.Component</code> which requires us to import <code>React</code> from <code>react</code> library. Class component must also contain the <code>render(){}</code> method.</p>
+</div>
+<p>In the folder <code>./src/components</code> create a new file <code>Navbar.js</code>. This will be our new class component <code>Navbar</code>:</p>
+<pre><code class="jsx hljs raw">// ./src/components/Navbar.js
+
+import React from &#39;react&#39;;
+
+class Navbar extends React.Component {
+  render() {
+    return (
+      &lt;nav&gt;
+        &lt;p&gt;React - Components &amp; props&lt;/p&gt;
+      &lt;/nav&gt;
+    );
+  }
+}
+
+export default Navbar;
+</code></pre>
+<p>Next, we’ll import the <code>Navbar</code> component and display it in <code>App.js</code>:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import Navbar from &#39;./src/components/Navbar&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+    &lt;/div&gt;
+  );
+}
+export default App;
+</code></pre>
+<br>
+<p>We will continue practicing by creating a <em>functional</em> component.</p>
+<div class="alert alert-info">
+<p>The functional component is, as its name says, a JavaScript function.</p>
+</div>
+<p>In the folder <code>./src/components</code> create another file <code>Greeting.js</code>. This will be our new functional component <code>Greeting</code>:</p>
+<pre><code class="jsx hljs raw">// ./src/components/Greeting.js
+
+function Greeting() {
+  const message = &#39;Hello Ana!&#39;;
+
+  return (
+    &lt;div&gt;
+      &lt;u&gt;{message}&lt;/u&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Greeting;
+</code></pre>
+<p>Import the new component and display it by updating your <code>App.js</code> with the following code:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import Greeting from &#39;./src/components/Greeting&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      &lt;Greeting /&gt;
+    &lt;/div&gt;
+  );
+}
+export default App;
+</code></pre>
+<p>As you can see, <code>Greeting</code> is just a function, with one main characteristic - it returns <code>JSX</code> so it can render the <code>message</code> on the DOM. We used the <code>Greeting</code> in the <code>App</code> function, wrapping it as a tag <code>&lt;Greeting /&gt;</code>, which is how we instantiate components in React.
+We can reuse the <code>Greeting</code> component multiple times. Let’s update <code>App.js</code> to do so:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... imports stay unchanged
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      &lt;Greeting /&gt;
+      &lt;hr /&gt;
+      &lt;Greeting /&gt;
+      &lt;hr /&gt;
+      &lt;Greeting /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>As shown, it is pretty easy to reuse a component. However, as you have probably noticed, each instance of the <code>Greeting</code> component shows the exactly same content.
+In the next step, we will see how we can reuse the component and make it show custom content by passing it data through <code>props</code>.</p>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Check for Understanding - Create class and function components</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/dawn-water-b266k?file=/src/App.js">CodeSandbox - Exercise 3</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>) CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Create a <code>class</code> component</strong></p>
+<p>In addition to the existing components, create a new component using the <code>class</code> syntax. If you need a refresher on the syntax of <em>class</em> components you can reference the <code>Navbar</code> component included in the example.</p>
+<br>
+<p><strong>3. Create a <code>function</code> component</strong></p>
+<p>In addition to the existing components, create a new function component. If you need a refresher on the syntax of the <em>function</em> components you can reference the <code>Greeting</code> component included in the example.</p>
+<br>
+<p><strong>4. Render the components in the <code>App.js</code></strong></p>
+<p>Import the newly created components and display them in the <code>App.js</code>.</p>
+</details>
+<br>
+<h2 class="raw">Introduction - Know how the Component tree works</h2>
+<p><strong>Components are the core building block of React apps.</strong> A typical React app is composed of many components. The structure of a React app can be represented as a <strong>component tree.</strong> The tree starts with one <strong>root component</strong> (usually named App) and has an infinite amount of nested child components.</p>
+<p>To illustrate this, we’ll create and display a new component in our existing app. In the folder <code>src/components</code> create a file <code>Button.js</code> and add the following content to it:</p>
+<pre><code class="jsx hljs raw">// ./src/components/Button.js
+
+function Button() {
+  return (
+    &lt;a href=&quot;https://reactjs.org&quot;&gt;
+      &lt;button&gt; Click here &lt;/button&gt;
+    &lt;/a&gt;
+  );
+}
+
+export default Button;
+</code></pre>
+<p>Next, we will import and use the new component <code>Button</code> to display two buttons in the <code>Navbar</code> :</p>
+<pre><code class="jsx hljs raw">// ./src/components/Navbar.js
+// ... previous import stays unchanged
+
+import Button from &#39;./Button&#39;;
+
+class Navbar extends React.Component {
+  render() {
+    return (
+      &lt;nav&gt;
+        &lt;p&gt;React - Components &amp; props&lt;/p&gt;
+        &lt;Button /&gt;
+        &lt;Button /&gt;
+      &lt;/nav&gt;
+    );
+  }
+}
+
+export default Navbar;
+</code></pre>
+<p>After rendering the component, we can represent our app in the form of a <em>component tree</em> that looks like this:</p>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-intro/react-component-tree-1.png" alt class="raw md-image"></p>
+<br>
+<p>The <em>component tree</em> model allows us to hierarchically represent the relationship between components. As you can see it is similar to the DOM tree. For example, using the component tree model we can see that components Navbar and Greeting are all nested directly inside of the App.js.</p>
+<p>Thinking about a React app structure in this way gives us a bird’s-eye view of the app. This is needed to allow us to visualize the data flow when passing data between the components. We will see how to pass data between the components by using <code>props</code> in the next step.</p>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Check for Understanding - Component tree diagram</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<p>Working in a team complete the following activity:</p>
+<p><strong>1. Create a component tree diagram:</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d1-react-component-tree-cfu3-s9moy?file=/src/App.js">CodeSandbox - Exercise 4</a>. Using this app as an example create a <em>component tree</em> diagram that represents all of its components.</p>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-intro/react-component-tree-2.png" alt class="raw md-image"></p>
+</details>
+<br>
+<h2 class="raw">Props</h2>
+<!--
+
+ *Explain* the props concept in React components and *demonstrate* how to use them in function and class components.
+
+-->
+<p>One of the fundamental concepts when dealing with React components is <strong>props</strong>. <em>Props</em> represent <em>the data that component receives from the outside</em>.</p>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":bulb:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/bulb.png" /> Conceptually, components are like JavaScript functions. They accept arbitrary inputs (called <code>props</code>) and return React elements describing what should appear on the screen.</p>
+</div>
+<h3 class="raw">Passing and accessing a prop</h3>
+<p>The term <strong>props</strong> stands for <em>properties</em>. In JSX, when a prop is sent to a component, it looks like an HTML attribute. Let’s take a look. In the <code>App</code> function, add the following piece of code:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... imports stay unchanged
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      &lt;Greeting firstName=&quot;Harper&quot; /&gt;
+      &lt;hr /&gt;
+      &lt;Greeting /&gt;
+      &lt;hr /&gt;
+      &lt;Greeting /&gt;
+      &lt;hr /&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<p>The custom attribute <code>firstName=&quot;Harper&quot;</code> that we added to the component is a prop. The prop <code>firstName</code> and its value <code>&quot;Harper&quot;</code> will be available inside the component through the <code>props</code> object.</p>
+<div class="alert alert-info">
+<p>To access the <code>props</code> object we first have to specify it as the parameter of the function component:</p>
+<pre><code class="jsx hljs raw">function Example(props) {
+  return /* JSX content */;
+}
+</code></pre>
+</div>
+<p>Let’s update the <code>Greeting</code> component to see this in practice. Add the parameter <code>props</code> and <em>console.log</em> it in the console:</p>
+<pre><code class="jsx hljs raw">// ./src/components/Greeting.js
+function Greeting(props) {
+  const message = &#39;Hello Ana!&#39;;
+
+  console.log(props);
+
+  return (
+    &lt;div&gt;
+      &lt;u&gt;{message}&lt;/u&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Greeting;
+</code></pre>
+<p>The keyword <code>props</code> is an object. It holds the values that we pass to the component as props, from the outside. In this case, <code>props</code> has a property <code>firstName</code> with the value <code>&quot;Harper&quot;</code>. Open the browser’s console and check the output:</p>
+<br>
+<p><img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_e40dc7cb3cbd15a16777b1588aa2b2e3.png" alt class="raw md-image"></p>
+<br>
+<p>We can access the property <code>firstName</code> and display it in the component. Update the <code>Greeting</code> component :</p>
+<pre><code class="jsx hljs raw">// ./src/components/Greeting.js
+
+function Greeting(props) {
+  // const message = &#39;Hello Ana!&#39;;   &lt;== REMOVE
+  console.log(props);
+
+  return (
+    &lt;div&gt;
+      &lt;u&gt;Hello {props.firstName}!&lt;/u&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Greeting;
+</code></pre>
+<p>Knowing that we can pass any data to a component using <em>props</em>, opens up so many opportunities for component reusability. Let’s update the <code>&lt;Greeting&gt;</code> components and pass a <code>firstName</code> props to each:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... imports stay unchanged
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      &lt;Greeting firstName=&quot;Harper&quot; /&gt;
+      &lt;hr /&gt;
+      &lt;Greeting firstName=&quot;Michelle&quot; /&gt;
+      &lt;hr /&gt;
+      &lt;Greeting firstName=&quot;Andrea&quot; /&gt;
+      &lt;hr /&gt;
+    &lt;/div&gt;
+  );
+}
+
+// ...
+</code></pre>
+<div class="alert alert-info">
+<p>Props are <em>pieces of information that come from outside of the component</em>. Another way to describe them is they are <em>the data passed into the component</em>.</p>
+</div>
+<br>
+<h3 class="raw">Passing multiple props</h3>
+<p>You can pass as many <em>props</em> as needed to a component. Also, the prop value passed can be of any data type (<em>string</em>, <em>number</em>, <em>boolean</em>, <em>array</em>, <em>object</em>, <em>function</em>). We’ll use a new component <code>StudentCard</code> to see how to pass props that have different data types:</p>
+<ol>
+<li class="raw">Let’s create a new file <code>./src/components/StudentCard.js</code> and the component <code>StudentCard</code>:</li>
+</ol>
+<pre><code class="jsx hljs raw">// ./src/components/StudentCard.js
+import React from &#39;react&#39;;
+
+function StudentCard(props) {
+  return (
+    &lt;div className=&quot;StudentCard&quot;&gt;
+      &lt;p&gt;
+        &lt;b&gt;Name:&lt;/b&gt; NAME
+      &lt;/p&gt;
+      &lt;p&gt;
+        &lt;b&gt;Cohort:&lt;/b&gt; CITY - COURSE
+      &lt;/p&gt;
+      &lt;p&gt;
+        &lt;b&gt;Current week: WEEK &lt;/b&gt;
+      &lt;/p&gt;
+      &lt;br /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default StudentCard;
+</code></pre>
+<ol start="2">
+<li class="raw">Next, we’ll import the component <code>StudentCard</code> and display it inside of <code>App.js</code>. This time we’ll pass multiple props: <code>name</code> - <em>string</em>, <code>week</code> - <em>number</em> and <code>info</code> - <em>object</em>:</li>
+</ol>
+<pre><code class="jsx hljs raw">// App.js
+// ... imports stay unchanged
+
+import StudentCard from &#39;./components/StudentCard&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      &lt;Greeting firstName=&quot;Harper&quot; /&gt;
+      &lt;Greeting firstName=&quot;Michelle&quot; /&gt;
+      &lt;Greeting firstName=&quot;Andrea&quot; /&gt;
+
+      &lt;StudentCard name=&quot;Eva&quot; week={7} info={{ city: &#39;BCN&#39;, course: &#39;WEB&#39; }} /&gt;
+      &lt;StudentCard name=&quot;Mat&quot; week={8} info={{ city: &#39;MIA&#39;, course: &#39;DATA&#39; }} /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<ol start="3">
+<li class="raw"><code>StudentCard</code> component receives props <code>name</code>, <code>week</code>, and <code>info</code> from <code>App</code>. We will update <code>StudentCard.js</code> to display them:</li>
+</ol>
+<pre><code class="jsx hljs raw">// ./src/components/StudentCard.js
+import React from &#39;react&#39;;
+
+function StudentCard(props) {
+  return (
+    &lt;div className=&quot;StudentCard&quot;&gt;
+      &lt;p&gt;
+        &lt;b&gt;Name:&lt;/b&gt; {props.name}
+      &lt;/p&gt;
+      &lt;p&gt;
+        &lt;b&gt;Cohort:&lt;/b&gt; {props.info.city} - {props.info.course}
+      &lt;/p&gt;
+      &lt;p&gt;
+        &lt;b&gt;Current week: {props.week}&lt;/b&gt;
+      &lt;/p&gt;
+      &lt;br /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default StudentCard;
+</code></pre>
+<p>Take a note of the object syntax we are using to access the data coming from the <code>info</code> object: <code>props.info.city</code> and <code>props.info.course</code>.</p>
+<br>
+<h4 class="raw"><code>props</code> in the class component</h4>
+<p>We saw that accessing the <code>props</code> object is pretty straightforward when it comes to functional components. Let’s create a new component <code>StudentList</code> as an example of how to use <code>props</code> in class components:</p>
+<pre><code class="jsx hljs raw">// ./src/components/Badge.js
+import React from &#39;react&#39;;
+
+class Badge extends React.Component {
+  render() {
+    return &lt;span className=&quot;Badge&quot;&gt; {this.props.badgeText} &lt;/span&gt;;
+  }
+}
+
+export default Badge;
+</code></pre>
+<p>Next, we’ll import the component and display it inside of <code>App.js</code> and pass it the prop <code>badgeText=&quot;important&quot;</code>:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... imports stay unchanged
+
+import Badge from &#39;./components/Badge&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      &lt;Greeting firstName=&quot;Harper&quot; /&gt;
+      &lt;Greeting firstName=&quot;Michelle&quot; /&gt;
+      &lt;Greeting firstName=&quot;Andrea&quot; /&gt;
+
+      &lt;StudentCard name=&quot;Eva&quot; week={7} info={{ city: &#39;BCN&#39;, course: &#39;WEB&#39; }} /&gt;
+      &lt;StudentCard name=&quot;Mat&quot; week={8} info={{ city: &#39;MIA&#39;, course: &#39;DATA&#39; }} /&gt;
+
+      &lt;Badge badgeText=&quot;important&quot; /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>If we are inside a class, we have to use the <code>this</code> keyword to access the props. This is why we used <code>{this.props.badgeText}</code> inside of the class component <code>Badge</code>.</p>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Check for Understanding - Passing props</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d1-react-component-props-cfu5-vmd7o?file=/src/App.js">CodeSandbox - Exercise 5</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>) CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Update the component <code>Status</code> to display the props</strong></p>
+<p>Component <code>App.js</code> includes all of the code that you will need for this exercise. Your task is to update components <code>Status</code> and <code>FlightCard</code> and display the props that they are receiving.</p>
+<p>Update the <code>Status</code> component to display the <code>airport</code> and <code>direction</code> coming from the prop <code>details</code>. <code>Status.js</code> includes placeholder text <code>AIRPORT</code> and <code>DIRECTION</code> as a hint on where to display the content from the props.</p>
+<br>
+<p><strong>3. Update the component <code>FlightCard</code> to display the props</strong></p>
+<p>Update the <code>FlightCard</code> component to display the props <code>price</code> , <code>flightCode</code> and <code>destination</code>.</p>
+<p><code>FlightCard.js</code> includes placeholder text <code>FLIGHT_CODE</code>, <code>DESTINATION</code>, and <code>PRICE</code> as a hint on where to display the content from the props.</p>
+<br>
+<h4 class="raw">Expected result</h4>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-intro/react-component-cfu5-expected-result.png" alt="Exercise 5 - Expected Result" class="raw md-image"></p>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<pre><code class="jsx hljs raw">// ./src/components/Status.js
+
+function Status(props) {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;
+        {props.details.direction} - {props.details.airport} ✈
+      &lt;/h2&gt;
+      &lt;hr /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Status;
+</code></pre>
+<pre><code class="jsx hljs raw">// ./src/components/FlightCard.js
+
+import Button from &#39;./Button&#39;;
+
+function FlightCard(props) {
+  return (
+    &lt;div className=&quot;FlightCard&quot;&gt;
+      &lt;p&gt;Flight: {props.flightCode}&lt;/p&gt;
+      &lt;p&gt;Destination: {props.destination}&lt;/p&gt;
+      &lt;p&gt;Price: {props.price} USD&lt;/p&gt;
+
+      &lt;Button text=&quot;Book Flight&quot; /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default FlightCard;
+</code></pre>
+</details>
+<br>
+<h2 class="raw">Composing components - <code>props.children</code></h2>
+<!--
+
+*Explain* and *demonstrate* how to compose components using props.children.
+
+-->
+<p>So far we saw that components are mostly self-closing tags, such as <code>&lt;User /&gt;</code>.However, you can also write components as if they were regular tags:</p>
+<pre><code>&lt;CoolComponent&gt; &lt;/CoolComponent&gt;
+</code></pre>
+<p>This allows us to use a component as a <strong>wrapper for one or more other components</strong>. Let’s create a new component <code>StudentList</code> to show this:</p>
+<pre><code class="jsx hljs raw">// ./src/components/StudentList.js
+
+function StudentList(props) {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Student List&lt;/h2&gt;
+      {props.children}
+    &lt;/div&gt;
+  );
+}
+
+export default StudentList;
+</code></pre>
+<p>By creating the component in such a way we say: “<em>this component will be a “parent” component or “wrapper” component for other components</em>”.</p>
+<p>To show this, Let’s wrap all the <code>StudentCard</code> components with the <code>UserList</code> component:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import StudentList from &#39;./components/StudentList&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      &lt;Greeting firstName=&quot;Harper&quot; /&gt;
+      &lt;Greeting firstName=&quot;Michelle&quot; /&gt;
+      &lt;Greeting firstName=&quot;Andrea&quot; /&gt;
+      &lt;Badge badgeText=&quot;important&quot; /&gt;
+
+      &lt;StudentList&gt;
+        &lt;StudentCard name=&quot;Eva&quot; week={7} info={{ city: &#39;BCN&#39;, course: &#39;WEB&#39; }} /&gt;
+        &lt;StudentCard name=&quot;Mat&quot; week={8} info={{ city: &#39;MIA&#39;, course: &#39;DATA&#39; }} /&gt;
+      &lt;/StudentList&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<p>As we can see, nothing major changed in the way how the content is rendered.</p>
+<p>Having the opportunity to use <code>props.children</code> allows us to compose components. We will be taking advantage of this feature a lot.</p>
+<br>
+<p>So far, we have covered <strong>props</strong> and we now know that props allow us to <strong>pass data in the component</strong>. Explained with industry terms, we could say that <strong>props allow you to pass data down the component tree</strong>.</p>
+<p>One thing to keep in mind: <strong>props are immutable</strong>.</p>
+<!-- :::info
+The changes in `props` and/or `state` trigger React to re-render the components and potentially update the DOM.
+::: -->
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Check for Understanding - Pass nested components (<code>props.children</code>)</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Working in a team complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d1-react-component-props-cfu6-y42jh?file=/src/App.js">CodeSandbox - Exercise 6</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>) CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Update the component <code>FlightList</code> to display the nested components</strong></p>
+<p>Component <code>App.js</code> includes all of the code that you will need for this exercise. Your task is to update component <code>FlightList</code> to display the <code>&lt;FlightCard /&gt;</code> children components nested between the opening and the closing tags <code>&lt;FlightList&gt; ... &lt;/FlightList&gt;</code>.</p>
+<p><code>FlightList.js</code> includes the placeholder comment <code>DISPLAY NESTED FLIGHT CARDS HERE</code> as a hint on where to display the content from the props.</p>
+<br>
+<h4 class="raw">Expected result</h4>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-intro/react-component-cfu6-expected-result.png" alt="Exercise 6 - Expected Result" class="raw md-image"></p>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<p>Solution:</p>
+<pre><code class="jsx hljs raw">// ./src/components/FlightList.js
+
+function FlightList(props) {
+  return (
+    &lt;div className=&quot;FlightList&quot;&gt;
+      &lt;h2&gt;Flights&lt;/h2&gt;
+
+      {props.children}
+
+      &lt;br /&gt;
+      &lt;hr /&gt;
+      &lt;small&gt;
+        &lt;b&gt;Disclaimer:&lt;/b&gt; Prices are final prices and include all taxes and fees, including payment fees for the cheapest common payment method (which may differ depending on the provider). Additional charges may apply for other types of payment, luggage, meals, WLAN, or other additional services. Prices, availability, and travel details are provided based on the latest information received from our partners. This information is reflected in the results within less than 24 hours. Additional conditions may also, be applied by our partners. You should then check prices and conditions with the services providers before booking.
+      &lt;/small&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default FlightList;
+</code></pre>
+</details>
+<br>
+<h2 class="raw">When do you use props?</h2>
+<!--
+
+Import and use pre-made components from npm
+
+-->
+<h3 class="raw">(1) Props are like function arguments</h3>
+<p>You can use props to make your components reusable. Props can be used to control how the component is displayed. Passing in <strong>different props</strong> often results in the component <strong>looking or behaving differently</strong>.</p>
+<p>In this way, <em>props</em> for a component are like arguments of a function. Arguments control how a function behaves, just like props control how the component is displayed.</p>
+<p>Imagine we had a cool <strong>component to display the weather</strong> of a particular city. In that case, the prop we send would probably be the city name. Using that name, it would probably access the weather data from an API.</p>
+<p>Rendering the component would probably look like this:</p>
+<pre><code class="jsx hljs raw">// This code is just hypothetical
+// ...
+  render() {
+    return &lt;WeatherWidget city=&quot;Mexico City&quot; /&gt;;
+  }
+// ...
+</code></pre>
+<p>Sending a different <code>city</code> prop should produce different information.</p>
+<br>
+<p><img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_994ae09ba982413b0341b87a94fe6610.png" alt class="raw md-image"></p>
+<br>
+<h3 class="raw">(2) Share data between components</h3>
+<p>By definition, <em>props</em> let you <strong>share data</strong> between a <em>parent</em> component and a <em>child</em> component. Sharing data this way is very common. It’s quite common for an action that happens in one component <strong>to affect how another</strong> component should behave.</p>
+<br>
+<h3 class="raw">(3) Components from <code>npm</code></h3>
+<p>There are many pre-made components on the <code>npm</code>. Often, components you get from the <code>npm</code> will allow you to configure and customize them through the use of <em>props</em>. Let’s see an example!</p>
+<p>First, let’s install the <a href="https://www.npmjs.com/package/react-player"><code>react-player</code></a> npm package.</p>
+<pre><code class="shell hljs raw">$ npm install react-player
+</code></pre>
+<p>Now let’s import it inside <code>App.js</code> and use it as any other component:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+// import ReactPlayer from the npm package
+import ReactPlayer from &#39;react-player&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      {/* ... no changes here ... */}
+      &lt;hr /&gt;
+      &lt;ReactPlayer url=&quot;https://vimeo.com/channels/top/22439234&quot; playing /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>As the documentation states, the basic usage only involves the <code>url</code> <em>prop</em> – the address of the video we want to display. It works with many of the popular video services like YouTube and Vimeo.
+Aside from <code>url</code>, the component also has other props that you can read about in <a href="https://www.npmjs.com/package/react-player">the package’s documentation</a>. We also used the <code>playing</code> <em>prop</em> – a boolean prop that controls auto-play.</p>
+<p>Additionally, if you don’t like the most popular YouTube video of the day? Maybe two new props can help! The <code>controls</code> <em>prop</em> adds player controls and the <code>volume</code> prop lets you control the volume.</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+  render() {
+    return (
+      &lt;div className=&quot;App&quot;&gt;
+      {/* ... no changes here ... */}
+
+        &lt;ReactPlayer url=&quot;https://vimeo.com/channels/top/22439234&quot; /&gt;
+
+        {/* see the new props! */}
+
+        &lt;ReactPlayer
+          url=&quot;https://www.youtube.com/watch?v=kJQP7kiw5Fk&quot;
+          playing
+          controls
+          volume=&quot;0.5&quot;
+        /&gt;
+      &lt;/div&gt;
+    );
+  }
+// ...
+</code></pre>
+<p>With a component like <code>ReactPlayer</code>, you can see how props allow you to customize the way the component works for you.</p>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-components-props/tree/master">react-components-props</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="shell hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-components-props.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-components-props
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this lesson, we learned about components and how to pass data from the outside using <em>props</em>. Props are like function arguments but for components and they let you share data between components. Also, components from npm use props for customization and configuration.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://reactjs.org/docs/react-component.html"><code>React.Component</code> on reactjs.org</a></li>
+<li class="raw"><a href="https://www.agiliq.com/blog/2018/05/understanding-react-state-and-props/#understanding-reactjs-props">Understanding Props in React</a></li>
+</ul>

@@ -1,0 +1,684 @@
+<!-- # Context API -->
+<!--
+
+### Instructional Design Goals
+
+**A.** Explain what Context API is and why it is used
+
+**B.** Demonstrate how to set up and use Context, in an existing app
+
+- Create Context using `React.createContext`
+- Create and set up the Provider.
+- Consume Context using the `useContext` Hook
+
+**C.** Demonstrate **how to update the Context values (from anywhere)** by storing them in a stateful component.
+
+
+
+-->
+<h2 class="raw">Learning goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Explain what Context API is and why it is used</li>
+<li class="raw">Create a Context <code>Provider</code> that other components can subscribe to</li>
+<li class="raw">Create Context <code>Consumers</code> using the <code>useContext</code> hook</li>
+<li class="raw">Pass data through the component tree <em>without</em> prop drilling</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>In the previous lessons, we learned how to organize our components and lift the state up to allow components to access the data that they depend on. <strong>React uses the top-down data flow, where values can be passed from the parent component to children using props.</strong></p>
+<p>As a React app grow the number of components and the component tree tend to become bigger. This can at times present problem and make it difficult to pass data through props. If a component that requires some data is nested several levels down the only way to pass the data is through <em>prop drilling</em>. In this lesson, we will see how React’s Context API can help us solve this issue.</p>
+<br>
+<h2 class="raw">Getting Started</h2>
+<p>First, let’s create a new React app.</p>
+<pre><code class="bash hljs raw">$ npx create-react-app react-context-api
+$ cd react-context-api
+</code></pre>
+<p>Inside our project folder, <em>install</em> the <code>react-router-dom</code>:</p>
+<pre><code class="bash hljs raw">$ npm install react-router-dom
+</code></pre>
+<p>And then start the app:</p>
+<pre><code class="bash hljs raw">$ npm start
+</code></pre>
+<br>
+<p>As a starting point, we will use the starter code provided below. Go ahead and create the listed files by using the provided snippets:</p>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Click here for the code</summary>
+<pre><code class="css hljs raw">/* src/index.css */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Roboto&quot;, &quot;Oxygen&quot;,
+    &quot;Ubuntu&quot;, &quot;Cantarell&quot;, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, &quot;Courier New&quot;,
+    monospace;
+}
+
+.App {
+  text-align: center;
+  min-height: 100vh;
+}
+
+.HomePage,
+.ProjectsPage {
+  padding: 20px;
+  min-height: 100vh;
+}
+
+.Navbar {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #ffffff;
+  font-weight: 600;
+  border-bottom: 1px solid #000000a8;
+}
+
+.Navbar a {
+  list-style: none;
+  text-decoration: none;
+  display: inline-block;
+  margin: 0px 20px;
+  font-size: 1.2rem;
+  color: #000000;
+}
+
+.ProjectCard {
+  padding: 20px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  margin: 20px;
+}
+
+.selected {
+  text-shadow: 1px 0px 3px white;
+  border-bottom: rgba(230, 244, 77, 0.804) solid 2px;
+  padding-bottom: 5px;
+}
+
+.btn {
+  padding: 5px 20px;
+}
+
+.profile {
+  width: 200px;
+}
+
+.theme-btn {
+  padding: 2px 15px;
+  font-size: 1rem;
+  text-align: center;
+}
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/pages/HomePage.js
+
+const profileImg = &#39;https://i.imgur.com/i1gsj0v.png&#39;;
+
+function HomePage() {
+  return (
+    &lt;div className=&quot;HomePage&quot;&gt;
+      &lt;h1&gt;Hi! My Name is ...&lt;/h1&gt;
+      &lt;img src={profileImg} className=&quot;profile&quot; alt=&quot;profile&quot; /&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default HomePage;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/pages/ProjectsPage.js
+
+import { useState } from &#39;react&#39;;
+import ProjectCard from &#39;../components/ProjectCard&#39;;
+import projectsData from &#39;../projects-data.json&#39;;
+
+function ProjectsPage() {
+  const [projects, setProjects] = useState(projectsData);
+
+  return (
+    &lt;div className=&quot;ProjectsPage&quot;&gt;
+      &lt;h1&gt;My Projects&lt;/h1&gt;
+      &lt;div className=&quot;projects&quot;&gt;
+        {projects.map((p) =&gt; &lt;ProjectCard key={p._id} project={p}/&gt;)}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default ProjectsPage;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/components/ProjectCard.js
+
+import React from &#39;react&#39;;
+
+function ProjectCard(props) {
+  return (
+    &lt;div className=&quot;ProjectCard&quot;&gt;
+      &lt;h3&gt;{props.project.name}&lt;/h3&gt;
+      &lt;p&gt;{props.project.technologies}&lt;/p&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default ProjectCard;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/components/Navbar.js
+
+import { NavLink } from &#39;react-router-dom&#39;;
+
+
+function Navbar() {
+  return (
+    &lt;nav className=&quot;Navbar&quot;&gt;
+      &lt;div&gt;
+        &lt;NavLink to=&quot;/&quot; exact activeClassName=&quot;selected&quot;&gt;Home&lt;/NavLink&gt;
+        &lt;NavLink to=&quot;/projects&quot; activeClassName=&quot;selected&quot;&gt;Projects&lt;/NavLink&gt;
+      &lt;/div&gt;
+    &lt;/nav&gt;
+  )
+}
+
+export default Navbar;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/index.js
+
+import React from &#39;react&#39;;
+import ReactDOM from &#39;react-dom&#39;;
+import &#39;./index.css&#39;;
+import App from &#39;./App&#39;;
+import reportWebVitals from &#39;./reportWebVitals&#39;;
+
+import { BrowserRouter as Router } from &#39;react-router-dom&#39;;
+
+ReactDOM.render(
+  &lt;React.StrictMode&gt;
+    &lt;Router&gt;
+      &lt;App /&gt;
+    &lt;/Router&gt;
+  &lt;/React.StrictMode&gt;,
+  document.getElementById(&#39;root&#39;)
+);
+
+
+reportWebVitals();
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/App.js
+
+import &#39;./App.css&#39;;
+import { Switch, Route } from &#39;react-router-dom&#39;;
+import Navbar from &#39;./components/Navbar&#39;;
+import HomePage from &#39;./pages/HomePage&#39;;
+import ProjectsPage from &#39;./pages/ProjectsPage&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      
+      &lt;Switch&gt;
+        &lt;Route exact path=&quot;/&quot; component={HomePage} /&gt;
+        &lt;Route path=&quot;/projects&quot; component={ProjectsPage} /&gt;
+      &lt;/Switch&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/projects-data.json
+
+[
+  {
+    &quot;_id&quot;: &quot;1a&quot;,
+    &quot;name&quot;: &quot;The Frogger Clone&quot;,
+    &quot;year&quot;: 2021,
+    &quot;technologies&quot;: &quot;JavaScript, HTML, CSS&quot;,
+    &quot;description&quot;: &quot;The first project game clone.&quot;
+  },
+  {
+    &quot;_id&quot;: &quot;2b&quot;,
+    &quot;name&quot;: &quot;iTravel&quot;,
+    &quot;year&quot;: 2021,
+    &quot;technologies&quot;: &quot;Mongo DB, ExpressJS, NodeJS, JavaScript, HTML, CSS&quot;,
+    &quot;description&quot;: &quot;Web App that allows logged in users to share their experiences about travel destinations.&quot;
+  },
+  {
+    &quot;_id&quot;: &quot;3c&quot;,
+    &quot;name&quot;: &quot;The Plan&quot;,
+    &quot;year&quot;: 2021,
+    &quot;technologies&quot;: &quot;NodeJS, ExpressJS, Mongo DB, React&quot;,
+    &quot;description&quot;: &quot;Web App that allows logged in users to plan their next activity with your friends or business partners.&quot;
+  }
+]
+</code></pre>
+</details>
+<br>
+<p>At this point, you can run the app with <code>$ npm start</code> and see how it looks like on <code>http://localhost:3000/</code>.</p>
+<br>
+<h2 class="raw">Context API</h2>
+<!--
+
+&gt; Learning goal 1
+&gt;
+&gt; (_Potentially break it down to micro goals_)
+&gt;
+&gt; Micro goals
+&gt;
+&gt; - Micro goal 1
+&gt; - Micro goal 2
+
+-->
+<p>As React application and its component tree grow it becomes more elaborate to pass the data to the nested components that need it through props. In this case, we may do <em>prop drilling</em> to pass the data down to the components.</p>
+<br>
+<h3 class="raw">Prop Drilling</h3>
+<p><strong>What is “prop drilling” you may ask?</strong></p>
+<br>
+<p><em>Prop Drilling</em> is the process of passing the data through the React component tree, several levels down, to a nested component. It basically means: directly passing values many levels down through props.</p>
+<p><strong>Is “prop drilling” a good practice?</strong></p>
+<br>
+<p>In smaller applications, <em>prop drilling</em> usually doesn’t present a problem, and passing props a couple of levels down is acceptable. However, when an application starts to grow, <em>prop drilling</em> usually isn’t the best approach. When you have components passing data many levels down, the application becomes hard to maintain and may experience performance issues due to excessive re-rendering caused by props updates. To solve this problem we can use a state management library like Redux, or React’s built-in interface - Context API.</p>
+<br>
+<h3 class="raw">What is Context API?</h3>
+<p>Context API is React’s built-in state management solution, that allows you to easily pass data to any component in your React app that needs it. <img class="emoji" alt=":star:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/star.png" /></p>
+<div class="alert alert-success">
+<p>Context API provides a way to pass data throughout the component tree directly, without having to pass props down manually at every level. In a nutshell, Context API solves the problem of prop drilling.</p>
+</div>
+<br>
+<h3 class="raw">When to Use Context</h3>
+<p>Context is designed to share data considered “global” with a tree of React components, such as the current authenticated user, theme, or preferred language. Using Context, we can avoid passing props through the component tree. It is primarily used when some data needs to be accessible by <em>many</em> components at different nesting levels.</p>
+<br>
+<h3 class="raw">What will we be making?</h3>
+<p>We will demonstrate how to create and use Context API in an existing React app by implementing the <em>Light and Dark mode</em> toggle, in an existing app.</p>
+<p>Here is the final result:</p>
+<iframe src="https://codesandbox.io/embed/fervent-payne-3tzub?fontsize=14&hidenavigation=1&theme=dark&view=preview" style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"></iframe>
+<br>
+<p>Feel free to play with it and explore a bit as you go through the lesson.</p>
+<!-- [![Edit m3-react-context-lesson-code-example](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/m3-react-context-lesson-code-example-3tzub?fontsize=14&hidenavigation=1&theme=dark) -->
+<br>
+<h2 class="raw">Creating Context - <code>createContext()</code></h2>
+<p>We will create the new folder <code>src/context</code> and use it for storing our Context files. Inside of it, we will create a new file <code>src/context/theme.context.js</code> for the new Context object that we will create next.</p>
+<p>First, we need to create the Context using the React’s <a href="https://reactjs.org/docs/context.html#reactcreatecontext"> <code>createContext</code></a> method:</p>
+<pre><code class="jsx hljs raw">// src/context/theme.context.js
+
+import React, { createContext } from &quot;react&quot;;
+
+const ThemeContext = createContext();
+
+export { ThemeContext };
+</code></pre>
+<p>Calling the <code>createContext()</code> creates a <em>Context object</em>. In the above example, we named our <em>Context object</em> <code>ThemeContext</code>.  We will use this object in the next step to create a Context <code>Provider</code> and to later consume it via the <code>useContext()</code> hook.</p>
+<br>
+<h2 class="raw">Provider</h2>
+<p>Every Context object comes with a <code>Provider</code> React component <a href="https://reactjs.org/docs/context.html#contextprovider"> <code>Context.Provider</code></a>  that allows consuming components to subscribe to Context object changes. In our case, in the <code>theme.context.js</code>, Provider is available on the <code>ThemeContext</code> object we created, like this:</p>
+<pre><code class="jsx hljs raw">// example
+
+ThemeContext.Provider
+</code></pre>
+<p>This value is an actual component, and we use it by rendering it like a wrapper component in the following way:</p>
+<pre><code class="jsx hljs raw">// example
+
+&lt;ThemeContext.Provider value={}&gt;
+  
+  &lt;SomeComponent1 /&gt;
+  &lt;SomeComponent2 /&gt;
+  
+&lt;/ThemeContext.Provider&gt;
+</code></pre>
+<p>The Provider accepts a <code>value</code> prop which takes data to be passed to consuming components that are descendants of this Provider.  We always use the Provider by wrapping it around the other components to which we want to provide the Context values.</p>
+<br>
+<h3 class="raw">The Provider Wrapper</h3>
+<p>To be able to easily wrap the Provider around other components and expose the values from it, we will create a  <em>wrapper component</em>. Let’s demonstrate how to do this.</p>
+<p>We will create a <em>wrapper component</em> called <code>ThemeProviderWrapper</code>:</p>
+<pre><code class="jsx hljs raw">// src/context/theme.context.js
+
+import React, { createContext } from &quot;react&quot;;
+
+const ThemeContext = createContext();
+
+
+function ThemeProviderWrapper(props) {              // &lt;== CREATE A WRAPPER COMPONENT
+  return (  
+    &lt;ThemeContext.Provider value={&quot;dark&quot;}&gt;    {/*  &lt;== SET UP THE PROVIDER INSIDE */}
+        {props.children}
+    &lt;/ThemeContext.Provider&gt;
+  )
+}
+
+export { ThemeContext, ThemeProviderWrapper };            // &lt;== UPDATE
+</code></pre>
+<p>We exported the <code>ThemeProviderWrapper</code> as we will use it in the next step to wrap other components.</p>
+<p>Inside of the <code>ThemeProviderWrapper</code> component we set up our Provider -  <code>ThemeContext.Provider</code> :</p>
+<p>To enable access to the data stored in the Context we have to wrap our app with the Provider.</p>
+<p>Let’s import the <code>ThemeProviderWrapper</code> to <code>index.js</code> and wrap it around the <code>&lt;App /&gt;</code>:</p>
+<pre><code class="jsx hljs raw">// src/index.js
+// ... previous imports stay unchanged
+
+import { ThemeProviderWrapper } from &#39;./context/theme.context&#39;;    // &lt;== IMPORT
+
+ReactDOM.render(
+  &lt;React.StrictMode&gt;
+    &lt;Router&gt;
+      
+      &lt;ThemeProviderWrapper&gt;                {/*  &lt;== ADD  */}
+        &lt;App /&gt;
+      &lt;/ThemeProviderWrapper&gt;               {/*  &lt;== ADD  */}
+      
+    &lt;/Router&gt;
+  &lt;/React.StrictMode&gt;,
+  document.getElementById(&#39;root&#39;)
+);
+
+reportWebVitals();
+</code></pre>
+<br>
+<p>From this point on, data supplied in the Provider’s (<code>ThemeContext.Provider</code>) <code>value</code> is available to all of the components in the component tree to consume.</p>
+<br>
+<h2 class="raw">Consumer - <code>useContext</code> hook</h2>
+<p>Any descendant component that is nested inside of the <code>Provider</code> can consume the data that it is providing. This is where the <code>useContext</code> hook takes place. The <code>useContext</code> hook allows any component to start consuming the value from the <code>Provider</code>.</p>
+<p>The <code>useContext</code> hook accepts a <em>Context object</em> (the value returned from <code>React.createContext()</code>) and returns the current context value for that context. The current context value is determined by the <code>value</code> prop of the nearest <code>&lt;Context.Provider&gt;</code> above the calling component in the tree.</p>
+<p>We will show this on our <code>Navbar</code> component. To start consuming the <code>value={&quot;light&quot;}</code> coming from the <code>ThemeContext.Provider</code>, we need to import the <code>useContext</code> Hook and the Context object <code>ThemeContext</code> to the <code>Navbar.js</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/Navbar.js
+
+import { NavLink } from &#39;react-router-dom&#39;;
+
+import { useContext } from &#39;react&#39;;                          // &lt;== ADD
+import { ThemeContext } from &#39;./../context/theme.context&#39;;   // &lt;== ADD
+
+function Navbar() {
+  const value = useContext(ThemeContext);                    // &lt;== ADD
+
+  return (
+    &lt;nav className={&quot;Navbar &quot; + value}&gt;                    {/*  &lt;== UPDATE   */}
+      &lt;div&gt;
+        &lt;NavLink exact to=&quot;/&quot; activeClassName=&quot;selected&quot;&gt;Home&lt;/NavLink&gt;
+        &lt;NavLink to=&quot;/projects&quot; activeClassName=&quot;selected&quot;&gt;Projects&lt;/NavLink&gt;
+      &lt;/div&gt;
+    &lt;/nav&gt;
+  )
+}
+
+export default Navbar;
+</code></pre>
+<br>
+<p>We updated the <code>className</code> and made it dynamic. From now on it will either be <code>&quot;Navbar dark&quot;</code> or “Navbar light”, depending on the value coming from the <code>ThemeContext.Provider</code>.
+To be able to see the change in style when the class name changes, let’s add the following styles to our <code>index.css</code>:</p>
+<pre><code class="css hljs raw">/*   src/index.css   */
+/*     ... previous styles stay unchanged  */
+
+.light {
+  background-color: #efeded;
+}
+
+.dark {
+  background-color: #18191a;
+}
+
+.Navbar.light {
+  background-color: #ffffff;
+}
+
+.Navbar.dark {
+  background-color: #252526;
+}
+
+.light a,
+.light p,
+.light h1,
+.light h3 {
+  color: #000000;
+}
+
+.dark a,
+.dark p,
+.dark h1,
+.dark h3 {
+  color: #ffffff;
+}
+</code></pre>
+<br>
+<h4 class="raw">Changing the Theme</h4>
+<p>To change the theme color of the <code>Navbar</code>, we will manually update the <code>value</code> in the <code>ThemeContext.Provider</code>:</p>
+<pre><code class="jsx hljs raw">// src/context/theme.context.js
+
+import React, { createContext } from &quot;react&quot;;
+
+const ThemeContext = createContext();
+
+function ThemeProviderWrapper(props) {
+
+  return (
+    &lt;ThemeContext.Provider value={&quot;dark&quot;}&gt;    {/*  &lt;== UPDATE */}
+      {props.children}
+    &lt;/ThemeContext.Provider&gt;
+  )
+}
+
+export { ThemeContext, ThemeProviderWrapper };
+</code></pre>
+<p>To see the change take effect you may need to reload the page in the browser. After refreshing, you will see that your navbar became dark and if you inspect the page, you can see that it has two classes now attached to it (class <code>Navbar</code> and class <code>dark</code>).</p>
+<br>
+<h4 class="raw">Consume Context from Other Components</h4>
+<p>To make this more interesting, let’s add the same logic to our page components. Let’s update our page components and make them into consumers. We will use the value coming from the <code>ThemeContext.Provider</code> to set the <code>className</code>:</p>
+<pre><code class="jsx hljs raw">// src/pages/HomePage.js
+
+import { useContext } from &#39;react&#39;;                            // &lt;== ADD
+import { ThemeContext } from &#39;./../context/theme.context&#39;;     // &lt;== ADD
+
+const profileImg = &#39;https://i.imgur.com/i1gsj0v.png&#39;;
+
+function HomePage() {
+  const value = useContext(ThemeContext);                      // &lt;== ADD
+
+  return (
+    &lt;div className={&quot;HomePage &quot; + value}&gt;                       {/*  &lt;== UPDATE   */}
+      &lt;h1&gt;Hi! My Name is ...&lt;/h1&gt;
+      &lt;img src={profileImg} className=&quot;profile&quot; alt=&quot;profile&quot; /&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default HomePage;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">//  src/pages/ProjectsPage.js
+// ... previous imports stay unchanged
+
+import { useContext } from &#39;react&#39;;                          // &lt;== ADD
+import { ThemeContext } from &#39;../context/theme.context&#39;;     // &lt;== ADD
+
+
+function ProjectsPage() {
+  const [projects, setProjects] = useState(projectsData);
+  const value = useContext(ThemeContext);                    // &lt;== ADD
+
+  return (
+    &lt;div className={&quot;ProjectsPage &quot; + value}&gt;               {/*  &lt;== UPDATE   */}
+      &lt;h1&gt;My Projects&lt;/h1&gt;
+      &lt;div className=&quot;projects&quot;&gt;
+        {projects.map((p) =&gt; &lt;ProjectCard key={p._id} project={p}/&gt;)}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default ProjectsPage;
+</code></pre>
+<br>
+<p>The <code>className</code> of the above components will now reflect the value coming from our context. For example, in the <code>ProjectsPage</code> component, it will be either <code>&quot;ProjectsPage light&quot;</code>  or <code>&quot;ProjectsPage dark&quot;</code>.</p>
+<br>
+<h2 class="raw">Updating the Context</h2>
+<div class="alert alert-success">
+<p>When the Context <code>Provider</code> updates, the <code>useContext</code> hook will trigger a re-render in the consumer component and return the latest context <code>value</code>.</p>
+</div>
+<p>Whenever the <code>value</code> in the Context Provider updates, all of the components that are consuming the context via the <code>useContext</code> Hook will re-render.  But can we make our context dynamic and make the values in the context updatable? Yes, we can!</p>
+<p>At the moment we don’t have a way to update our Context value other than doing it manually. The reason for this is that the value we are passing to the <code>ThemeContext.Provider</code> is just a static value <code>&quot;light&quot;</code> or <code>&quot;dark&quot;</code>.  We can change this by updating the <code>ThemeProviderWrapper</code> and making it a stateful component:</p>
+<pre><code class="jsx hljs raw">// src/context/theme.context.js
+
+import React, { createContext, useState } from &quot;react&quot;;    // &lt;== UPDATE
+
+const ThemeContext = createContext();
+
+function ThemeProviderWrapper(props) {
+  const [theme, setTheme] = useState(&#39;light&#39;);      // &lt;== ADD
+
+  const toggleTheme = () =&gt; {                     // &lt;== ADD
+    if (theme === &#39;light&#39;) { 
+      setTheme(&#39;dark&#39;);
+    } else {
+      setTheme(&#39;light&#39;);
+    };
+  }
+
+  return (
+    &lt;ThemeContext.Provider value={{ theme, toggleTheme }}&gt;     {/*  &lt;== UPDATE   */}
+      {props.children}
+    &lt;/ThemeContext.Provider&gt;
+  )
+}
+
+
+export { ThemeContext, ThemeProviderWrapper };
+</code></pre>
+<p>Let’s summarize the previous steps and check our understanding:</p>
+<ol>
+<li class="raw">We imported the <code>useState</code> hook and used it to declare a state variable <code>theme</code>.</li>
+<li class="raw">We also created a function called <code>toggleTheme</code> that can be used to update the <code>theme</code>.</li>
+<li class="raw">When called, function <code>toggleTheme</code> updates the <code>theme</code> by toggling its value between <code>&quot;light&quot;</code>  and <code>&quot;dark&quot;</code>.</li>
+<li class="raw">To make the <code>theme</code> value available to all consumer components, we set it in the <code>value</code> prop of the <code>ThemeContext.Provider</code>. We also passed the <code>toggleTheme</code>  function, to make it possible for any consumer component to change the <code>theme</code> value.</li>
+</ol>
+<p>Our  <code>ThemeContext.Provider</code> is now providing an object with two values: <code>theme</code> and <code>toggleTheme</code>. For this reason, we need to update the consumer components, to properly access the <code>theme</code> value:</p>
+<pre><code class="jsx hljs raw">//  src/pages/HomePage.js
+// ... previous imports stay unchanged
+
+function HomePage() {
+  const { theme } = useContext(ThemeContext);                 // &lt;== UPDATE
+
+  return (
+    &lt;div className={&quot;HomePage &quot; + theme}&gt;                    {/*  &lt;== UPDATE */}
+      &lt;h1&gt;Hi! My Name is ...&lt;/h1&gt;
+      &lt;img src={profileImg} className=&quot;profile&quot; alt=&quot;profile&quot; /&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default HomePage;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">//  src/pages/ProjectsPage.js
+// ... previous imports stay unchanged
+
+function ProjectsPage() {
+  const [projects, setProjects] = useState(projectsData);
+  const { theme } = useContext(ThemeContext);                   // &lt;== UPDATE
+
+  return (
+    &lt;div className={&quot;ProjectsPage &quot; + theme}&gt;                  {/*  &lt;== UPDATE */}
+      &lt;h1&gt;My Projects&lt;/h1&gt;
+      &lt;div className=&quot;projects&quot;&gt;
+        {projects.map((p) =&gt; &lt;ProjectCard key={p._id} project={p}/&gt;)}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default ProjectsPage;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/components/Navbar.js
+// ... previous imports stay unchanged
+
+function Navbar() {
+  const { theme } = useContext(ThemeContext);               // &lt;== UPDATE
+
+  return (
+    &lt;nav className={&quot;Navbar &quot; + theme}&gt;                    {/*  &lt;== UPDATE */}
+      &lt;div&gt;
+        &lt;NavLink exact to=&quot;/&quot; activeClassName=&quot;selected&quot;&gt;Home&lt;/NavLink&gt;
+        &lt;NavLink to=&quot;/projects&quot; activeClassName=&quot;selected&quot;&gt;Projects&lt;/NavLink&gt;
+      &lt;/div&gt;
+    &lt;/nav&gt;
+  )
+}
+
+export default Navbar;
+</code></pre>
+<br>
+<p>And we are down to the best part. As the last step, we will create a button for changing the theme of our app. Let’s add a <em>toggle theme</em> button to the <code>Navbar</code> component and set the <code>toggleTheme</code> function to run when the button is clicked:</p>
+<pre><code class="jsx hljs raw">// src/components/Navbar.js
+// ... previous imports stay unchanged
+
+function Navbar() {
+  const {theme, toggleTheme} = useContext(ThemeContext);       // &lt;== UPDATE
+
+  return (
+    &lt;nav className={&quot;Navbar &quot; + theme}&gt;
+      &lt;div&gt;
+
+        &lt;NavLink exact to=&quot;/&quot; activeClassName=&quot;selected&quot;&gt;Home&lt;/NavLink&gt;
+        &lt;NavLink to=&quot;/projects&quot; activeClassName=&quot;selected&quot;&gt;Projects&lt;/NavLink&gt;
+      &lt;/div&gt;
+
+      {/*  👇  ADD  👇   */}
+      &lt;button className=&quot;theme-btn&quot; onClick={toggleTheme}&gt;
+        {theme === &#39;light&#39; ? &#39;dark 🌜&#39; : &#39;light 🟡&#39;}
+      &lt;/button&gt;
+    &lt;/nav&gt;
+  )
+}
+
+export default Navbar;
+</code></pre>
+<p>Try clicking the <em>toggle theme</em> button. Cool, right?  Every time you click the button, the <em>theme</em> changes in all consumer components!</p>
+<p>Let’s go over the last part and break it down for better understanding:</p>
+<ol>
+<li class="raw">We added a <em>toggle theme</em> button to the <code>Navbar</code> component.</li>
+<li class="raw">Whenever this button is clicked it will run the <code>toggleTheme</code> function.</li>
+<li class="raw">The <code>toggleTheme</code> function comes from our context. We provide the function through the <code>ThemeContext.Provider</code>:</li>
+</ol>
+<pre><code class="jsx hljs raw">// ...
+
+&lt;ThemeContext.Provider value={{ theme, toggleTheme }}&gt;
+</code></pre>
+<ol start="4">
+<li class="raw">When invoked, the <code>toggleTheme</code> function updates the <code>theme</code> value. This way our Provider’s <code>value</code> prop also updates.</li>
+<li class="raw">Whenever the Provider’s <code>value</code> prop updates all the consumer components will re-render.</li>
+</ol>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-context-api/tree/master">react-context-api</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-context-api.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-context-api
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this lesson, we learned about the Context API and how to use it to avoid <em>prop drilling</em>. We saw how to create a Context object, set up the Provider, and consume the context using the <code>useContext</code> Hook. Context API is a good way to share data “globally” and for simple scenarios like setting the authenticated user, theme, or preferred language.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://reactjs.org/docs/context.html">Context API</a></li>
+<li class="raw"><a href="https://reactjs.org/docs/hooks-reference.html#usecontext">useContext Hook</a></li>
+<li class="raw"><a href="https://codeburst.io/quick-intro-to-react-hooks-6dd8ecb898ed">Quick intro to React Hooks - useState &amp; useContext</a></li>
+</ul>

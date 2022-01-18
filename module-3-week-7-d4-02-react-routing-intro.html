@@ -1,0 +1,620 @@
+<!-- # React | Intro to Routing -->
+<h2 class="raw">Learning Goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Set up the React Router in your React app using the <code>react-router-dom</code> library.</li>
+<li class="raw">Create a React app that contains multiple pages.</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>React is used to create Single Page Applications. However, this doesn’t necessarily imply that we can’t have multiple pages in our applications.</p>
+<p>Although <em>SPAs</em> have only one HTML file, they are still expected to have the features of traditional websites, like navigation between pages. For example, users should be able to visit different pages or bookmark a page, which requires multiple pages. Each page should also have a specific URL. Besides that, the forward and back button should move user back and forth in the browsing history.</p>
+<p>React has its own way of dealing with this, which is accomplished using the <em><strong>React Router</strong></em> library. React router library comprises of three packages:</p>
+<ul>
+<li class="raw"><code>react-router</code>,</li>
+<li class="raw"><code>react-router-dom</code> and</li>
+<li class="raw"><code>react-router-native</code>.</li>
+</ul>
+<p>In this lesson, we will be using the <strong>react-router-dom</strong> npm package to create multiple pages and navigation.</p>
+<br>
+<h3 class="raw">Getting Started</h3>
+<p>To start this lesson, let’s create a new React app. We will be making a simple portfolio website with few different pages allowing the users to go through them separately.</p>
+<pre><code class="bash hljs raw">$ npx create-react-app react-routing-intro
+$ cd react-routing-intro
+</code></pre>
+<p>Inside our project folder, <em>install</em> the <code>react-router-dom</code>:</p>
+<pre><code class="bash hljs raw">$ npm install react-router-dom
+</code></pre>
+<p>And then start the app:</p>
+<pre><code class="bash hljs raw">$ npm start
+</code></pre>
+<p>Clean the <code>App.js</code> a bit so that it has the following structure:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+import &#39;./App.css&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;&lt;/div&gt;
+  );
+}
+export default App;
+</code></pre>
+<br>
+<p>As a starting point, we will use the code provided below. Go ahead and create the files shown below by using the provided snippets:</p>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click here for the code</b></summary>
+<pre><code class="css hljs raw">/* index.css */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Roboto&quot;, &quot;Oxygen&quot;,
+    &quot;Ubuntu&quot;, &quot;Cantarell&quot;, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, &quot;Courier New&quot;,
+    monospace;
+}
+
+.App {
+  text-align: center;
+}
+
+.page-img {
+  width: 70%;
+}
+
+.Navbar {
+  display: flex;
+  justify-content: space-between;
+  background: #352275;
+  padding: 5px 20px;
+}
+
+.Navbar li,
+.Navbar a {
+  list-style: none;
+  text-decoration: none;
+  display: inline-block;
+  margin: 0px 20px;
+  font-size: 1.2rem;
+  color: white;
+}
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/pages/HomePage.js
+
+const imgURL = &quot;https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-routing/home.gif&quot;;
+
+function HomePage() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Home&lt;/h1&gt;
+      &lt;img src={imgURL} alt=&quot;home gif&quot; className=&quot;page-img&quot; /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default HomePage;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/pages/AboutPage.js
+
+const imgURL = &quot;https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-routing/about.gif&quot;;
+
+function AboutPage() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;About&lt;/h1&gt;
+      &lt;img src={imgURL} alt=&quot;the office gif&quot; className=&quot;page-img&quot; /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AboutPage;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/pages/ErrorPage.js
+
+const imgURL = &quot;https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-routing/404.gif&quot;;
+
+function ErrorPage() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;404&lt;/h1&gt;
+      &lt;img src={imgURL} alt=&quot;404 error gif&quot; className=&quot;page-img&quot; /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ErrorPage;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/pages/ProjectsPage.js
+
+import { useState, useEffect } from &quot;react&quot;;
+import projectsData from &quot;./../projects-data.json&quot;;
+
+function ProjectsPage() {
+  const [projects, setProjects] = useState([]);
+
+  // This effect will run only once on initial render.
+  // To do it we set the dependency array empty [].
+  useEffect(() =&gt; {
+    setProjects(projectsData);
+  }, []);
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Projects&lt;/h2&gt;
+      {projects.map((project) =&gt; {
+        return (
+          &lt;div key={project.id} className=&quot;project&quot;&gt;
+            &lt;h3&gt;{project.name}&lt;/h3&gt;
+            &lt;p&gt;{project.technologies}&lt;/p&gt;
+          &lt;/div&gt;
+        );
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectsPage;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/components/Navbar.js
+
+function Navbar() {
+  return (
+    &lt;nav className=&quot;Navbar&quot;&gt;
+      &lt;ul&gt;
+        &lt;li&gt;Home&lt;/li&gt;
+        &lt;li&gt;About&lt;/li&gt;
+        &lt;li&gt;Projects&lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/nav&gt;
+  );
+}
+
+export default Navbar;
+</code></pre>
+<br>
+<p><strong><code>src/projects-data.json</code></strong></p>
+<pre><code class="json hljs raw">[
+  {
+    &quot;_id&quot;: &quot;1a&quot;,
+    &quot;name&quot;: &quot;The Frogger Clone&quot;,
+    &quot;year&quot;: 2017,
+    &quot;technologies&quot;: &quot;JavaScript, jQuery&quot;,
+    &quot;description&quot;: &quot;The first project game clone.&quot;
+  },
+  {
+    &quot;_id&quot;: &quot;2b&quot;,
+    &quot;name&quot;: &quot;iTravel&quot;,
+    &quot;year&quot;: 2017,
+    &quot;technologies&quot;: &quot;Mongo DB, ExpressJS, NodeJS, JavaScript, HTML, CSS&quot;,
+    &quot;description&quot;: &quot;Web App that allows logged in users to share their experiences about travel destinations.&quot;
+  },
+  {
+    &quot;_id&quot;: &quot;3c&quot;,
+    &quot;name&quot;: &quot;The Plan&quot;,
+    &quot;year&quot;: 2017,
+    &quot;technologies&quot;: &quot;Mongo DB, ExpressJS, Angular2, NodeJS, JavaScript, HTML, CSS&quot;,
+    &quot;description&quot;: &quot;Web App that allows logged in users to plan your next activity with your friends or business partners.&quot;
+  },
+  {
+    &quot;_id&quot;: &quot;4e&quot;,
+    &quot;name&quot;: &quot;UnoApp&quot;,
+    &quot;year&quot;: 2017,
+    &quot;technologies&quot;: &quot;Mongo DB, ExpressJS, NodeJS, JavaScript, HTML, CSS&quot;,
+    &quot;description&quot;: &quot;App for the lovers of the well-known game Uno&quot;
+  }
+]
+</code></pre>
+</details>
+<br>
+<h2 class="raw">React Router</h2>
+<p><em>React Router</em> is a collection of <strong>navigational components</strong> used to handle front-end navigation. <em>React Router</em> does this by keeping an eye on the browser’s URL, modifying the browser history, and keeping the UI state in sync. This way, React Router allows us to navigate between different components as if they were pages.</p>
+<p><strong>React Router</strong> provides the following components:</p>
+<ul>
+<li class="raw"><strong><code>&lt;BrowserRouter&gt;</code></strong> -This component keeps the <em>User Interface in sync with the URL</em>. It uses the HTML5 History API.</li>
+<li class="raw"><strong><code>&lt;HashRouter&gt;</code></strong> - Uses the hash portion of the URL. (Only for older browsers that don’t support the HTML5 History API)</li>
+<li class="raw"><strong><code>&lt;Routes&gt;</code></strong></li>
+<li class="raw"><strong><code>&lt;Route&gt;</code></strong> - <em>Renders a UI component</em> depending on the URL.</li>
+<li class="raw"><strong><code>&lt;Link&gt;</code></strong> - Renders a navigation link. (basically an <code>&lt;a&gt;</code> tag, but they <em>change the URL without refreshing the page</em>),</li>
+</ul>
+<p>The first thing we need to do is to choose a router implementation; for web applications, we have two options:</p>
+<div class="alert alert-info">
+<p><strong>Side note:</strong></p>
+<p>The <a href="https://developer.mozilla.org/en-US/docs/Web/API/History_API">History API</a> is a browser interface that provides access to the <em>browser’s session history</em> (pages visited in the current tab) through the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/history">history</a> object. The <em>history</em> object lets you navigate back and forth through the user’s history, manipulate the contents of the history stack, and manage the current location (URL in the browser) via <code>history.location</code>.</p>
+<p><em>React Router</em> provides an abstraction on top of the History API interface allowing us to create multiple pages and implement the front-end navigation.</p>
+</div>
+<br>
+<h3 class="raw">Components Representing Pages</h3>
+<p>To build a React SPA with multiple pages, we need separate components that will represent pages. We had already created the <code>/src/pages</code> folder. Inside of it, we have components <code>HomePage.js</code>, <code>AboutPage.js</code>, <code>ErrorPage.js</code>, and <code>ProjectsPage.js</code>. In this folder, you should keep only <em>large components</em> that represent <em>pages</em>. If this doesn’t make sense yet, don’t worry. We’ll explain it in the next step.</p>
+<br>
+<h3 class="raw">Setup the React Router - <code>&lt;BrowserRouter&gt;</code></h3>
+<p>At this point, we can start implementing our front-end navigation using React Router.</p>
+<p>The first step is to set up the <code>&lt;BrowserRouter&gt;</code>, which is a root component for React Router. To do so, we will first need to update <code>index.js</code>.</p>
+<pre><code class="jsx hljs raw">// index.js
+// ... previous imports stay unchanged
+
+import { BrowserRouter as Router } from &#39;react-router-dom&#39;; // &lt;== IMPORT
+
+// Next, wrap the &lt;App /&gt; with the &lt;Router&gt; and &lt;/Router&gt; tags
+
+ReactDOM.render(
+  &lt;Router&gt;                            
+    &lt;App /&gt;
+  &lt;/Router&gt;,                        
+  document.getElementById(&quot;root&quot;)
+);
+
+reportWebVitals();
+</code></pre>
+<p>We imported the <code>BrowserRouter</code> and gave it the alias <code>Router</code> by using the ES6 <code>import as</code> syntax.</p>
+<p>The main job of the <code>&lt;Router&gt;</code> component is to create a history object and keep track of the location (URL).
+From now on, the <code>&lt;Router&gt;</code> component will be in control of the navigation and the <a href="https://developer.mozilla.org/en-US/docs/Web/API/History_API">browser history</a> in our app. Whenever the location (URL) changes because of some navigation action, <code>&lt;Router&gt;</code> will intercept that change and render the corresponding page component.</p>
+<br>
+<h3 class="raw">Create routes - <code>&lt;Routes&gt;</code> &amp; <code>&lt;Route&gt;</code></h3>
+<p>The next step is to configure the routing by using the <code>&lt;Route&gt;</code> components. The <code>&lt;Route&gt;</code> component is used to define which page we want to render for a specific URL.</p>
+<p>In the <code>App.js </code>, we will import the page components <code>HomePage</code>, <code>AboutPage</code>, <code>ErrorPage</code>, and <code>ProjectsPage</code>.  Then, to configure the routing to start displaying these pages, we need to import the <code>Routes</code> and <code>Route</code> components from <code>react-router-dom</code>. We’ll use them to define the routes and pages that our app will be showing:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged 
+
+import Navbar from &quot;./components/Navbar&quot;;      // &lt;== IMPORT
+import HomePage from &quot;./pages/HomePage&quot;;       // &lt;== IMPORT
+import AboutPage from &quot;./pages/AboutPage&quot;;     // &lt;== IMPORT
+import ProjectsPage from &quot;./pages/ProjectsPage&quot;;   // &lt;== IMPORT
+import ErrorPage from &quot;./pages/ErrorPage&quot;;         // &lt;== IMPORT
+
+import { Routes, Route } from &quot;react-router-dom&quot;;  // &lt;== IMPORT
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      
+      {/*   Add &lt;Route /&gt; components between &lt;Routes&gt; and &lt;/Routes&gt;   */} 
+      &lt;Routes&gt;
+        &lt;Route path=&quot;/&quot; element={&lt;HomePage /&gt;} /&gt; 
+        &lt;Route path=&quot;/about&quot; element={&lt;AboutPage /&gt;} /&gt;
+        &lt;Route path=&quot;/projects&quot; element={&lt;ProjectsPage /&gt;} /&gt;
+      &lt;/Routes&gt;
+      
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<p>The <code>&lt;Routes&gt;</code> component is the parent for the <code>&lt;Route&gt;</code> components. When the URL changes <code>&lt;Routes&gt;</code> renders the element from the child <code>&lt;Route&gt;</code> that matches the URL location.</p>
+<p>Inside the <code>&lt;Routes&gt;</code>, we used <code>&lt;Route&gt;</code> components to define our app’s pages.</p>
+<p>The main <em>props</em> of the <code>&lt;Route&gt;</code> component are <code>path</code> and <code>element</code>. For example, let’s take a look at the following <code>&lt;Route&gt;</code>:</p>
+<pre><code class="jsx hljs raw">&lt;Route path=&quot;/about&quot; element={ &lt;AboutPage /&gt; } /&gt;
+</code></pre>
+<p>This <code>&lt;Route&gt;</code> says the following: <code>&lt;AboutPage /&gt;</code> will be shown as the content inside of the <code>&lt;Routes&gt;</code> whenever the browser URL changes to <code>/about</code>.</p>
+<p>You can try it out by navigating to the rest of the routes through the browser URL bar:</p>
+<ul>
+<li class="raw"><a href="http://localhost:3000/">http://localhost:3000/</a>  --&gt;  <strong>HomePage</strong></li>
+<li class="raw"><a href="http://localhost:3000/about">http://localhost:3000/about</a>  --&gt;  <strong>AboutPage</strong></li>
+<li class="raw"><a href="http://localhost:3000/projects">http://localhost:3000/projects</a>  --&gt;  <strong>ProjectsPage</strong></li>
+</ul>
+<p>Excellent, that works really well! We defined <em>three pages</em> in our app and created corresponding <em>routes</em> so that React Router knows when it needs to render them.</p>
+<br>
+<h3 class="raw">404 Page Route</h3>
+<p>Now, what would happen if we try to visit a non-existent route (URL)?</p>
+<p>Let’s say that we mistype the URL and try to open <a href="http://localhost:3000/contact">http://localhost:3000/contact</a>, the page that doesn’t exist. Try it out yourself! No content, right?</p>
+<p>This is completely normal as we tried to visit the route (URL) that doesn’t exist in our app. To address this case, it is a good practice to add a <em>fallback</em> <code>&lt;Route&gt;</code> displaying an Error page. This way we can notify the user that the page doesn’t exist.</p>
+<p>As our Error page, we will use an existing component <code>src/pages/ErrorPage.js</code>. Let’s set up a new route to address this case.</p>
+<p>In <code>App.js</code>, we will create a new <code>&lt;Route&gt;</code> this time <strong>with the <code>path=&quot;*&quot;</code></strong> that renders the <code>ErrorPage</code> component. We will <strong>place this new route at the bottom</strong>, after all the other <code>&lt;Route&gt;</code> components:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      
+      &lt;Routes&gt;
+        &lt;Route path=&quot;/&quot; element={&lt;HomePage /&gt;} /&gt; 
+        &lt;Route path=&quot;/about&quot; element={&lt;AboutPage /&gt;} /&gt;
+        &lt;Route path=&quot;/projects&quot; element={&lt;ProjectsPage /&gt;} /&gt;
+        
+        &lt;Route path=&quot;*&quot; element={ &lt;ErrorPage /&gt; } /&gt;   {/*  &lt;== ADD */}        
+      &lt;/Routes&gt;
+
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>Set up in this way, the last <code>&lt;Route&gt;</code> acts as a fallback route that will activate only when none of the other routes are matched.</p>
+<p>To test it, you can try visiting a non-existent route (URL), like <a href="http://localhost:3000/foo">http://localhost:3000/foo</a>.</p>
+<br>
+<h3 class="raw">Navigation - <code>&lt;Link&gt;</code></h3>
+<p>Great, we have built the base. Let’s move forward. We need some <em>links</em>, and preferably, we need them in the <em>navbar</em>.</p>
+<p>Our component <code>&lt;Navbar /&gt;</code> already contains the basic structure. We’ll need to update and add links that we can use to navigate between the pages.</p>
+<p>We will use <code>react-router-dom</code> <code>&lt;Link&gt;</code> component. <code>&lt;Link&gt;</code> is a React Router replacement for standard link element <code>&lt;a href=&quot;&quot;&gt; &lt;/a&gt;</code>. Whenever you render a <code>&lt;Link&gt;</code> component, an anchor (<code>&lt;a&gt;</code>) will be rendered in your application’s HTML.</p>
+<pre><code class="jsx hljs raw">// src/components/Navbar.js
+
+import { Link } from &quot;react-router-dom&quot;;     // &lt;== IMPORT
+
+function Navbar() {
+  return (
+    &lt;nav className=&quot;Navbar&quot;&gt;
+      &lt;ul&gt;
+        &lt;Link to=&quot;/&quot;&gt; Home &lt;/Link&gt;           {/* &lt;== ADD */}
+        &lt;Link to=&quot;/about&quot;&gt; About &lt;/Link&gt;      {/* &lt;== ADD */}
+        &lt;Link to=&quot;/projects&quot;&gt; Projects &lt;/Link&gt;  {/* &lt;== ADD */}
+      &lt;/ul&gt;
+    &lt;/nav&gt;
+  );
+}
+
+export default Navbar;
+</code></pre>
+<p>To test it, click the links in the navbar. When clicked, a <em>Link</em> will trigger the render of the corresponding page component, one where <em>Link’s</em> prop <code>to</code> matches the <em>Route’s</em>  <code>path</code>. For example:</p>
+<p>Clicking on the <em>Link</em> that has <code>to=&quot;/about&quot;</code>:</p>
+<pre><code class="jsx hljs raw">&lt;Link to=&quot;/about&quot;&gt; About &lt;/Link&gt;
+</code></pre>
+<p>Will trigger the rendering of the component specified in the Route with the <code>path=&quot;/about&quot;</code>:</p>
+<pre><code class="jsx hljs raw">&lt;Route path=&quot;/about&quot; element={&lt;AboutPage /&gt;} /&gt;
+</code></pre>
+<br>
+<h3 class="raw">Styled Navigation Link - <code>&lt;NavLink&gt;</code></h3>
+<p>The <code>&lt;NavLink&gt;</code> is a special type of <code>&lt;Link&gt;</code> that can style itself as “active” when it matches the current location. To start using <code>&lt;NavLink&gt;</code>, we have to import it from <code>react-router-dom</code>.</p>
+<!--
+
+
+
+
+
+- **`activeClassName`: string**. The `&lt;NavLink&gt;` is a special type of `&lt;Link&gt;` that can style itself as "active" when it matches the current location. In order to use `&lt;NavLink&gt;`, we just have to import it from `react-router-dom`. 
+
+  ```jsx
+  &lt;NavLink to="/faq" activeClassName="selected" &gt;FAQs&lt;/NavLink&gt;
+  ```
+
+- **`activeStyle`: object**. The styles to apply to the element when it is active.
+
+  ```jsx
+  &lt;NavLink to="/faq" activeStyle={{fontWeight: 'bold', color: 'red'}}&gt;FAQ&lt;/NavLink&gt;
+  ```
+
+- **`exact`: boolean**. When true, the active class/style will only be applied if the location is matched exactly.
+
+  ```jsx
+  &lt;NavLink exact to="/profile"&gt;Profile&lt;/NavLink&gt;
+  ```
+
+- **`strict`: boolean**. When true, the trailing slash on a location’s pathname will be taken into consideration when determining if the location matches the current URL.
+
+  ```jsx
+  &lt;NavLink strict to="/events/"&gt;Events&lt;/NavLink&gt;
+  ```
+
+-->
+<p>As an example of how to use <code>&lt;NavLink&gt;</code>, let’s update the <code>Navbar</code> component. We will replace all existing <code>Link</code>s with the <code>NavLink</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/Navbar.js
+
+import { Link, NavLink } from &quot;react-router-dom&quot;;   // &lt;== IMPORT
+
+function Navbar() {
+  return (
+    &lt;nav className=&quot;Navbar&quot;&gt;
+      &lt;ul&gt;
+        {/* &lt;Link to=&quot;/&quot;&gt; Home &lt;/Link&gt; */}
+        {/* &lt;Link to=&quot;/about&quot;&gt; About &lt;/Link&gt; */}
+        {/* &lt;Link to=&quot;/projects&quot;&gt; Projects &lt;/Link&gt; */}
+        
+        {/*    ADD 👇   */}
+        &lt;NavLink to=&quot;/&quot; className={({ isActive }) =&gt; isActive ? &quot;selected&quot; : &quot;&quot;}&gt;
+          Home
+        &lt;/NavLink&gt;
+        
+        &lt;NavLink 
+          to=&quot;/about&quot; 
+          className={({ isActive }) =&gt; isActive ? &quot;selected&quot; : &quot;&quot;}
+         &gt;
+          About
+        &lt;/NavLink&gt;
+        
+        &lt;NavLink 
+          to=&quot;/projects&quot; 
+          className={({ isActive }) =&gt; isActive ? &quot;selected&quot; : &quot;&quot;}
+        &gt;
+          Projects
+        &lt;/NavLink&gt;
+        
+      &lt;/ul&gt;
+      
+    &lt;/nav&gt;
+  );
+}
+
+export default Navbar;
+</code></pre>
+<p>We will add the following styles to <code>index.css</code>. Is holds styles for the class name we set in the <code>activeClassName</code> attribute:</p>
+<pre><code class="css hljs raw">/* index.css */
+.selected {
+  text-shadow: 1px 0px 3px white;
+  color: #fff;
+  border-bottom: rgba(255, 255, 255, 0.639) solid 2px;
+  padding-bottom: 5px;
+}
+</code></pre>
+<br>
+<h3 class="raw"><code>&lt;Navigate&gt;</code></h3>
+<p><code>&lt;Navigate&gt;</code> is used to implement redirection, for example when we want to protect a certain page and only show it to authorized users.</p>
+<p>To demonstrate its use, we’ll create a new version of the <code>HomePage</code> component that uses <code>&lt;Navigate&gt;</code>. Let’s create a component called <code>HomePageWithNavigate</code>:</p>
+<pre><code class="jsx hljs raw">// src/pages/HomePageWithNavigate.js
+
+import { useState } from &quot;react&quot;;
+import { Navigate } from &quot;react-router-dom&quot;;
+
+const imgURL = &quot;https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-routing/home.gif&quot;;
+
+
+function HomePageWithNavigate() {
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+
+  if (!isLoggedIn) return &lt;Navigate to=&quot;/error&quot; /&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Home - With Navigate&lt;/h1&gt;
+      &lt;img src={imgURL} alt=&quot;home&quot; className=&quot;page-img&quot; /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default HomePageWithNavigate;
+</code></pre>
+<p>We’ll import it in <code>App.js</code> and use it in the Route that renders the <code>HomePage</code> component:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import HomePageWithNavigate from &quot;./pages/HomePageWithNavigate&quot;;  // &lt;== IMPORT 
+
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+
+      &lt;Routes&gt;
+        {/* &lt;Route  path=&quot;/&quot; element={&lt;HomePage /&gt;} /&gt; */}
+        &lt;Route  path=&quot;/&quot; element={&lt;HomePageWithNavigate /&gt;} /&gt;   {/* &lt;== ADD */}
+        &lt;Route path=&quot;/about&quot; element={&lt;AboutPage/&gt;} /&gt;
+        &lt;Route path=&quot;/projects&quot; element={&lt;ProjectsPage/&gt;} /&gt;
+
+        &lt;Route path=&quot;*&quot; element={&lt;ErrorPage /&gt;} /&gt;
+      &lt;/Routes&gt;      
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p><em>Rendering</em> a <code>&lt;Navigate&gt;</code> will navigate to a new location (URL). The new location will override the current location in the <em>history stack</em>, as server-side redirects <strong>(HTTP 3xx)</strong> do.</p>
+<p>Since this was only for demo purposes, and to avoid our Home page giving us 404, go ahead and change the value of <code>isLoggedIn</code> to <code>true</code> in the <code>HomePageWithNavigate.js</code> file:</p>
+<pre><code class="jsx hljs raw">// src/pages/HomePageWithRedirect.js
+
+// ... no changes in imports
+
+  
+function HomePageWithRedirect() {
+  const [isLoggedIn, setIsLoggedIn] = useState(true); // &lt;== UPDATE
+
+  // ... no changes
+}
+
+export default HomePageWithRedirect;
+</code></pre>
+<p>Now we have our Home page again rendering the content, so 404 is gone.</p>
+<br>
+<h3 class="raw">Passing props to a page component</h3>
+<p>On certain occasions, you may want to render a page component while also passing it some additional props.</p>
+<p>Let’s say that <em>data</em> that we display in the <code>ProjectsPage</code> component had to come from the parent component through the props. So instead of loading the <em><code>projects-data.json</code></em> file directly in the <code>ProjectsPage</code> component, we would import it in the <code>App.js</code> and then pass it as a prop.</p>
+<p>In the <code>App.js</code>, we’ll import the array with projects from the <code>src/projects-data.json</code> file. Then we will update the <code>&lt;Route&gt;</code> that is rendering the <code>ProjectsPage</code> to pass the array as a prop:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous props stay unchanged
+
+import projectsData from &quot;./projects-data.json&quot;;    // &lt;== IMPORT
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      
+      &lt;Routes&gt;
+        {/* &lt;Route  path=&quot;/&quot; element={&lt;HomePage /&gt;} /&gt; */}
+        &lt;Route  path=&quot;/&quot; element={&lt;HomePageWithNavigate /&gt;} /&gt;
+        &lt;Route path=&quot;/about&quot; element={&lt;AboutPage/&gt;} /&gt;
+        
+        &lt;Route 
+          path=&quot;/projects&quot; 
+          element={ &lt;ProjectsPage projects={projectsData} /&gt; } 
+        /&gt;
+
+        &lt;Route path=&quot;*&quot; element={&lt;ErrorPage /&gt;} /&gt;
+      &lt;/Routes&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>The next step is to update the <code>ProjectsPage</code> component. We will remove the previous import and update the existing <code>useEffect</code> hook to use the data coming through the <code>props</code>:</p>
+<pre><code class="jsx hljs raw">// ./src/pages/ProjectsPage.js
+
+import { useState, useEffect } from &quot;react&quot;;
+// import projectsData from &quot;./../projects-data.json&quot;;  // &lt;== REMOVE
+
+function ProjectsPage (props) {                     // &lt;== UPDATE
+  const [projects, setProjects] = useState([]);
+
+  // This effect depends on `props.projects`.
+  // It will run on initial render, and every time
+  // when the `props.projects` updates.
+  useEffect(() =&gt; {
+    setProjects(props.projects);                  // &lt;== UPDATE
+  }, [props.projects]);                           // &lt;== UPDATE
+
+  
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Projects&lt;/h1&gt;
+      {projects.map((project) =&gt; {
+        return (
+          &lt;div key={project._id} className=&quot;project&quot;&gt;
+            &lt;h3&gt;{project.name}&lt;/h3&gt;
+            &lt;p&gt;{project.technologies}&lt;/p&gt;
+          &lt;/div&gt;
+        );
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectsPage;
+</code></pre>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":bulb:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/bulb.png" /> The above example is a great way to practice using the effects hook - <code>useEffect</code>.</p>
+<p>We use the dependency array to specify that our <em>effect</em> depends on the <code>props.projects</code>. This way, the <em>effect</em> code will run both on the initial render and whenever the value <code>props.projects</code> updates.</p>
+</div>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-routing-intro/tree/master">react-routing-intro</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-routing-intro.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-routing-intro
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>We learned the basics for adding routes to our React applications. As we mentioned, we use React to build SPA, which brings us the challenge of incorporating navigation between the pages. We use <code>Router</code>, which allows our app to navigate between different components, changing the browser URL, modifying the browser history, and keeping the UI state in sync.</p>
+<p>In the following lesson, we will see the advanced use of React Router! <img class="emoji" alt=":muscle:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/muscle.png" /></p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://reacttraining.com/react-router/web/guides/philosophy">React Training Guide</a></li>
+<li class="raw"><a href="https://github.com/ReactTraining/react-router">React Training - Router</a></li>
+</ul>

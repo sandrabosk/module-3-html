@@ -1,0 +1,770 @@
+<!-- # React | Hooks & Lifecycle -->
+<!--
+
+### Instructional Design Goals
+
+**A.**  Explain the concept of Lifecycle phases
+
+**B.**  Explain what is a Hook, list different hooks and explain the Rules of hooks
+
+**C.** *Review* and *illustrate* use of a state hook `useState`
+
+**D.** *Explain* and demonstrate the use of the `useEffect` hook for mounting, unmounting and updates.
+
+**E.** *Demonstrate* how to fetch and store data in a component using `useState` and `useEffect` hooks
+
+-->
+<h2 class="raw">Learning goals</h2>
+<ul>
+<li class="raw">Describe the component lifecycle and lifecycle phases</li>
+<li class="raw">Perform side effects in a component with the <code>useEffect</code> hook</li>
+<li class="raw">Fetch data from an API and save it in the component’s state</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>React provides an additional interface that allows us to customize how a component behaves during the specific phase of its existence. This interface is available in both <em>class</em> and <em>functional</em> components. In class components, we can customize the component’s behavior using <em><a href="https://reactjs.org/docs/glossary.html#lifecycle-methods">Lifecycle methods</a></em> and in functional components by using <em><a href="https://reactjs.org/docs/hooks-intro.html">hooks</a></em>.
+In this lesson, we will focus on functional components and hooks.</p>
+<br>
+<h3 class="raw">Getting Started</h3>
+<p>Let’s create a new React app that we’ll use for the following examples:</p>
+<pre><code class="shell hljs raw">$ npx create-react-app react-hooks
+$ cd react-hooks
+$ npm start
+</code></pre>
+<p>Clean the <code>App.js</code> a bit, so that it has the following structure:</p>
+<pre><code class="jsx hljs raw">// App.js
+import &#39;./App.css&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;&lt;/div&gt;
+  );
+}
+export default App;
+</code></pre>
+<br>
+<p>As a starting point, we will use the code provided below. Go ahead and create the file shown below by using the provided snippet:</p>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Click here for the code</summary>
+<pre><code class="css hljs raw">/* index.css */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Roboto&quot;, &quot;Oxygen&quot;,
+    &quot;Ubuntu&quot;, &quot;Cantarell&quot;, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.App {
+  font-family: sans-serif;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+}
+
+.dark {
+  background: #282c34;
+  color: white;
+}
+
+.Counter,
+.Timer {
+  width: 300px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 2px solid black;
+  background: cornflowerblue;
+  border-radius: 5px;
+}
+
+.Timer {
+  background-color: azure;
+}
+
+button,
+select {
+  padding: 5px 10px;
+  min-width: 50px;
+  margin: 5px;
+  font-size: 18px;
+}
+
+.card {
+  min-width: 400px;
+  width: 90%;
+  padding: 10px;
+  box-shadow: 0px 2px 3px grey;
+  margin-bottom: 20px;
+  background: #cfb2d6;
+  border-radius: 4px;
+}
+
+.list &gt; li,
+.list &gt; p,
+.list &gt; div {
+  margin: 10px;
+}
+
+.logo,
+img {
+  width: 200px;
+}
+
+.search-bar {
+  padding: 20px;
+}
+
+.search-bar input {
+  padding: 5px 20px;
+  border-radius: 5px;
+  border: 1px solid gray;
+}
+</code></pre>
+</details>
+<br>
+<h2 class="raw">The Component Lifecycle</h2>
+<!--
+
+&gt; - **A.**  Explain the concept of Lifecycle phases
+
+-->
+<p>Almost everything in our world has a life cycle, from beginning to end. Similarly, from the moment it gets created, every React component goes through a <em>lifecycle</em>.</p>
+<p>There are <em>three</em> main phases in the React component <em>lifecycle</em>:</p>
+<br>
+<h3 class="raw">1. Mounting</h3>
+<p>The mounting phase happens when the component is initially created and added to the DOM. We could simply describe it as <em>component creation</em>.</p>
+<p>During the mounting phase, React component is instantiated and rendered to the DOM for the first time. The <em>state</em> of the stateful components gets initialized at this time.</p>
+<p>The <em>mounting</em> phase is often referred to as the <em>initial render</em>.</p>
+<br>
+<h3 class="raw">2. Updating</h3>
+<p>Next is the <em>Updating</em> phase, or an <em>Update</em> for short. <em>Update</em> can happen only after the component has been initially created and rendered to the DOM.</p>
+<p>An <em>Update</em> is triggered by the change of the component’s <code>state</code> or <code>props</code> triggers. Put in other words, whenever the <code>state</code> or <code>props</code> of the component change, the component will update.</p>
+<p>We can use the <em>Updating</em> phase to execute code when the component’s <code>state</code> or <code>props</code> update.</p>
+<br>
+<h3 class="raw">3. Unmounting</h3>
+<p>The last phase in the component’s <em>lifecycle</em> happens when the component is removed from the DOM and destroyed. React documentation calls this phase <em>Unmounting</em>.</p>
+<p>The <em>Unmounting</em> phase allows us to run the code and perform cleanup (cancel requests, cancel active timers, etc.) before the component gets removed from the DOM.</p>
+<br>
+<h2 class="raw">Hooks</h2>
+<!--
+
+&gt; **B.**  Explain what a Hook is, list different hooks, and explain the Rules of hooks
+&gt;
+&gt; **C.** *Review* and *illustrate* use of a state hook `useState`
+&gt;
+&gt; **D.** *Explain* and demonstrate the use of the `useEffect` hook for mounting, unmounting, and updates.
+
+-->
+<br>
+<h3 class="raw">What is a hook?</h3>
+<p>React functional components have several <em>hooks</em> that we can use to run some code during the particular lifecycle phase. These <em>hooks</em> allow us to <em>hook into</em> a specific phase and insert our own functionality.</p>
+<div class="alert alert-success">
+<p><em>Hooks</em> are functions that let you “<em>hook</em> into” <em>React</em> state and lifecycle features. They are used in functional components. React will automatically call each Hook you set up in a component during the corresponding lifecycle phase.</p>
+</div>
+<p>React provides several built-in hooks. You can even create your hooks to reuse stateful behavior between different components.</p>
+<p>We’ll look at the <code>useState</code> hook first and review what we have previously learned.</p>
+<div class="alert alert-warning">
+<p><em>Hooks</em> don’t work inside class components. Class components have special <a href="https://reactjs.org/docs/state-and-lifecycle.html#adding-lifecycle-methods-to-a-class">lifecycle methods</a> that accomplish the same purpose. We won’t be covering class lifecycle methods during this time.</p>
+</div>
+<br>
+<h3 class="raw">State hook - <code>useState</code></h3>
+<h4 class="raw">Declaring state</h4>
+<p>The  <code>useState</code> is a Hook that lets you add React state to function components.</p>
+<p>In the following example, we will use the <code>useState</code> Hook to add a state to two components. We will start by creating a new component <code>Counter</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/01-use-state/Counter.js
+
+import React, { useState } from &quot;react&quot;;
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    &lt;div className=&quot;Counter&quot;&gt;
+      &lt;h2&gt;Counter&lt;/h2&gt;
+
+      &lt;p&gt;You clicked {count} times&lt;/p&gt;
+
+      &lt;button onClick={() =&gt; setCount(count - 1)}&gt; - &lt;/button&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)}&gt; + &lt;/button&gt; 
+
+    &lt;/div&gt;
+  );
+}
+
+export default Counter;
+</code></pre>
+<p>Next, we will import the <code>Counter</code> component and render it in <code>App.js</code>. We will also import <code>useState</code>  and use it to create a state variable to show/hide the <code>Counter</code> component:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+import &quot;./App.css&quot;;
+import { useState } from &quot;react&quot;;
+import Counter from &quot;./components/01-use-state/Counter&quot;;
+
+function App() {
+  const [show, setShow] = useState(true);
+
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;button onClick={() =&gt; setShow(!show)}&gt;
+        { show ? &quot;Hide&quot; : &quot;Show&quot;}
+      &lt;/button&gt;
+      {show &amp;&amp; &lt;Counter /&gt;}
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<p>Let’s summarize how the <code>useState</code> Hook works:</p>
+<p>During the mounting phase, React creates the state variables declared by the <code>useState</code> Hook.</p>
+<p>The <code>useState()</code> Hook takes one argument, the <em>initial state</em>. This value is set as the first version of the state available right after the initial render.  For example, in the component <code>Counter</code> we initialized the state variable <code>count</code> to <code>0</code>.</p>
+<p>The <code>useState()</code> Hook returns a pair of values wrapped in an array. The first value is the state variable, and the second is the function used to update it.</p>
+<p>We could represent the syntax of <code>useState()</code> using the following pseudo code:</p>
+<pre><code class="jsx hljs raw">const [stateValue, updaterFunction] = useState(initialValue);
+</code></pre>
+<div class="alert alert-info">
+<p>To store data in the state, sometimes you don’t need to create multiple state variables. <strong>State variables can also hold objects and arrays</strong>, which you can use to group similar data.</p>
+</div>
+<br>
+<h4 class="raw">Component Re-rendering</h4>
+<p><strong>React components automatically re-render whenever there is a change in their <code>state</code> or <code>props</code>.</strong></p>
+<p>In the previous example, our <code>Counter</code> component will re-render every time <code>setCount()</code> is called. In the same way, our <code>App</code> component will re-render every time <code>setShow()</code> is called to update the state.</p>
+<p>The important thing to note is that <strong><em>state</em> must be updated via the <em>updater function</em></strong>. We should never update the state directly. If we were to update the state directly, the component wouldn’t re-render:</p>
+<pre><code class="jsx hljs raw">// WRONG ❌
+
+count = count + 1
+</code></pre>
+<pre><code class="jsx hljs raw">// CORRECT ✅
+
+setCount( count + 1 )
+</code></pre>
+<p>We can summarize this rule by saying:  “every time a state variable is updated via the <em>updater function</em>, the component will re-render.”</p>
+<div class="alert alert-success">
+<p>React component automatically re-renders whenever its <code>state</code> or <code>props</code> update.</p>
+</div>
+<br>
+<h4 class="raw">Infinite Re-rendering Loop</h4>
+<p>Let’s say that we want to create a component that acts as a <em>timer</em>. The component should start by displaying <em>0</em> as the number of seconds. Each second the number should be incremented by 1.</p>
+<p>Think about how would we do this? How would we update the state every second?</p>
+<p>To do this we will need <code>setInterval</code>. If you remember, <code>setInterval</code> allows us to run a function on a set interval of time.</p>
+<p>Now, this is where we come to the next important point. <strong>Using <code>setInterval</code> directly</strong> in the function component will work, but it <strong>can potentially cause infinite re-render</strong>. Let’s demonstrate this by creating a new component, called <code>Timer</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/02-use-state-loop/Timer.js
+
+import React, { useState } from &quot;react&quot;;
+
+function Timer() {
+  const [count, setCount] = useState(0);
+
+  setInterval(() =&gt; {
+    setCount(count + 1);
+  }, 1000);
+
+  return (
+    &lt;div className=&quot;Timer&quot;&gt;
+      &lt;h2&gt;Timer&lt;/h2&gt;
+
+      &lt;h3&gt;{count}&lt;/h3&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Timer;
+</code></pre>
+<p>We’ll import it and render it in <code>App.js</code>:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import Timer from &quot;./components/02-use-state-loop/Timer&quot;;   // &lt;== IMPORT
+
+function App() {
+  const [show, setShow] = useState(true);
+
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;button onClick={() =&gt; setShow(!show)}&gt;
+        { show ? &quot;Hide&quot; : &quot;Show&quot;}
+      &lt;/button&gt;
+      {/* {show &amp;&amp; &lt;Counter /&gt;} */}
+      
+      {show &amp;&amp; &lt;Timer /&gt;}                     {/* &lt;== ADD  */}
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>What happens once we run our app with the new <code>Timer</code> component?</p>
+<p>Notice how the timer starts behaving unexpectedly. The reason for this is that the above code creates an infinite re-rendering loop.</p>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+<summary><b>Click to see the result</b></summary>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-hooks/react-rerendering-loop.gif" alt="Example - Component in a re-rendering loop" class="raw md-image"></p>
+</details>
+<br>
+<br>
+<p>To help us better understand what is happening, let’s break it down into steps:</p>
+<ol>
+<li class="raw">The <code>Timer</code> component has a <code>setInterval</code> placed directly in the function body.</li>
+<li class="raw"><code>setInterval</code> continuously calls <code>setCount()</code> (every 1 second) to update the <em>state</em></li>
+<li class="raw">The <code>Timer</code> component re-renders, each time the <em>state</em> updates.</li>
+<li class="raw">When the component re-renders, code in the function’s body runs again and creates a new <code>setInterval</code> timer.</li>
+<li class="raw">This way multiple <em>setInterval</em> timers get created causing an increasing number of re-renders until there are too many re-renders and updates that the component eventually crashes.</li>
+</ol>
+<p>The question is, how to prevent a re-rendering loop, like the one above?</p>
+<p>There are two rules that you should keep in mind:</p>
+<ul>
+<li class="raw">
+<p>First, <strong>avoid calling the state updater function <em>directly</em> in the component’s body</strong>. Calling state updater function causes the state to update on each render and cause a re-rendering loop.</p>
+</li>
+<li class="raw">
+<p>Second, when you need <strong>to update the state as soon as the component is created, use the <code>useEffect</code> Hook</strong>. Commonly you would do this for initial data fetching when setting a subscription, or a timer.</p>
+<p>In the next step, we’ll see how to do this with the <code>useEffect</code> Hook.</p>
+</li>
+</ul>
+<br>
+<h3 class="raw">Effect Hook - <code>useEffect</code></h3>
+<h4 class="raw">What is an Effect?</h4>
+<p>We said that <em>hooks</em> allows you to run some code at particular times in the lifecycle, such as after a component is created, or after it updates. The name for these actions is “side effects” or for short, “effects”.</p>
+<div class="alert alert-success">
+<p>In React, an <strong><em>effect</em> is: &quot;<em>the code that you want to run during a specific lifecycle phase</em>.&quot;</strong></p>
+</div>
+<p>Subscriptions, timers, and other side effects are not allowed directly inside the main body of a function component. As we have seen previously, doing so will lead to re-rendering loops, bugs, and inconsistencies in the UI.</p>
+<p>The <code>useEffect</code> Hook (also called the <em>Effect Hook</em>) allows you to run your side effects. Data fetching, setting up a subscription, starting a timer, and manually changing the DOM in React components are all examples of common action (aka <em>side effects</em> <img class="emoji" alt=":wink:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/wink.png" />) that you may want to set up in your components.</p>
+<p>Specifically, the <code>useEffect</code> Hook allows you to run side effects during all three lifecycle phases:</p>
+<ul>
+<li class="raw"><strong>Mounting phase</strong></li>
+<li class="raw"><strong>Update phase</strong></li>
+<li class="raw"><strong>Unmounting phase</strong></li>
+</ul>
+<br>
+<h4 class="raw">Syntax of <code>useEffect</code></h4>
+<p>The syntax of the <code>useEffect</code> is the following:</p>
+<pre><code class="jsx hljs raw">// Actual syntax
+useEffect(() =&gt; {}, [])
+</code></pre>
+<p>As you can see <code>useEffect</code> takes two arguments:</p>
+<pre><code class="js hljs raw">// Pseudo code:
+useEffect(didUpdate, dependencyArray)
+</code></pre>
+<ul>
+<li class="raw"><code>didUpdate</code> - a function containing the code (side effect) we want to run.</li>
+<li class="raw"><code>dependencyArray</code> - the array of values that the effect depends on. React watches this array for any change and when a value in this array changes, the effect will run.</li>
+</ul>
+<br>
+<h4 class="raw"><code>useEffect</code> - Mounting phase</h4>
+<p>We can set the <code>useEffect</code> to <strong>run code in the mounting phase</strong>, <strong>only once</strong>. This means right after the component was created and render to the DOM for the first time.</p>
+<p>To do so, we use the <code>useEffect</code> Hook with the following syntax:</p>
+<pre><code class="jsx hljs raw">// Run the effect only once 
+// during the mounting phase
+
+useEffect(() =&gt; {}, [])
+</code></pre>
+<p>The empty array <code>[]</code> means that “this effect doesn’t depend on anything”, and will therefore run only once, after the initial render.</p>
+<p>With the <code>useEffect</code> we can fix our <code>Timer</code> component from the previous example. We can create an effect that runs only once and starts the <code>setInterval</code> timer after the initial render.</p>
+<p>To show how to set <code>useEffect</code>, we’ll create a new component <code>TimerTwo</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/03-use-effect-mounting/TimerTwo.js
+
+import React, { useState, useEffect } from &quot;react&quot;;       // &lt;== IMPORT
+
+function TimerTwo() {
+  const [count, setCount] = useState(0);
+
+  // Add the effect in the function body
+  useEffect(() =&gt; {
+    console.log(&quot;useEffect - Mounting (initial render)&quot;);
+    
+    const id = setInterval(() =&gt; {
+      setCount((prevCount) =&gt; prevCount + 1);
+    }, 1000);
+    
+  }, [] );  // &lt;--  [] means: Run the effect only once, after initial render
+
+  return (
+    &lt;div className=&quot;Timer&quot;&gt;
+      &lt;h2&gt;Timer Two&lt;/h2&gt;
+
+      &lt;h3&gt;{count}&lt;/h3&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default TimerTwo;
+</code></pre>
+<p>Next, we’ll import it and render it in <code>App.js</code>:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import TimerTwo from &quot;./components/03-use-effect-mounting/TimerTwo&quot;;  // &lt;== IMPORT
+
+function App() {
+  const [show, setShow] = useState(true);
+
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;button onClick={() =&gt; setShow(!show)}&gt;
+        { show ? &quot;Hide&quot; : &quot;Show&quot;}
+      &lt;/button&gt;
+      {/* {show &amp;&amp; &lt;Counter /&gt;} */}
+      {/* {show &amp;&amp; &lt;Timer /&gt;} */}
+
+      {show &amp;&amp; &lt;TimerTwo /&gt;}              {/*  &lt;== ADD  */}
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p><em>Et Voilà</em>! The component is now working as it should. Thanks to <code>useEffect</code>, we started the timer <strong>only once</strong>, during the mounting phase after the initial render.</p>
+<p>The empty dependency array <code>[]</code> is the crucial part. It tells React to run our side effect (code in <code>useEffect</code>) only once.</p>
+<div class="alert alert-info">
+<p>You may have noticed that we called our <em>state updater function</em>  <code>setCount</code> with different syntax. You may wonder why didn’t we use the usual syntax, like this:</p>
+<pre><code class="jsx hljs raw">setCount(count + 1);
+</code></pre>
+<p>If we were to do so, our timer would update to <em>1</em> and then stay at the same value (you can try it).</p>
+<p><strong>The problem is that <code>useEffect</code> captures the <code>count</code> from the first render.</strong> It is equal to <code>0</code>.</p>
+<p>As our effect runs only once the <em>closure</em> in <code>setInterval</code> always references the <code>count</code> from the first render, and <code>count + 1</code> is always <code>1</code>.</p>
+<p>The way to fix this is to replace state updater function <code>setCount(count + 1)</code> using the <a href="https://reactjs.org/docs/hooks-reference.html#functional-updates">functional update form</a>:</p>
+<pre><code class="jsx hljs raw">setCount((prevCount) =&gt; prevCount + 1);
+</code></pre>
+<p>This is an additional syntax that you can use with <em>state updater functions</em>. This way you can always read fresh <em>state</em> for that <em>state variable</em>.</p>
+</div>
+<br>
+<p>Now, click the <kbd><strong>Hide</strong></kbd> button to take away the component from the screen. If you open the <em>console</em> you’ll notice the following error:</p>
+<div class="alert alert-warning">
+<p><img class="emoji" alt=":rotating_light:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/rotating_light.png" /></p>
+<blockquote class="raw">
+<p>Warning: Can’t perform a React state update on an unmounted component. This is a no-op, but it indicates a memory leak in your application. To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.</p>
+</blockquote>
+</div>
+<p>The issue occurs because the component gets removed from the DOM (destroyed) while the interval timer still continues to run. As the <em>warning</em> says, this may cause a memory leak. How should we go about canceling the remaining interval?</p>
+<p>We have to cancel the interval in the <em>unmounting</em> phase before the component is removed from the DOM. We’ll see how to do this next.</p>
+<br>
+<h4 class="raw"><code>useEffect</code> - Unmounting phase</h4>
+<p>Often, <em>effects</em> create resources that need to be cleaned up before the component leaves the screen, such as a subscription or a timer, like in the previous example. Before the component <em>unmounts</em>, we should cancel all remaining processes to prevent memory leaks.</p>
+<p>To do this, the function passed to <strong><code>useEffect</code> may return a cleanup function</strong>.</p>
+<p>We’ll demonstrate how to set it up by using a new component <code>TimerThree</code>:</p>
+<pre><code class="jsx hljs raw">// ./src/components/04-use-effect-unmounting/TimerThree.js
+
+import React, { useState, useEffect } from &quot;react&quot;;
+
+function TimerThree() {
+  const [count, setCount] = useState(0);
+
+  
+  useEffect(() =&gt; {
+    console.log(&quot;useEffect - Mounting (initial render)&quot;);
+    const id = setInterval(() =&gt; {
+      setCount((prevCount) =&gt; prevCount + 1);
+    }, 1000);
+
+    // Return a &quot;cleanup function&quot; which will run automatically
+    // before the component is removed from the DOM
+    return () =&gt; {                                               // &lt;== ADD
+      console.log(&quot;Cleanup - Component Unmounting&quot;);
+      clearInterval(id);
+    };
+  }, []);
+  
+
+  return (
+    &lt;div className=&quot;Timer&quot;&gt;
+      &lt;h2&gt;Timer Three&lt;/h2&gt;
+
+      &lt;h3&gt;{count}&lt;/h3&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default TimerThree;
+</code></pre>
+<p>Next, we’ll import the <code>TimerThree</code> component in <code>App.js</code> and render it:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import TimerThree from &quot;./components/04-use-effect-unmounting/TimerThree&quot;; // &lt;== IMPORT
+
+function App() {
+  const [show, setShow] = useState(true);
+
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;button onClick={() =&gt; setShow(!show)}&gt;
+        { show ? &quot;Hide&quot; : &quot;Show&quot;}
+      &lt;/button&gt;
+      {/* {show &amp;&amp; &lt;Counter /&gt;} */}
+      {/* {show &amp;&amp; &lt;Timer /&gt;} */}
+      {/* {show &amp;&amp; &lt;TimerTwo /&gt;} */}
+
+      { show &amp;&amp; &lt;TimerThree /&gt; }                  {/*  &lt;== ADD  */}
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>We updated the code from the previous example <code>TimerTwo</code>, and added the cleanup function to our <code>useEffect</code> :</p>
+<pre><code class="jsx hljs raw">return () =&gt; {
+  console.log(&quot;Cleanup - Component Unmounting&quot;);
+  clearInterval(id);
+};
+</code></pre>
+<p>We can think of the returned function as a “cleanup effect”. React will run the <em>returned</em> <em>function</em> automatically during the <em>unmounting phase</em>, right before the component is removed from the DOM and destroyed. This way we can clean up and cancel any remaining processes.</p>
+<p>This allows us to cancel the <code>setInterval</code> timer before the component gets removed from the UI. This way we get rid of the previous <em>warning</em>.</p>
+<p>To stop the interval timer, we used the <code>clearInterval()</code> method.</p>
+<div class="alert alert-success">
+<p><strong><em>Cleanup function</em> is a function returned from <code>useEffect</code></strong>. It is used to clean up any remaining resources that the component had created like timers, pending requests, etc. When set, the <em>cleanup function</em> will run automatically during the unmounting phase. This means before the component is removed from the DOM.</p>
+</div>
+<br>
+<h4 class="raw"><code>useEffect</code> - Conditional updates</h4>
+<p>We saw how to set <code>useEffect</code> to run code (effects) only once, during the initial render.</p>
+<p>The <code>useEffect</code> Hook can also be used to run code during the <em>Update</em> phase, whenever there is an update of state or props.</p>
+<p>As you may have noticed, <code>useEffect</code> takes a second argument <code>[]</code> the <em>dependency array</em>. Dependency array is used to specify the values that the effect depends on. Additionally, React keeps track of this array to know if it should re-run the effect.</p>
+<p><strong>Whenever a value specified in the dependency array updates, React re-runs the effect.</strong></p>
+<p>We’ll create a new component <code>TimerFour</code> using the previous code as the base. We’ll show how to conditionally run an <em>effect</em>:</p>
+<pre><code class="jsx hljs raw">// ./src/components/05-use-effect-conditional-updates/TimerFour.js
+import React, { useState, useEffect } from &quot;react&quot;;
+
+function TimerFour() {
+  const [count, setCount] = useState(0);
+
+  useEffect(() =&gt; {
+    console.log(&quot;useEffect - Mounting (initial render)&quot;);
+    const id = setInterval(() =&gt; {
+      setCount((prevCount) =&gt; prevCount + 1);
+    }, 1000);
+
+    return () =&gt; {
+      clearInterval(id);
+      console.log(&quot;Component Unmounting&quot;);
+    };
+  }, []);
+  
+
+  // Add a new effect that will run only
+  // when the `count` value updates
+  useEffect(() =&gt; {                              // &lt;== ADD
+    console.log(&quot;useEffect - on update&quot;);
+    document.title = count;
+  }, [count] );     
+  
+  // [count] means: this effect depends on the value `count`,
+  // therefore re-run the effect every time `count` updates.
+  
+
+  return (
+    &lt;div className=&quot;Timer&quot;&gt;
+      &lt;h2&gt;Timer Four&lt;/h2&gt;
+      &lt;h3&gt;{count}&lt;/h3&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default TimerFour;
+</code></pre>
+<p>Same as before, we’ll import and render the new component <code>TimerFour</code> in <code>App.js</code>:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+//  IMPORT 👇
+import TimerFour from &quot;./components/05-use-effect-conditional-updates/TimerFour&quot;;
+
+function App() {
+  const [show, setShow] = useState(true);
+
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;button onClick={() =&gt; setShow(!show)}&gt;
+        { show ? &quot;Hide&quot; : &quot;Show&quot;}
+      &lt;/button&gt;
+      {/* {show &amp;&amp; &lt;Counter /&gt;} */}
+      {/* {show &amp;&amp; &lt;Timer /&gt;} */}
+      {/* {show &amp;&amp; &lt;TimerTwo /&gt;} */}
+      {/* { show &amp;&amp; &lt;TimerThree /&gt; } */}
+
+      { show &amp;&amp; &lt;TimerFour /&gt; }                  {/*  &lt;== ADD  */}
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>In the example above, we added an effect to the <code>TimerFour</code> that updates the <em>page tab</em> title. As we want to run this effect every time the <em>state variable</em> <code>count</code> updates, we added <code>count</code> to the dependency array:</p>
+<pre><code class="jsx hljs raw">useEffect(() =&gt; {
+  console.log(&quot;useEffect - on update&quot;);
+  document.title = count;
+  
+}, [count]);   
+
+// [count] means: this effect depends on the value `count`,
+// therefore re-run the effect every time `count` updates.
+</code></pre>
+<div class="alert alert-warning">
+<p><img class="emoji" alt=":warning:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/warning.png" /> <strong>Important:</strong> Setting <code>useEffect</code> without the second argument <code>[]</code> (dependency array) will cause the <code>useEffect</code> to run on every render. This could potentially cause an infinite re-rendering loop.</p>
+<pre><code class="jsx hljs raw">useEffect(() =&gt; {})
+</code></pre>
+</div>
+<br>
+<h3 class="raw">Rules of hooks</h3>
+<p>Hooks are JavaScript functions, but you need to follow two rules when using them. React provides a <a href="https://www.npmjs.com/package/eslint-plugin-react-hooks">linter plugin</a> to enforce these rules automatically. This <em>plugin</em> is included by default in <em>Create React App</em>. The two rules are:</p>
+<h4 class="raw">1. Only call hooks at the top level</h4>
+<p><strong>Don’t call hooks inside loops, conditions, or nested functions.</strong> Instead, always use hooks at the top level of your React function before any early returns. By following this rule, you ensure that hooks are called in the same order each time a component renders. That’s what allows React to correctly preserve the state of hooks between multiple <code>useState</code> and <code>useEffect</code> calls. (If you’re curious you can read more about it <a href="https://reactjs.org/docs/hooks-rules.html#explanation">here</a>.)</p>
+<h3 class="raw"></h3>
+<h4 class="raw">2. Only Call hooks from React functions</h4>
+<p><strong>Don’t call hooks from regular JavaScript functions.</strong> Instead, you can:</p>
+<ul>
+<li class="raw"><img class="emoji" alt=":white_check_mark:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/white_check_mark.png" /> Call hooks from React function components.</li>
+<li class="raw"><img class="emoji" alt=":white_check_mark:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/white_check_mark.png" /> Call hooks from <a href="https://reactjs.org/docs/hooks-custom.html">custom hooks</a> (we won’t be covering it in this lesson).</li>
+</ul>
+<br>
+<h2 class="raw">Fetching data with <code>useEffect</code></h2>
+<!--
+
+&gt; - **E.** *Demonstrate* how to fetch and store data in a component using `useState` and `useEffect` hooks
+
+-->
+<p>For the end, we’ll do an example of fetching data from an API and displaying it in a component. This is one of the common scenarios where we would use hooks.  To do this, we’ll need <code>useEffect</code> and <code>useState</code> hooks.</p>
+<p>We’ll create a new component <code>IronbnbList</code> to demonstrate this:</p>
+<pre><code class="jsx hljs raw">// src/components/IronbnbList.js
+
+import { useState, useEffect } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+
+const apiURL = &quot;https://ironbnb-m3.herokuapp.com/apartments&quot;;
+
+function IronbnbList() {
+  const [fetching, setFetching] = useState(true);
+  const [apartments, setApartments] = useState([]);
+
+  useEffect(() =&gt; {
+    console.log(&quot;useEffect - Initial render (Mounting)&quot;);
+    axios.get(apiURL).then((response) =&gt; {
+      setApartments(response.data);
+      setFetching(false);
+    });
+  }, []);
+
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;List of apartments&lt;/h3&gt;
+      {fetching &amp;&amp; &lt;p&gt;Loading ...&lt;/p&gt;}
+
+      {apartments.map((apt) =&gt; {
+        return (
+          &lt;div key={apt._id} className=&quot;card&quot;&gt;
+            &lt;img src={apt.img} alt=&quot;apartment&quot; /&gt;
+            &lt;h3&gt;{apt.title}&lt;/h3&gt;
+            &lt;p&gt;Price: {apt.pricePerDay}&lt;/p&gt;
+          &lt;/div&gt;
+        )
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default IronbnbList;
+</code></pre>
+<p>We’ll render the new component in the <code>App.js</code>:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import IronbnbList from &#39;./components/IronbnbList&#39;;      // &lt;== IMPORT
+
+function App() {
+  const [show, setShow] = useState(true);
+
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;button onClick={() =&gt; setShow(!show)}&gt;
+        { show ? &quot;Hide&quot; : &quot;Show&quot;}
+      &lt;/button&gt;
+      {/* {show &amp;&amp; &lt;Counter /&gt;} */}
+      {/* {show &amp;&amp; &lt;Timer /&gt;} */}
+      {/* {show &amp;&amp; &lt;TimerTwo /&gt;} */}
+      {/* { show &amp;&amp; &lt;TimerThree /&gt; } */}
+      {/* {show &amp;&amp; &lt;TimerFour /&gt;} */}
+      
+      {show &amp;&amp; &lt;IronbnbList /&gt;}                  {/*   &lt;== ADD   */}
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<div class="alert alert-warning">
+<p>Make sure you install axios:</p>
+<pre><code class="shell hljs raw">$ npm i axios
+</code></pre>
+</div>
+<p>As we are using <code>axios</code> to fetch data in <code>IronbnbList</code>, we’ll need to install it in our app:</p>
+<pre><code class="bash hljs raw">npm install axios
+</code></pre>
+<p>Let’s go over the code in the <code>IronbnbList</code> component and check our understanding:</p>
+<ol>
+<li class="raw">
+<p>We imported the <code>useEffect</code> and the <code>useState</code> Hook.</p>
+</li>
+<li class="raw">
+<p>In the body of the function component we declared state variables <code>fetching</code> and  <code>apartments</code>:</p>
+<ul>
+<li class="raw">
+<p>State variable <code>fetching</code> is used to display the <em>“Loading”</em> message when the data fetching is in progress.</p>
+</li>
+<li class="raw">
+<p>State variable <code>apartments</code> is used to store the data coming from the API. Its initial state is an empty array <code>[]</code>. The initial state of <code>apartments</code> must be an array, as we are <em>mapping</em> over it in the <code>return</code>:   <code>apartments.map((apt) =&gt; </code>.</p>
+</li>
+</ul>
+</li>
+<li class="raw">
+<p>Next, we created an effect using the <code>useEffect</code> Hook.
+We set the effect to run <em>only once</em> on the initial render by setting the empty <em>dependency array</em> <code>[]</code> as the second argument to <code>useEffect</code>.</p>
+</li>
+<li class="raw">
+<p>When the component renders initially, the <em>effect</em> runs and makes an <code>axios</code> request to the API.</p>
+</li>
+<li class="raw">
+<p>Once the request is done, we take the <code>response</code> <em>data</em> returned from the API. The <code>response.data</code> contains the list of apartments. We call <code>setApartments(response.data)</code> to set the data in the state.</p>
+</li>
+<li class="raw">
+<p>Variable <code>fetching</code> is responsible for showing the loading message while the data is being fetched. For this reason, as soon as we receive the response from the API, we set it to false: <code>setFetching(false)</code>.</p>
+</li>
+</ol>
+<p><a href="https://codesandbox.io/s/m3-d3-hooks-use-efect-example1-m3i3f?file=/src/App.js">See the example on CodeSandbox</a></p>
+<br>
+<!--
+
+[Bonus Example - fetching data & search bar](https://codesandbox.io/s/m3-d3-hooks-use-efect-example2-38cto?file=/src/App.js)
+
+-->
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-hooks/tree/master">react-hooks</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-hooks.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-hooks
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this lesson, we learned that React components have a lifecycle, consisting of three phases:  <em>Mounting</em>, <em>Update</em>, and <em>Unmounting</em>. As we have seen, the <code>useEffect</code> hook lets us set up and run side effects during the <em>lifecycle</em> of a component. We use different <code>useEffect</code> syntax to specify when we want the effect code to run, either during <em>Mounting</em>, <em>Update</em>, or <em>Unmounting</em> phase. To run an effect only once during the initial render, we should set the empty <em>dependency array</em> <code>[]</code>. To conditionally run an effect, we can add values to the <code>useEffect</code>'s <em>dependency array</em>.</p>
+<p>Some of the common effects that we can perform in React components are data fetching, setting timers, updating DOM directly, etc. To fetch the data from an API and save it in a component during the initial render, we use the <code>useState</code>  and the <code>useEffect</code> hooks.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://reactjs.org/docs/hooks-overview.html">Hooks at a Glance</a></li>
+<li class="raw"><a href="https://reactjs.org/docs/hooks-rules.html">Rules of Hooks</a></li>
+<li class="raw"><a href="https://reactjs.org/docs/hooks-reference.html">Hooks API Reference</a></li>
+</ul>

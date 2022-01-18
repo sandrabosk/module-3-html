@@ -1,0 +1,614 @@
+<!-- # Connecting a React app to the backend -->
+<!--
+
+### Instructional Design Goals
+
+**A.** Demonstrate how to make `GET` and `POST` requests in a React app using `axios`
+
+**B.** Demonstrate how to make a request to an API using `axios` and the `useEffect` hook and how to store the response data in the state.
+
+**C.** Demonstrate how to programmatically navigate to another page using the React Router's useNavigate hook
+
+-->
+<h2 class="raw">Learning goals</h2>
+<ul>
+<li class="raw">Make a GET request to the backend (API) and store the retrieved data in a component in the front-end</li>
+<li class="raw">Make a POST request to the backend (API)</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>The main goal of this module is to become proficient with React and then using that knowledge to build a full-stack application. In addition to having the front-end interface, full-stack applications rely on the backend or an external service for handling the data and authentication. Typically, front-end applications communicate with the backend using the HyperText Transfer Protocol (HTTP) and its methods GET, POST, PUT, DELETE, etc. In this lesson, we will see how to make GET and POST requests to an external API (backend) from our React app (front-end).</p>
+<br>
+<h2 class="raw">Getting Started</h2>
+<p>First, let’s create a new React app.</p>
+<pre><code class="bash hljs raw">$ npx create-react-app react-connecting-to-backend
+$ cd react-connecting-to-backend
+</code></pre>
+<p>Inside our project folder, <em>install</em> the <code>react-router-dom</code>:</p>
+<pre><code class="bash hljs raw">$ npm install react-router-dom
+</code></pre>
+<p>And then start the app:</p>
+<pre><code class="bash hljs raw">$ npm start
+</code></pre>
+<br>
+<p>Below you will find the starter code that we need for this lesson. Go ahead and create the following files by using the provided snippets:</p>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click here for the code</b></summary>
+<br>
+<pre><code class="css hljs raw">/* src/index.css */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Roboto&quot;, &quot;Oxygen&quot;,
+    &quot;Ubuntu&quot;, &quot;Cantarell&quot;, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.App {
+  font-family: sans-serif;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+}
+
+nav {
+  background: #cec8db;
+  color: white;
+  padding: 10px;
+  box-shadow: 0px 1px 2px gray;
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+button,
+select {
+  padding: 5px 10px;
+  min-width: 50px;
+  margin: 10px;
+  font-size: 18px;
+}
+
+.list {
+  margin: 0 auto;
+  width: 100%;
+  text-align: center;
+}
+
+.card {
+  width: 400px;
+  padding: 10px;
+  box-shadow: 0px 2px 3px grey;
+  margin: 0 auto;
+  margin-bottom: 20px;
+  background: #cfb2d6;
+  border-radius: 4px;
+}
+
+.logo,
+img {
+  width: 200px;
+}
+
+.AddApartmentPage {
+  border: 1px solid grey;
+  box-shadow: 0px 2px 3px grey;
+  width: 400px;
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.AddApartmentPage {
+  background: #afd7fb;
+}
+
+.AddApartmentPage label {
+  width: 100px;
+  display: block;
+  margin: 0 auto;
+}
+
+.AddApartmentPage input {
+  padding: 10px;
+  display: inline-block;
+  margin: 2px 0 10px;
+}
+
+.AddApartmentPage input[type=&quot;number&quot;] {
+  padding: 10px;
+  display: inline-block;
+  margin: 2px 0 10px;
+  text-align: center;
+}
+
+.AddApartmentPage button[type=&quot;submit&quot;] {
+  display: block;
+  margin: 0 auto;
+  margin-top: 20px;
+  border-radius: 3px;
+}
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/pages/ApartmentsPage.js
+
+import { useState } from &quot;react&quot;;
+
+function ApartmentsPage() {
+  const [apartments, setApartments] = useState([]);
+  
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;List of apartments&lt;/h3&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ApartmentsPage;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/pages/AddApartmentPage.js
+
+function AddApartmentPage() {
+  return (
+    &lt;div className=&quot;AddApartmentPage&quot;&gt;
+      &lt;h3&gt;Add New Apartment&lt;/h3&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AddApartmentPage;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/components/Navbar.js
+
+import { NavLink } from &quot;react-router-dom&quot;;
+
+function Navbar() {
+  return (
+    &lt;nav&gt;
+      &lt;NavLink to=&quot;/&quot;&gt;
+        &lt;button&gt;Home&lt;/button&gt;
+      &lt;/NavLink&gt;
+      
+      &lt;NavLink to=&quot;/apartments/new&quot;&gt;
+        &lt;button&gt;Add Apartment&lt;/button&gt;
+      &lt;/NavLink&gt;
+    &lt;/nav&gt;
+  );
+}
+
+export default Navbar;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/index.js
+
+import React from &#39;react&#39;;
+import ReactDOM from &#39;react-dom&#39;;
+import &#39;./index.css&#39;;
+import App from &#39;./App&#39;;
+import reportWebVitals from &#39;./reportWebVitals&#39;;
+
+import { BrowserRouter as Router } from &#39;react-router-dom&#39;;
+
+ReactDOM.render(
+  &lt;React.StrictMode&gt;
+    &lt;Router&gt;
+      &lt;App /&gt;
+    &lt;/Router&gt;
+  &lt;/React.StrictMode&gt;,
+  document.getElementById(&#39;root&#39;)
+);
+
+
+reportWebVitals();
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/App.js
+
+import &quot;./App.css&quot;;
+import { Routes, Route } from &quot;react-router-dom&quot;;
+
+import Navbar from &quot;./components/Navbar&quot;;
+import ApartmentsPage from &quot;./pages/ApartmentsPage&quot;;
+import AddApartmentPage from &quot;./pages/AddApartmentPage&quot;;
+
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      
+      &lt;Routes&gt;
+        &lt;Route path=&quot;/&quot; element={&lt;ApartmentsPage /&gt;} /&gt;
+        &lt;Route path=&quot;/apartments/new&quot; element={&lt;AddApartmentPage /&gt;} /&gt;
+      &lt;/Routes&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+</details>
+<br>
+<br>
+<h2 class="raw">Get Data from an API</h2>
+<!--
+
+&gt; **B.**  Demonstrate how to make a request to an API using `axios` and the `useEffect` hook and how to store the response data in the state.
+
+-->
+<p>Since we started working with React, we have been focused only on the front-end. Up until this point to render content in our React app we used static data coming from the local files (<code>json</code>) or variables. This approach is considered ok when creating test applications and when storing internal data that the app depends on, such as static content or internal configuration. In addition to this, front-end applications depend on the server to download or upload data, and to access other back-end services.</p>
+<br>
+<h3 class="raw">Ironbnb API</h3>
+<p>In this lesson, we will work with the <em>Ironbnb API</em> which returns JSON responses. To make GET and POST requests to the Ironbnb API from our components we will use <code>axios</code>.</p>
+<p>The Ironbnb API’s <strong>base URL</strong> is <strong><code>https://ironbnb-m3.herokuapp.com</code></strong> and it has the following endpoints:</p>
+<table>
+<thead>
+<tr>
+<th>HTTP verb</th>
+<th>URL</th>
+<th style="text-align:left">Request body</th>
+<th style="text-align:left">Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/apartments</code></td>
+<td style="text-align:left">- - -</td>
+<td style="text-align:left">Returns an array with all the apartment documents.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/apartments/:id</code></td>
+<td style="text-align:left">- - -</td>
+<td style="text-align:left">Returns an apartment document by its id.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/apartments</code></td>
+<td style="text-align:left">{ <br />  img: String, <br />  title: String,<br />  pricePerDay: Number <br />}</td>
+<td style="text-align:left">Creates a new apartment document.</td>
+</tr>
+</tbody>
+</table>
+<br>
+<p>An example of making a request to the API could be getting the list of all the apartments. To do so we should make a <code>GET</code> request to the <code>https://ironbnb-m3.herokuapp.com/apartments</code>.</p>
+<br>
+<h2 class="raw">Get Initial Data - GET request</h2>
+<p>Our application currently doesn’t display any data. We will change this by updating the <code>ApartmentsListPage.js</code>. We will make a <code>GET</code> request to the API to fetch the list of the apartments once the component has mounted. Let’s update the <code>ApartmentsPage.js</code>:</p>
+<pre><code class="jsx hljs raw">// src/pages/ApartmentsPage.js
+
+import { useState, useEffect } from &quot;react&quot;;     // &lt;== IMPORT useEffect
+import axios from &quot;axios&quot;;                       // &lt;== IMPORT axios
+
+function ApartmentsPage() {
+  const [apartments, setApartments] = useState([]);
+
+  useEffect(() =&gt; {                                // &lt;== ADD THE EFFECT
+    axios
+      .get(&quot;https://ironbnb-m3.herokuapp.com/apartments&quot;)
+      .then((response) =&gt; {
+        console.log(&#39;response.data&#39;, response.data);
+        setApartments(response.data)
+      });
+    
+  }, [] );  // &lt;- [] means: Run the effect only once, after initial render
+
+  
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;List of apartments&lt;/h3&gt;
+
+      {/*   👇   ADD  👇   */}
+      {apartments.map((apartment) =&gt; (
+        &lt;div key={apartment._id} className=&quot;card&quot;&gt;
+          &lt;img src={apartment.img} alt=&quot;apartment&quot; /&gt;
+          &lt;h3&gt;{apartment.title}&lt;/h3&gt;
+          &lt;p&gt;Price: {apartment.pricePerDay}&lt;/p&gt;
+        &lt;/div&gt;
+      ))}
+      
+    &lt;/div&gt;
+  );
+}
+
+export default ApartmentsPage;
+</code></pre>
+<br>
+<p>Let’s summarize the above steps and check our understanding:</p>
+<ul>
+<li class="raw">
+<p>First, we imported the <code>useEffect</code> hook from <code>react</code>. Next, we imported the <code>axios</code> npm package. (We didn’t install it yet, we will soon.)</p>
+</li>
+<li class="raw">
+<p>We then created a new <em>effect</em> using the <code>useEffect</code> hook that will run only once, during the <em>mounting</em> phase. We set the effect to run <em>only once</em> after the initial render by setting the empty <em>dependency array</em> <code>[]</code> as the second argument to <code>useEffect</code>.</p>
+</li>
+<li class="raw">
+<p>When the component renders for the first time the <em>effect</em> runs and an HTTP <code>GET</code> request is made to the Ironbnb API. The returned response data is available on the <code>response.data</code> property and we use it to update the state variable <code>apartments</code> with the data from the response:</p>
+<pre><code class="js hljs raw">setApartments(response.data)
+</code></pre>
+</li>
+<li class="raw">
+<p>As the last step we render a list by mapping over the state variable <code>apartments</code>.</p>
+</li>
+<li class="raw">
+<p>As we are using <code>axios</code> for making requests we will also need to install it as a dependency:</p>
+</li>
+</ul>
+<pre><code class="shell hljs raw">$ npm install axios
+</code></pre>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Get data from an API</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/cfu-1-m3-d5-react-get-request-rd31m">CodeSandbox - Get Data from an API (Exercise)</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>) CodeSandbox will automatically create a copy of the app with a new URL for you.</p>
+<br>
+<p><strong>2. Get data from the <em>Ironbnb API</em></strong></p>
+<p>You will be working the <code>ApartmentsList.js</code> file. Your task is to make a <code>GET</code> request to the following URL using <code>axios</code>:</p>
+<pre><code class="bash hljs raw"># GET
+https://ironbnb-m3.herokuapp.com/apartments
+</code></pre>
+<p>The data returned from the response should be set in the state variable <code>apartments</code>.</p>
+<p>To do this you will need an <em>effect</em> which will run only once, after the initial render.</p>
+<p><strong>NOTE:</strong> Remember to import <code>axios</code> and the <code>useEffect</code> hook to the <code>ApartmentsList.js</code>.</p>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<p><strong>Exercise Solution:</strong> <a href="https://codesandbox.io/s/cfu-1-m3-d5-react-get-request-solution-ug8h8">Link</a></p>
+</details>
+<br>
+<br>
+<h2 class="raw">Making a POST request</h2>
+<p>Next, we will use the <code>AddApartmentPage</code> component to do an example of making a POST request from our React app.
+To be able to send the POST request to the API and create a new document we will need <code>&lt;form&gt;</code> and <code>&lt;input&gt;</code> fields. Let’s update the component <code>AddApartmentPage</code> and make it into a <em>controlled component</em>:</p>
+<pre><code class="jsx hljs raw">// src/pages/AddApartmentPage.js
+
+import { useState } from &quot;react&quot;;          // &lt;== IMPORT
+
+function AddApartmentPage() {
+  const [headline, setHeadline] = useState(&quot;&quot;);     // &lt;== ADD
+  const [price, setPrice] = useState(1);            // &lt;== ADD
+
+
+  return (
+    &lt;div className=&quot;AddApartmentPage&quot;&gt;
+      &lt;h3&gt;Add New Apartment&lt;/h3&gt;
+      
+      {/*  👇  ADD 👇  */}
+      &lt;form &gt;
+        &lt;label&gt;Title&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;headline&quot;
+          onChange={(e) =&gt; setHeadline(e.target.value)}
+          value={headline}
+        /&gt;
+
+        &lt;label&gt;Price per Day&lt;/label&gt;
+        &lt;input
+          type=&quot;number&quot;
+          name=&quot;pricePerDay&quot;
+          onChange={(e) =&gt; setPrice(e.target.value)}
+          value={price}
+        /&gt;
+        
+        &lt;button type=&quot;submit&quot;&gt;Create Apartment&lt;/button&gt;
+        
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AddApartmentPage;
+</code></pre>
+<br>
+<p>In a controlled component, each <code>&lt;input&gt;</code> field requires a separate state variable and an <code>onChange</code> event. This is why we created state variables <code>headline</code> and <code>price</code> and linked them to the inputs via the <code>value</code> attribute.
+To ensure that our inputs are updating their corresponding state variables we added an <code>onChange</code> event listener to each <code>&lt;input&gt;</code> element.</p>
+<pre><code class="jsx hljs raw">// ...
+onChange={(e) =&gt; setHeadline(e.target.value) }
+</code></pre>
+<pre><code class="jsx hljs raw">// ...
+onChange={(e) =&gt; setPrice(e.target.value) }
+</code></pre>
+<br>
+<p>We want to make a <code>POST</code> request to the Ironbnb API every time the user submits the form. To do this we will need an <code>onSubmit</code> event on the <code>&lt;form&gt;</code> and a handler function.</p>
+<p>Let’s update the <code>AddApartmentPage</code> component once more to do this:</p>
+<pre><code class="jsx hljs raw">// src/pages/AddApartmentPage.js
+// ... previous imports stay unchanged
+
+import axios from &#39;axios&#39;;            // &lt;==  IMPORT axios
+
+
+function AddApartmentPage() {
+  const [headline, setHeadline] = useState(&quot;&quot;);
+  const [price, setPrice] = useState(1);
+
+  
+  const handleSubmit = (e) =&gt; {          // &lt;== HANDLER FUNCTION
+    // Prevent page reload on submit
+    e.preventDefault();
+    // Create the body for the POST request
+    const body = { title: headline, pricePerDay: price };
+    
+    axios
+      .post(&quot;https://ironbnb-m3.herokuapp.com/apartments&quot;, body)
+      .then((response) =&gt; {
+        // Reset the state
+        setHeadline(&quot;&quot;);
+        setPrice(1);
+      });
+  };
+
+  
+  return (
+    &lt;div className=&quot;AddApartmentPage&quot;&gt;    
+      &lt;h3&gt;Add New Apartment&lt;/h3&gt;
+      
+      &lt;form onSubmit={handleSubmit}&gt;   {/* &lt;== ADD EVENT  */}
+        &lt;label&gt;Title&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;headline&quot;
+          onChange={(e) =&gt; setHeadline(e.target.value)}
+          value={headline}
+        /&gt;
+
+        &lt;label&gt;Price per Day&lt;/label&gt;
+        &lt;input
+          type=&quot;number&quot;
+          name=&quot;pricePerDay&quot;
+          onChange={(e) =&gt; setPrice(e.target.value)}
+          value={price}
+        /&gt;
+        &lt;button type=&quot;submit&quot;&gt;Create Apartment&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AddApartmentPage;
+</code></pre>
+<br>
+<p>The <code>handleSubmit</code> function runs when the user submits the form. As forms have a default HTML behavior of reloading the page on submit, we first called <code>e.preventDefault()</code> to prevent the page reload.</p>
+<p>We then called <code>axios.post()</code> to create a <code>POST</code> request and sent the input data stored in the state.</p>
+<p>If we navigate back to our <code>/</code> page with the list of apartments we will be able to see the apartment document that we just created in the list.</p>
+<br>
+<!--
+
+&gt;  **C.** Demonstrate how to programmatically navigate to another page using the React Router's useNavigate hook
+
+-->
+<h3 class="raw">Navigate to Another Page - React Router’s <code>useNavigate</code></h3>
+<p>As you may have noticed, to see the refreshed list of apartments after creating an apartment requires us to manually move to our <code>/</code> page. Fortunately, we can do this programmatically using React Router. React Router has a few of its own custom hooks that let you access the router and perform navigation from inside your components.</p>
+<p>React Router’s  [<code>useNavigate()</code> hook](Demonstrate how to make a request to an API using <code>axios</code> and the <code>useEffect</code> hook and how to store the response data in the state.) hook returns a function that lets you navigate programmatically.</p>
+<p>For example, we could use the <code>useNavigate</code> hook in the <code>AddApartmentPage</code> to automatically navigate to the <code>/</code> page once the  <code>axios.post()</code> request resolves successfully:</p>
+<pre><code class="jsx hljs raw">// src/pages/AddApartmentPage.js
+// ... previous imports stay unchanged
+
+import { useNavigate } from &quot;react-router-dom&quot;; // &lt;== IMPORT
+
+function AddApartmentPage() {
+  const [headline, setHeadline] = useState(&quot;&quot;);
+  const [price, setPrice] = useState(1);
+  
+  const navigate = useNavigate();                // &lt;==  ADD
+
+  
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+    const body = { title: headline, pricePerDay: price };
+    
+    axios
+      .post(&quot;https://ironbnb-m3.herokuapp.com/apartments&quot;, body)
+      .then((response) =&gt; {
+        // Reset the state
+        setHeadline(&quot;&quot;);
+        setPrice(1);
+      
+        // Navigate to the `/` page
+        navigate(&#39;/&#39;);                      // &lt;== ADD
+      });
+  };
+
+  
+  return (
+    &lt;div className=&quot;AddApartmentPage&quot;&gt;
+      &lt;h3&gt;Add New Apartment&lt;/h3&gt;
+      &lt;form onSubmit={handleSubmit}&gt;
+        &lt;label&gt;Title&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;headline&quot;
+          onChange={(e) =&gt; setHeadline(e.target.value)}
+          value={headline}
+        /&gt;
+
+        &lt;label&gt;Price per Day&lt;/label&gt;
+        &lt;input
+          type=&quot;number&quot;
+          name=&quot;pricePerDay&quot;
+          onChange={(e) =&gt; setPrice(e.target.value)}
+          value={price}
+        /&gt;
+        &lt;button type=&quot;submit&quot;&gt;Create Apartment&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AddApartmentPage;
+</code></pre>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Make a POST request</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/cfu2-m3-d5-react-post-request-ny3ct?file=/src/pages/AddApartmentPage.js">CodeSandbox - Make a POST request (Exercise)</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>) CodeSandbox will automatically create a copy of the app with a new URL for you.</p>
+<br>
+<p><strong>2. Make a POST request to the <em>Ironbnb API</em></strong></p>
+<p>Create a form handler function in the <code>AddApartmentPage.js</code> file that will run when a user submits the form. The handler function should make a <code>POST</code> request using  <code>axios</code> to the following URL:</p>
+<pre><code class="bash hljs raw"># POST
+https://ironbnb-m3.herokuapp.com/apartments
+</code></pre>
+<p>This endpoint expects the POST request body with the following structure:</p>
+<pre><code class="js hljs raw">{ title: String, pricePerDay: Number }
+</code></pre>
+<p><strong>NOTE:</strong> Remember to import <code>axios</code> to the <code>AddApartmentPage.js</code> file.</p>
+<br>
+<p><strong>3. Bonus: Navigate to a <code>/</code> page when the request resolves</strong></p>
+<p>For this task, you should use the React Router’s <code>useNavigate</code> hook. Update your “on submit” handler function to automatically navigate to the <code>/</code> page when the POST request resolves successfully.</p>
+<p><strong>NOTE:</strong> Remember to import the <a href="https://reactrouter.com/docs/en/v6/api#usenavigate"><code>useNavigate</code></a> Hook from <code>react-router-dom</code>,</p>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<p><strong>Exercise Solution: <a href="https://codesandbox.io/s/cfu2-m3-d5-react-post-request-solution-lco8y?file=/src/pages/AddApartmentPage.js">Link</a></strong></p>
+</details>
+<br>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-connecting-to-backend/tree/master">react-connecting-to-backend</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-connecting-to-backend.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-connecting-to-backend
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this lesson, we learned how to connect React app with the server (API) and how we can use <code>axios</code> to make <code>GET</code> and <code>POST</code> requests to an API.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://www.npmjs.com/package/axios">axios</a></li>
+<li class="raw"><a href="https://www.freecodecamp.org/news/a-practical-es6-guide-on-how-to-perform-http-requests-using-the-fetch-api-594c3d91a547/">How to perform HTTP requests using the Fetch API</a></li>
+<li class="raw"><a href="https://reactjs.org/docs/faq-ajax.html">ReactJS - AJAX and APIs</a></li>
+</ul>

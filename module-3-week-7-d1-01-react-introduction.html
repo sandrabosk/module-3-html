@@ -1,0 +1,499 @@
+<!-- # React | Introduction -->
+<!--
+
+## Instructional Design Goals
+
+**A.** *summarize/paraphrase* what React is and its main features
+
+**B.** *run* the pre-made React application using NodeJS
+
+**C.** *identify* the benefits of Component-based architecture
+
+**D.** *infer* the structure of a React application by looking at pre-made app using components
+
+**E.** group elements by functionality into a component, *using* a component-based approach
+
+**F.** *observe and repeat (replicate)* creating and displaying basic react components
+
+**F.** *setup* the React Dev Tools in the browser
+
+-->
+<h2 class="raw">Learning goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Describe what JS frameworks and libraries are and why we use them</li>
+<li class="raw">Explain what React is and what are its main features</li>
+<li class="raw">Explain what components are and how they simplify the creation of User interfaces</li>
+<li class="raw">Create and render React components</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>In today’s web development, there are many ways to create user interfaces. These can be simple Static Websites, <a href="https://lvivity.com/single-page-app-vs-multi-page-app#:~:text=A%20Multi%2Dpage%20Application%20is,page%20displayed%20in%20the%20browser.">Multi-page Applications</a> (server-side rendered), <a href="https://www.freecodecamp.org/news/what-are-progressive-web-apps/#whatisaprogressivewebapp">Progressive Web Apps (PWA)</a>, <a href="https://developer.mozilla.org/en-US/docs/Glossary/SPA">Single-page Applications</a>, etc.</p>
+<p>The simplest way to create a front-end application is using plain HTML, CSS, and JavaScript. This is the purest way of doing web development. It doesn’t require the use of tools, libraries, or frameworks.</p>
+<p>However, this approach doesn’t scale very well when creating large web applications.</p>
+<p>As applications grow, they tend to become hard to maintain and scale. Think about a web platform such as Facebook, Airbnb, or Instagram. How many HTML, CSS, and JS files do we need to create one such application? The answer is thousands of files.</p>
+<p>Fun fact: <strong>Facebook’s</strong> frontend runs on over 60 million lines of <strong>code</strong> <img class="emoji" alt=":scream:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/scream.png" />. You get the picture!</p>
+<p>As an application grows, it may start encountering architecture problems such as:</p>
+<ul>
+<li class="raw">code and files being very hard to organize (too much code),</li>
+<li class="raw">it becomes hard to interconnect or reuse logic and code across files and features,</li>
+<li class="raw">It is hard to enforce specific design patterns and structure</li>
+</ul>
+<p>When these things happen, a framework can come to help. <img class="emoji" alt=":star:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/star.png" /></p>
+<br>
+<h2 class="raw">Frameworks and Code Libraries</h2>
+<!--
+
+&gt;  *Understand what JS frameworks (and libraries) are and why we need them,*
+&gt;
+&gt; Micro goals
+&gt;
+&gt; - Understand what a software framework is
+&gt; - Understand what a front-end framework is
+&gt; - Draw parallel to another JavaScript framework
+&gt; - Understand what a code library is
+
+-->
+<p><strong>A software framework is:</strong></p>
+<blockquote class="raw">
+<p>A universal, reusable software environment used to facilitate the development of software applications, products, and solutions.</p>
+</blockquote>
+<p>A framework serves as a development environment and a set of tools and commonly includes:</p>
+<ul>
+<li class="raw">Support programs,</li>
+<li class="raw">Compilers/transpilers,</li>
+<li class="raw">Code libraries (also called packages),</li>
+<li class="raw">Toolsets,</li>
+<li class="raw">Predefined structure of the application (folder/file structure and configuration)</li>
+<li class="raw">Enforced set of rules and well-tested design principles that must be followed</li>
+</ul>
+<p><strong>A JavaScript framework is</strong> a collection of JavaScript code libraries and tools used for developing JavaScript applications.</p>
+<p>A <em>Framework</em> helps you to build apps faster by addressing common development issues. You may know some other frameworks, like <a href="https://expressjs.com">Express</a>. In this module, we will use React frontend framework to create client-side applications.</p>
+<br>
+<h3 class="raw">Front-end Frameworks</h3>
+<p>A <em>front-end framework</em> consists of tools, JavaScript libraries, and packages. Front-end frameworks help developers build and scale front-end applications easier and faster.</p>
+<br>
+<p><strong>A code library is:</strong></p>
+<blockquote class="raw">
+<p>A collection of objects, functions, and methods which can be reused and shared among multiple applications. A library performs specific, well-defined operations.</p>
+<p><small><cite> – <a href="https://jaxenter.com/pros-cons-using-framework-135901.html">Kolev (2017, July 31). _The pros and cons of using a framework</a> </cite></small></p>
+</blockquote>
+<p>In other words, <strong>code libraries</strong> are collections of ready-to-use code used to speed up the creation of programs.</p>
+<p>When it comes to React, there are still many divided opinions on the question, “Is React a <em>library</em> or is it a <em>framework</em>?”. React takes the best of both, and it isn’t easy to draw the line and decide in favor of one or the other.</p>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Quiz</h4>
+<br>
+<ol>
+<li class="raw">What is a software framework?</li>
+<li class="raw">What problems does the software framework help solve?</li>
+<li class="raw">What is a code library?</li>
+</ol>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Answers:</b></summary>
+<br>
+<ol>
+<li class="raw">
+<p>A software framework is a development environment and a set of tools used to facilitate the faster development of software.
+It usually includes support programs, code libraries and a predefined code structure. Besides this software framework enforces the use of well-tested design principles.</p>
+</li>
+<li class="raw">
+<p>As applications grow, they tend to become hard to maintain and scale. Frameworks solve these problems by providing a uniform project structure, enforcing best practices, and automating common tasks.</p>
+</li>
+<li class="raw">
+<p>A Code library is a collection of pre-written code. It may contain objects, functions, and methods which can be reused and shared among many applications. Code libraries are used to speed up the creation of programs.</p>
+</li>
+</ol>
+</details>
+<br>
+<h2 class="raw">Introduction to React</h2>
+<!--
+
+&gt; Understand what React is and what are its main features
+&gt;
+&gt; Micro goals:
+&gt;
+&gt; - Explain what React is. Provide official definition, Official documentation page, about React, background.
+&gt; - List out and explain React features
+&gt; - List advantages of using React
+&gt; - A Brief explanation of React toolchain
+
+-->
+<p><strong>What is React?</strong></p>
+<p>React is a <strong>front-end JavaScript library</strong> used to create front-end applications that run in the browser. It was created by <a href="https://www.reactiflux.com/transcripts/jordan-walke/">Jordan Walke</a>, a software engineer working for Facebook. React first deployed on <a href="https://facebook.com/">Facebook’s</a> newsfeed in 2011 and on <a href="https://instagram.com/">Instagram.com</a> in 2012.</p>
+<p>React allows developers to create robust web applications that handle dynamic changes in the data without reloading the page. Besides Web apps, we can also use React for developing Android and iOS mobile apps. This is done through the cross-platform framework called React Native.</p>
+<br>
+<h3 class="raw">Advantages of React</h3>
+<ul>
+<li class="raw">
+<p><strong>Component-based development</strong> - We create React applications using components. Components are smaller reusable pieces of UI. This allows us to build complex applications.</p>
+</li>
+<li class="raw">
+<p><strong>Separation of concerns</strong> - React enables a clean, modular design of the applications. Developers can work on different parts of the application, on a specific component. This way, they don’t interfere with the work of others or break the existing code.</p>
+</li>
+<li class="raw">
+<p><strong>Speed</strong> - React enables us to maintain a clear project structure. Clear structure speeds up the development.</p>
+</li>
+<li class="raw">
+<p><strong>Enforces Structure</strong> - React enforces certain design patterns and project structure. If all developers in the team follow the same practices, collaboration improves.</p>
+<br>
+</li>
+</ul>
+<h3 class="raw">React Features</h3>
+<p>Let’s take a closer look at some essential features of React:</p>
+<ul>
+<li class="raw">
+<p><strong>Component-Based</strong> - Components are building blocks of React applications. We can compose React components to make complex UIs. Additionally, each component can have encapsulated state.</p>
+</li>
+<li class="raw">
+<p><strong>JSX</strong> - <a href="https://reactjs.org/docs/introducing-jsx.html">JSX</a> is a JavaScript syntax extension used to write HTML and JavaScript together. Instead of separating JavaScript and HTML into different files, React uses JSX to combine HTML and JS together. JSX speeds up and simplifies the creation of React apps and components. Don’t worry; we will take a further look into this in the next steps! <img class="emoji" alt=":wink:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/wink.png" /></p>
+</li>
+<li class="raw">
+<p><strong>Learn Once, Write Anywhere</strong> - React can be used to pre-render web pages on the server with Node. Besides Web apps, we can use React to create mobile apps with <a href="https://reactnative.dev/">React Native</a>.</p>
+</li>
+</ul>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":bulb:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/bulb.png" /> While JSX is the recommended way for creating React apps, it is not the only one.
+We can also create React apps using pure old JavaScript!</p>
+</div>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Quiz</h4>
+<ol>
+<li class="raw">What is React?</li>
+<li class="raw">Is React a frontend or backend library?</li>
+<li class="raw">What is JSX?</li>
+<li class="raw">What is the meaning of Component-based development?</li>
+</ol>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Answers:</b></summary>
+<ol>
+<li class="raw">React is a front-end JavaScript library used to create front-end applications that run in the browser.</li>
+<li class="raw">React is a front-end library. React can also be used for creating Android and iOS mobile apps thanks to React Native.</li>
+<li class="raw">JSX is a JavaScript syntax extension used to write HTML and JavaScript together. Instead of separating JavaScript and HTML into different files, React uses JSX to combine HTML and JS together.</li>
+<li class="raw">In Component-based development, the entire application is created out of smaller reusable pieces of UI, called <em>components</em>. Components are the main building blocks.</li>
+</ol>
+</details>
+<br>
+<h2 class="raw">Add React to a Website</h2>
+<p>While React is commony used for creating Single page applications (more on that later) and with a development toolchain, this is not the only way it can be used. React can be added to an existing web page with only few lines of code, without using a toolchain. Here’s an example:</p>
+<pre><code class="jsx hljs raw">&lt;!-- index.html --&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Add React to a Website&lt;/title&gt;
+    &lt;meta charset=&quot;UTF-8&quot; /&gt;
+
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;./src/styles.css&quot; /&gt;
+    
+    &lt;!-- Load Babel - used to parse JSX --&gt;
+    &lt;script src=&quot;https://unpkg.com/@babel/standalone/babel.min.js&quot;&gt;&lt;/script&gt;
+    &lt;!-- React&#39;s core library--&gt;
+    &lt;script crossorigin src=&quot;https://unpkg.com/react@17/umd/react.development.js&quot;&gt;&lt;/script&gt;
+    &lt;!-- ReactDOM library renders the content created with React to the DOM. --&gt;
+    &lt;script crossorigin src=&quot;https://unpkg.com/react-dom@17/umd/react-dom.development.js&quot;&gt;&lt;/script&gt;
+    
+  &lt;/head&gt;
+
+  &lt;body&gt;
+    &lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+
+    &lt;script type=&quot;text/babel&quot;&gt;
+      ReactDOM.render(
+        &lt;div&gt;
+          &lt;h1&gt;Hello React!&lt;/h1&gt;
+          &lt;p&gt; React is a front-end JavaScript library &lt;/p&gt;
+        &lt;/div&gt;,
+        document.getElementById(&#39;root&#39;)
+      )
+    &lt;/script&gt;
+    
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p><a href="https://codesandbox.io/s/react-in-browser-example1-28wyl?fontsize=14&amp;hidenavigation=1&amp;theme=light"><img src="https://codesandbox.io/static/img/play-codesandbox.svg" alt="Edit react-webpage-example1" class="raw md-image"></a></p>
+<p>To add React to the HTML page like in the example above, we need to do the following:</p>
+<ul>
+<li class="raw">
+<p>Create a DOM container in the HTML page <code>&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;</code>.</p>
+</li>
+<li class="raw">
+<p>Add React Scripts.</p>
+</li>
+<li class="raw">
+<p>Add Babel (to enable writting JSX).</p>
+</li>
+</ul>
+<p>The above setup is all that is needed! JSX content that is passed to the <code>ReactDOM.render()</code> method will be rendered to the DOM in the specified <em>root</em> div: <code>document.getElementById('root')</code>.</p>
+<p>In the above example, we rendered a fairly small amount of content using React. However, we could render as much content as needed. Let’s update the <code>index.html</code> page and add more content:</p>
+<pre><code class="jsx hljs raw">&lt;!-- index.html --&gt;
+
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Add React to a Website&lt;/title&gt;
+    &lt;meta charset=&quot;UTF-8&quot; /&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;./src/styles.css&quot; /&gt;
+    &lt;!-- React&#39;s core library--&gt;
+    &lt;script crossorigin src=&quot;https://unpkg.com/react@17/umd/react.development.js&quot;&gt;&lt;/script&gt;
+    &lt;!-- ReactDOM library renders the content created with React to the DOM. --&gt;
+    &lt;script crossorigin src=&quot;https://unpkg.com/react-dom@17/umd/react-dom.development.js&quot;&gt;&lt;/script&gt;
+    &lt;!-- Load Babel - used to parse JSX --&gt;
+    &lt;script src=&quot;https://unpkg.com/@babel/standalone/babel.min.js&quot;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+
+  &lt;body&gt;
+    &lt;div id=&quot;root&quot;&gt;&lt;/div&gt;
+
+    &lt;script type=&quot;text/babel&quot;&gt;
+      ReactDOM.render(
+      
+        &lt;div&gt;
+          
+          &lt;nav&gt;
+            &lt;img id=&quot;nav-img&quot; src=&quot;https://bit.ly/3AwQRV1&quot; /&gt;
+            &lt;p&gt;Hello React&lt;/p&gt;
+          &lt;/nav&gt;
+
+          &lt;div&gt;
+            &lt;h2&gt;REACT INTRODUCTION&lt;/h2&gt;
+          &lt;/div&gt;
+
+          &lt;a href=&quot;https://reactjs.org&quot;&gt;
+            &lt;button className=&quot;btn&quot;&gt;BUTTON&lt;/button&gt;
+          &lt;/a&gt;
+
+          &lt;div id=&quot;gallery&quot;&gt;
+            &lt;h2&gt;GALLERY&lt;/h2&gt;
+            &lt;img src=&quot;https://bit.ly/3iMeumb&quot; /&gt;
+            &lt;img src=&quot;https://bit.ly/3iLPn32&quot; /&gt;
+            &lt;img src=&quot;https://bit.ly/3BrDAhE&quot; /&gt;
+            &lt;img src=&quot;https://bit.ly/3lsRQkz&quot; /&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;,
+      
+        document.getElementById(&#39;root&#39;)
+      )
+    &lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+</code></pre>
+<br>
+<h2 class="raw">Basic React Application</h2>
+<!--
+
+&gt; Run an existing React application
+&gt;
+&gt; Micro goals:
+&gt;
+&gt; - Introduce the environment of the example.
+&gt; - Present a simple React app constructed out of components, allowing students to distinguish between different components easily.
+&gt; - Run an existing react application
+&gt; - Allow the students to easily update the existing component and reuse a component by copy-pasting.
+
+-->
+<p>As you have seen, adding React to a webpage is fairly simple. Now, the approach of setting up everything on your own is not very common. When creating apps with React, we typically use a React toolchain which provides a predefined project structure and configuration.</p>
+<p>Let’s get started. To keep it simple for the moment, we’ll open an existing React app using the <a href="https://codesandbox.io/">CodeSandbox</a> platform.</p>
+<!-- CodeSandbox is an online editor similar to Codepen. It allows you to write your code in the online editor, that looks exactly the same as VSCode, and share it easily. -->
+<p>We’ll use the following <em>CodeSandbox example</em> - <a href="https://codesandbox.io/s/m3-d1-react-introduction-ielbx?file=/src/App.js">React introduction</a>:</p>
+<iframe src="https://codesandbox.io/embed/m3-d1-react-introduction-v2-doh6b?fontsize=14&hidenavigation=1&theme=light" style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;"></iframe>
+<p><a href="https://codesandbox.io/s/m3-d1-react-introduction-v2-doh6b?fontsize=14&amp;hidenavigation=1&amp;theme=light"><img src="https://codesandbox.io/static/img/play-codesandbox.svg" alt="Edit m3-d1-react-introduction-v2" class="raw md-image"></a></p>
+<br>
+<h4 class="raw">App structure</h4>
+<p>The above React app is a simple landing page containing several components.</p>
+<p>The app uses a different structure and setup from the one we used in the previous example. It was created using a tool called <em>Create React App</em> (more on this later). This app structure allows us to split our React code into components.</p>
+<br>
+<h4 class="raw">Component-based</h4>
+<p>Now let’s take a look at the <code>App.js</code> file .<code>App.js</code> is a React component. A React component holds UI, logic, and data, all in one place. You will notice in the example that <code>App.js</code> contains a code that is a mix of JavaScript and HTML, all in the same file!</p>
+<p><strong>You may be wondering how’s that even possible?</strong> Well, it is possible thanks to JSX. JSX allows us to put <em>HTML</em>, <em>JavaScript logic</em>, and <em>data</em> together in the same file. We will cover JSX in detail in a later lesson.</p>
+<p>Component-based development brings the following benefits:</p>
+<ul>
+<li class="raw">Code is reusable.</li>
+<li class="raw">We can quickly duplicate the Components and move them around.</li>
+<li class="raw">To update a part of the app, we update a single component without touching the rest of the application.</li>
+</ul>
+<p>Function App is the initial component, always created first in a React app, and serves as a parent for all other content and React components.</p>
+<p>:::</p>
+<p><img class="emoji" alt=":point_up:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/point_up.png" /> We call <code>App</code> a <strong>root component</strong>, as it represents the root of the React application rendered to the DOM.</p>
+<p>:::</p>
+<p>To better understand the structure of the above app and the components, take a look at the below image: <br></p>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-intro/react-intro-example.png" alt="img" class="raw md-image"></p>
+<br>
+<p>As you can see, <code>App.js</code> is displaying other components <code>Navbar</code>, <code>Headline</code>, <code>Button</code>, <code>Gallery</code>, etc.</p>
+<p>By just looking at the code in <code>App.js</code>, it is easy to understand the structure of the page. Each part of the page is represented by a component. Nice and tidy, isn’t it?</p>
+<p>You must be wondering, how do we create a component? Well, that’s what we will do next!</p>
+<br>
+<h2 class="raw">Creating a React component</h2>
+<!--
+
+&gt; Create and render your first React component
+&gt;
+&gt; Micro goals:
+&gt;
+&gt; - Run an existing react application
+&gt; - Create a simple React component by following the provided examples
+&gt; - Learn how to `export` and `import` a component
+&gt; - Become familiar with the function component syntax
+&gt; - Practice syntax and create new components by using the provided HTML content and guide examples
+
+ -->
+<p>You saw how components make it easy to organize the code in an application. You are now probably eager to create your first component. So, let’s create a React component.</p>
+<p>We will continue working on the previous <em>CodeSandbox example</em> - <a href="https://codesandbox.io/s/m3-d1-react-introduction-ielbx?file=/src/App.js">React introduction</a>. We will work on the file <code>src/components/MyButton.js</code>. If you open the file, you will find the following code:</p>
+<pre><code class="jsx hljs raw">// src/components/MyButton.js
+
+function MyButton() {
+  return ( /* HTML &amp; JSX CONTENT */ );
+}
+
+export default MyButton;
+</code></pre>
+<p>Now the above function <code>MyButton</code> is a component. In a nutshell, a component is a function that returns JSX content. The only thing that we need to do here is add the content we want to display.</p>
+<p>Take a moment and go over the other components inside of the <code>/src/components</code> folder. Take a look at the components <code>Headline.js</code> and <code>Button.js</code>. As you can see, they are very similar. Each component is a function that returns some JSX content.</p>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":bulb:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/bulb.png" /> A React component is just a function that returns JSX content or other components.</p>
+</div>
+<p>So, to make the above <code>MyButton</code> component render some content, we need to <em>return</em> the HTML or JSX content from the function.</p>
+<p>Update the <code>MyButton.js</code> file and add the following content in the <code>return</code> parentheses:</p>
+<pre><code class="jsx hljs raw">// src/components/MyButton.js
+
+&lt;a href=&quot;https://ironhack.com&quot;&gt;
+  &lt;button className=&quot;btn yellow&quot;&gt;MY BUTTON&lt;/button&gt;
+&lt;/a&gt;
+</code></pre>
+<p>After updating the file, your code should look like this:</p>
+<pre><code class="jsx hljs raw">// src/components/MyButton.js
+
+function MyButton() {
+  return (
+    &lt;a href=&quot;https://ironhack.com&quot;&gt;
+      &lt;button className=&quot;btn yellow&quot;&gt;REACT DOCS&lt;/button&gt;
+    &lt;/a&gt;
+  );
+}
+
+// To make the component available, we have to export it
+export default MyButton;
+</code></pre>
+<div class="alert alert-success">
+<p><img class="emoji" alt=":muscle:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/muscle.png" /> <strong>Practice makes perfect.</strong> To enforce what you just learned, you should try to create a component from scratch. Go on and delete the existing code from the <code>MyButton.js</code> and recreate the component, this time from scratch.</p>
+</div>
+<br>
+<h3 class="raw">Export a component</h3>
+<p>As you may have noticed, there is an <strong><code>export default</code></strong> statement at the bottom of the file. We need this statement to make the component available for <code>import</code> from other files.  This means that you must include the <code>export default</code> statement in every component. Otherwise, the component won’t be accessible for import, and React will throw an error.</p>
+<p>React supports the latest JavaScript syntax and uses the <code>import</code> and <code>export</code> statements for importing and exporting code from files. This syntax is also known as <a href="https://exploringjs.com/es6/ch_modules.html">ES modules</a>.</p>
+<p>The ES modules statement:</p>
+<pre><code class="jsx hljs raw">export default ComponentName;
+</code></pre>
+<p>Is equivalent to the Node’s:</p>
+<pre><code class="js hljs raw">module.exports = ComponentName;
+</code></pre>
+<div class="alert alert-warning">
+<p><img class="emoji" alt=":package:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/package.png" /> In React, we use ES modules import and export statement to import and export components.</p>
+</div>
+<br>
+<h3 class="raw">Import and use a component</h3>
+<p>To start using the <code>MyButton</code> component, we need to <code>import</code> it into the component where we want to display it.</p>
+<p>To do this, open the <code>App.js</code> file and add the following <code>import</code> statement at the top of the file:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+import MyButton from &#39;./components/MyButton&#39;;
+</code></pre>
+<p>Once you have imported the component, the next step is to render it inside the <code>App</code>. To render the component add it inside of the <code>return</code> as a tag, putting the angle brackets <code>&lt; &gt;</code> around the component name  like: <code> &lt;MyButton /&gt;</code>. Update the <code>App</code> component in the following way:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      &lt;Headline /&gt;
+
+      &lt;Button /&gt;
+      &lt;Button /&gt;      
+
+      &lt;MyButton /&gt;
+
+      &lt;Gallery /&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>After updating the file, your code should look this (click to expand):</b></summary>
+<br>
+<pre><code class="jsx hljs raw">// App.js
+
+import &#39;./styles.css&#39;;
+// We import other components to be able to use them inside of this component
+import Navbar from &#39;./components/Navbar&#39;;
+import Button from &#39;./components/Button&#39;;
+import CustomButton from &#39;./components/CustomButton&#39;;
+import Headline from &#39;./components/Headline&#39;;
+import Gallery from &#39;./components/Gallery&#39;;
+import MyButton from &#39;./components/MyButton&#39;;
+
+// React Component &lt;App /&gt;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      &lt;Headline /&gt;
+
+      &lt;Button /&gt;
+      &lt;Button /&gt;
+
+      &lt;MyButton /&gt;
+
+      &lt;Gallery /&gt;
+    &lt;/div&gt;
+  );
+}
+
+// export default App;
+module.exports = App;
+</code></pre>
+</details>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Check for understanding - Create Components</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the below activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d1-react-introduction-cfu1-5xhrh?file=/src/App.js">CodeSandbox - Exercise</a>.</p>
+<p>To start working, you just need to start writing the code. Upon first save (<kbd>CMD</kbd>+<kbd>Z</kbd> / <kbd>CTRL</kbd>+<kbd>Z</kbd>), CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Starter code</strong></p>
+<p>The <code>Navbar</code> component (<code>/src/components/Navbar</code>) is left as an example for you; feel free to use it as a reference. If you open <code>App.js</code>, you will see that the component <code>Navbar</code> is already imported and rendered in the return of the <code>App</code>.</p>
+<br>
+<p><strong>3. Create and display the components</strong></p>
+<p>Create the following components and display them in the <code>App</code> component:</p>
+<ul>
+<li class="raw"><code>Headline</code></li>
+<li class="raw"><code>ButtonBlue</code></li>
+<li class="raw"><code>ButtonYellow</code></li>
+<li class="raw"><code>Gallery</code></li>
+</ul>
+<p>You can find the content for each component in the file <code>/content.html</code> that we provided for you.</p>
+<p><strong>Note:</strong> Once you are done creating each component, remember to export the component from the file.</p>
+<br>
+<p><img class="emoji" alt=":trophy:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/trophy.png" /> <strong>Solution:</strong> <strong><a href="https://codesandbox.io/s/solution-m3-d1-react-introduction-cfu1-82td7?file=/src/App.js">Link</a></strong></p>
+</details>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this lesson, we explained what frameworks are and how React can help us to create robust, scalable, and well-organized front-end apps. We successfully created our first React component and also abstracted existing React app content into components.</p>
+<p>As you have seen, creating a component in React is as simple as creating a function. The only difference is that we are returning JSX content.</p>
+<p>Now, let’s move forward! <img class="emoji" alt=":muscle:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/muscle.png" /></p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://hellodarwin.com/blog/different-web-apps">What are the different types of web apps?</a></li>
+<li class="raw"><a href="https://www.idtech.com/blog/what-are-libraries-in-coding">What are libraries in programming?</a></li>
+<li class="raw"><a href="https://reactjs.org/">React - Official Documentation</a></li>
+<li class="raw"><a href="https://medium.com/@NeotericEU/single-page-application-vs-multiple-page-application-2591588efe58">Single-page application vs. multiple-page application</a></li>
+<li class="raw"><a href="https://javascript.info/import-export">Modules Export and Import</a></li>
+</ul>

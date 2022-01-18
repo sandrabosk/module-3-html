@@ -1,0 +1,1100 @@
+<!-- ![logo_ironhack_blue 7](https://user-images.githubusercontent.com/23629340/40541063-a07a0a8a-601a-11e8-91b5-2f13e4e6b441.png)
+
+# React | Authentication - Front-end -->
+<h2 class="raw">Learning Goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Set up Token-based authentication in a React app</li>
+<li class="raw">Implement the authentication logic using Context API</li>
+<li class="raw">Subscribe to the authentication state using the <code>useContext</code> Hook</li>
+<li class="raw">Create custom React Router route components</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>We have already learned that React applications can have multiple pages thanks to React Router. In this lesson, we will go a step further in this direction and create public pages available to all of the users and private pages available only to the authenticated users. To do this we will need to establish authentication logic and a way to handle the authentication state, which means knowing if the user is logged in or not. For handling the authentication state, we will use Context API and the useContext Hook.</p>
+<p>We’ll look at how to use JWT to establish token-based authentication and how to integrate our React app with the backend so that we can get data from the server’s protected routes.</p>
+<br>
+<h3 class="raw">Getting Started</h3>
+<h4 class="raw">Server</h4>
+<p>As the backend for our full-stack application we will use the Project Management API server that we created during the previous lesson <em><a href="https://github.com/ironhack-labs/lesson-code-h-react-authentication-backend/tree/master">React | Authentication - Backend</a></em>. If you already have it locally, you can skip the first step and proceed to the next one (2. Set up environment variables).</p>
+<ol>
+<li class="raw">
+<p>Run the following commands to create the new folder, clone the code from the repository and install the dependencies:</p>
+<pre><code class="bash hljs raw">$ mkdir react-auth-server
+$ cd react-auth-server
+
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-authentication-backend.git .
+
+$ npm install
+</code></pre>
+</li>
+<li class="raw">
+<p>Set up environment variables</p>
+<p>In the root folder of the server project create a new <code>.env</code> file and add the following content:</p>
+<pre><code class="bash hljs raw"># .env
+PORT=5005
+TOKEN_SECRET=1r0Nh4cK
+</code></pre>
+</li>
+<li class="raw">
+<p>Run the server (backend)</p>
+<pre><code class="bash hljs raw">$ npm run dev
+</code></pre>
+</li>
+</ol>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":point_up:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/point_up.png" /> In the first step we cloned the code from the repository into an existing folder by using <code>.</code> at the end of the command, like this:</p>
+<pre><code class="bash hljs raw">$ git clone &lt;REPO_URL&gt; .
+</code></pre>
+<p>We use this command to clone the code from the repository directly into the current folder. To do this the existing folder must be empty.</p>
+</div>
+<br>
+<h4 class="raw">Client</h4>
+<p>In this lesson, we will continue working on the Project Management React App we created during the previous lesson <a href="https://github.com/ironhack-labs/lesson-code-project-management-server-v2/tree/master"><em>Integrating the React App</em></a> and use its code as the starting point:</p>
+<ol>
+<li class="raw">
+<p>Run the following commands to create the new folder, clone the code from the repository and install the dependencies:</p>
+<pre><code class="bash hljs raw">$ mkdir react-auth-client
+$ cd react-auth-client
+
+$ git clone https://github.com/ironhack-labs/lesson-code-project-management-client-v2.git .
+
+$ npm install
+</code></pre>
+</li>
+<li class="raw">
+<p>Start the development server (client)</p>
+<pre><code class="bash hljs raw">$ npm start
+</code></pre>
+</li>
+<li class="raw">
+<p>Replace the existing css styles in the <code>index.css</code> file with styles provided below. This will allow you to focus on React without having to worry about the styles:</p>
+</li>
+</ol>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Click here for the code</summary>
+<br>
+<pre><code class="css hljs raw">/* src/index.css */
+
+body {
+  margin: 0;
+}
+
+a {
+  list-style: none;
+  color: black;
+}
+
+button,
+select {
+  padding: 5px 10px;
+  min-width: 50px;
+  margin: 5px;
+  font-size: 18px;
+}
+
+label {
+  width: 200px;
+  display: block;
+}
+
+input,
+textarea {
+  width: 200px;
+  padding: 10px;
+  display: inline-block;
+  margin: 10px;
+}
+
+nav {
+  background: #515f7d;
+  color: white;
+  padding: 0px 20px;
+  box-shadow: 0px 1px 2px gray;
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 5px;
+}
+
+nav li {
+  list-style: none;
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.card {
+  width: 400px;
+  padding: 10px;
+  box-shadow: 0px 2px 3px grey;
+  margin: 0 auto;
+  margin-bottom: 20px;
+  background: #94a7c8;
+  border-radius: 4px;
+}
+
+.ProjectCard h3::after {
+  content: url(&quot;https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/icon-expand.png&quot;);
+  margin-left: 5px;
+}
+
+.EditProjectPage,
+.AddProject,
+.AddTask,
+.SignupPage,
+.LoginPage {
+  background: #f9eec3;
+  border: 1px solid grey;
+  box-shadow: 0px 2px 3px grey;
+  width: 400px;
+  text-align: center;
+  margin: 0 auto;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.EditProjectPage {
+  background-color: rgb(239, 196, 88);
+}
+
+.SignupPage,
+.LoginPage {
+  background-color: #608dd5;
+}
+
+.LoginPage {
+  background-color: #94a7c8;
+}
+
+.EditProjectPage form,
+.AddTask form,
+.AddProject form,
+.SignupPage form,
+.LoginPage form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.AddTask button,
+.AddProject button {
+  display: block;
+}
+
+.TaskCard {
+  background-color: #dfeef9;
+}
+</code></pre>
+</details>
+<br>
+<div class="alert alert-info">
+<p><strong>Side note:</strong> Remember, the client-side is running on port <code>3000</code> and the server on the port <code>5005</code>.</p>
+<p>Eventually, down the road, we will have components for <em>signup</em> and <em>login</em> and each component will need to make an <code>axios</code> request to the corresponding route in the backend.</p>
+</div>
+<br>
+<h2 class="raw">Auth Context</h2>
+<h3 class="raw">Create Auth Context</h3>
+<p>To get the data from the server’s protected routes, we will need to store the JWT on the client. To create private pages in our React app, we’ll need a mechanism to store and share the information about the current status of the authentication, which indicates whether the user is authenticated or not.</p>
+<p>This is where React’s Context API comes into play. We will use Context to create a global state that holds the following:</p>
+<ul>
+<li class="raw">current status of the authentication (is the user authenticated or not?)</li>
+<li class="raw">user data</li>
+<li class="raw">functions to update authentication status</li>
+<li class="raw">functions for handling and storing the JWT on the client-side</li>
+</ul>
+<p>Inside the <code>src/</code> folder, create a new folder named <code>context</code> and inside of it a new file <code>auth.context.js</code>. In this file we will instantiate a new Context using React’s Context API and create the wrapper component for the Context Provider:</p>
+<pre><code class="jsx hljs raw">// src/context/auth.context.js
+
+import React, { useState, useEffect } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+const API_URL = &quot;http://localhost:5005&quot;;
+
+const AuthContext = React.createContext();
+
+function AuthProviderWrapper(props) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  
+  /* 
+    Functions for handling the authentication status (isLoggedIn, isLoading, user)
+    will be added here later in the next step
+  */
+
+  return (
+    &lt;AuthContext.Provider value={{ isLoggedIn, isLoading, user }}&gt;
+      {props.children}
+    &lt;/AuthContext.Provider&gt;
+  )
+}
+
+export { AuthProviderWrapper, AuthContext };
+</code></pre>
+<p>To be able to easily wrap the Context Provider around other components and expose the values from it to the components in our app, we created a <em>wrapper component</em> <code>AuthProviderWrapper</code>.</p>
+<br>
+<h3 class="raw">Set the Auth Provider</h3>
+<p>To enable access to the values that we exposed through the Provider’s (<code>AuthContext.Provider</code>)  <code>value</code> prop we have to wrap the <code>AuthProviderWrapper</code> around other components. As we want to provide these values to all of the components in our application we will import the <code>AuthProviderWrapper</code> in the <code>index.js</code> and wrap it around the root component <code>&lt;App /&gt;</code>:</p>
+<pre><code class="jsx hljs raw">// src/index.js
+// ... previous imports stay unchanged
+
+import { AuthProviderWrapper } from &quot;./context/auth.context&quot;; // &lt;== IMPORT
+
+ReactDOM.render(
+  &lt;React.StrictMode&gt;
+    &lt;Router&gt;
+      &lt;AuthProviderWrapper&gt;      {/*  &lt;== ADD  */}
+        &lt;App /&gt;
+      &lt;/AuthProviderWrapper&gt;     {/*  &lt;== ADD  */}
+    &lt;/Router&gt;
+  &lt;/React.StrictMode&gt;,
+  document.getElementById(&quot;root&quot;)
+);
+
+reportWebVitals();
+</code></pre>
+<p>Data supplied in the Provider’s <code>value</code> prop will now be available to all components in the Component Tree. We can now subscribe to any component and start consuming the values from the Provider by using the <code>useContext()</code> Hook.</p>
+<br>
+<h2 class="raw">Consume Context with the <code>useContext</code> Hook</h2>
+<p>The <code>useContext</code> Hook is used to subscribe to the Context and consume the values it provides. This means that whenever the data in the Context Provider’s <code>value</code> prop updates, all of the subscribed components will update (re-render) and get the latest values.</p>
+<p>The first component that we will subscribe to our AuthContext will be <code>Navbar</code>.  To subscribe the component to the AuthContext and start consuming the values from the Provider we will need the <em>Context object</em> and <code>useContext</code> Hook. Let’s import these two in the <code>Navbar.js</code> and add some additional logic:</p>
+<pre><code class="jsx hljs raw">// src/components/Navbar.js
+
+import { Link } from &quot;react-router-dom&quot;;
+import { useContext } from &quot;react&quot;;                       // &lt;== IMPORT 
+import { AuthContext } from &quot;../context/auth.context&quot;;    // &lt;== IMPORT
+
+function Navbar() {
+  // Subscribe to the AuthContext to gain access to
+  // the values from AuthContext.Provider `value` prop
+  const { isLoggedIn, user } = useContext(AuthContext);   // &lt;== ADD
+
+  
+  // 👇 Update the rendering logic to display different content 
+  //  depending on the user being logged in or not
+  return (
+    &lt;nav&gt;
+      &lt;Link to=&quot;/&quot;&gt;
+        &lt;button&gt;Home&lt;/button&gt;
+      &lt;/Link&gt;
+
+      {/*  👇  UPDATE  👇   */}
+      {isLoggedIn
+        ? (&lt;&gt;
+            &lt;Link to=&quot;/projects&quot;&gt;
+              &lt;button&gt;Projects&lt;/button&gt;
+            &lt;/Link&gt;
+            &lt;button&gt;Logout&lt;/button&gt;
+            &lt;span&gt;{user.name}&lt;/span&gt;
+          &lt;/&gt;)
+        : 
+        (&lt;&gt;
+          &lt;Link to=&quot;/signup&quot;&gt; &lt;button&gt;Signup&lt;/button&gt; &lt;/Link&gt;
+          &lt;Link to=&quot;/login&quot;&gt; &lt;button&gt;Login&lt;/button&gt; &lt;/Link&gt;
+        &lt;/&gt;)
+      }
+    &lt;/nav&gt;
+  );
+}
+
+export default Navbar;
+</code></pre>
+<p>As you can see, we also updated the <code>Navbar</code>'s rendering logic to display different content depending on the <code>isLoggedIn</code> value coming from the <code>AuthContext</code>:</p>
+<ul>
+<li class="raw">When <code>isLoggedIn</code> is <code>true</code> : show the user’s name and the buttons <kbd>Projects</kbd> and <kbd>Logout</kbd>.</li>
+<li class="raw">When <code>isLoggedIn</code> is <code>false</code>: will show the <kbd>Login</kbd> button.</li>
+</ul>
+<br>
+<h2 class="raw">Sign Up Page</h2>
+<h4 class="raw">Create the Signup Page</h4>
+<p>Next, we need to create the <code>Signup</code> page component. Inside the <code>src/pages/</code> folder create a new file <code>SignupPage.js</code> and add the following content:</p>
+<pre><code class="jsx hljs raw">// src/pages/SignupPage.js
+
+import { useState } from &quot;react&quot;;
+import { Link } from &quot;react-router-dom&quot;;
+import axios from &quot;axios&quot;;
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+
+function SignupPage(props) {
+  const [email, setEmail] = useState(&quot;&quot;);
+  const [password, setPassword] = useState(&quot;&quot;);
+  const [name, setName] = useState(&quot;&quot;);
+  const [errorMessage, setErrorMessage] = useState(undefined);
+
+  
+  const handleEmail = (e) =&gt; setEmail(e.target.value);
+  const handlePassword = (e) =&gt; setPassword(e.target.value);
+  const handleName = (e) =&gt; setName(e.target.value);
+
+  
+  const handleSignupSubmit = (e) =&gt; {};
+
+  
+  return (
+    &lt;div className=&quot;SignupPage&quot;&gt;
+      &lt;h1&gt;Sign Up&lt;/h1&gt;
+
+      &lt;form onSubmit={handleSignupSubmit}&gt;
+        &lt;label&gt;Email:&lt;/label&gt;
+        &lt;input type=&quot;text&quot; name=&quot;email&quot; value={email} onChange={handleEmail} /&gt;
+
+        &lt;label&gt;Password:&lt;/label&gt;
+        &lt;input type=&quot;password&quot; name=&quot;password&quot; value={password} onChange={handlePassword} /&gt;
+
+        &lt;label&gt;Name:&lt;/label&gt;
+        &lt;input type=&quot;text&quot; name=&quot;name&quot; value={name} onChange={handleName} /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Sign Up&lt;/button&gt;
+      &lt;/form&gt;
+
+      { errorMessage &amp;&amp; &lt;p className=&quot;error-message&quot;&gt;{errorMessage}&lt;/p&gt; }
+
+      &lt;p&gt;Already have account?&lt;/p&gt;
+      &lt;Link to={&quot;/login&quot;}&gt; Login&lt;/Link&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default SignupPage;
+</code></pre>
+<p>We created a controlled component that displays a signup form. In the component, we declared state variables <code>email</code>, <code>password</code> and <code>name</code> and connected them to the inputs. Each input has an <code>onChange</code> event and a handler function of its own: <code>handleEmail</code>, <code>handlePassword</code> and <code>handleName</code>.</p>
+<br>
+<h4 class="raw">Send a Sign Up Request</h4>
+<p>The form itself has an <code>onSubmit</code> event with the handler function <code>handleSignupSubmit</code>. When the form gets submitted <code>handleSignupSubmit</code> function should send a POST request to the API endpoint `http://localhost:5005/auth/signup, so let’s go ahead and update it to do so:</p>
+<pre><code class="jsx hljs raw">// src/pages/SignupPage.js
+
+// ...
+
+  const handleSignupSubmit = (e) =&gt; {
+    e.preventDefault();
+    // Create an object representing the request body
+    const requestBody = { email, password, name };
+
+    // Make an axios request to the API
+    // If POST request is successful redirect to login page
+    // If the request resolves with an error, set the error message in the state
+    axios.post(`${API_URL}/auth/signup`, requestBody)
+      .then((response) =&gt; props.history.push(&#39;/login&#39;))
+      .catch((error) =&gt; {
+        const errorDescription = error.response.data.message;
+        setErrorMessage(errorDescription);
+      })
+  };
+
+  
+// ...
+</code></pre>
+<p>As you may have noticed in the code above, we redirect the user to the login page after he has successfully signed up:</p>
+<pre><code class="js hljs raw">.then((response) =&gt; props.history.push(&#39;/login&#39;))
+</code></pre>
+<p>If the request generates an error response, we set the error description from the response as the error message:</p>
+<pre><code class="js hljs raw">.catch((error) =&gt; {
+  const errorDescription = error.response.data.message;
+  setErrorMessage(errorDescription);
+})
+</code></pre>
+<br>
+<h4 class="raw">Render the SignupPage Component</h4>
+<p>We still don’t have a login page but don’t worry, we’ll make one in the next step! Before we do so, let’s import the <code>SignupPage</code> component  to <code>App.js</code> and add a new <code>&lt;Route&gt;</code> to render it:</p>
+<pre><code class="jsx hljs raw">// src/App.js
+// ... previous imports stay unchanged
+
+import SignupPage from &quot;./pages/SignupPage&quot;;  // &lt;== IMPORT
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+
+      &lt;Switch&gt;      
+        &lt;Route exact path=&quot;/&quot; component={HomePage} /&gt;
+        &lt;Route exact path=&quot;/projects&quot; component={ProjectListPage} /&gt;
+        &lt;Route exact path=&quot;/projects/:id&quot; component={ProjectDetailsPage} /&gt;
+        &lt;Route exact path=&quot;/projects/edit/:id&quot; component={EditProjectPage} /&gt;
+        
+        {/*  👇  ADD  👇  */}
+        &lt;Route exact path=&quot;/signup&quot; component={SignupPage} /&gt;
+      &lt;/Switch&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<h2 class="raw">Login Page</h2>
+<h4 class="raw">Create the Login Page</h4>
+<p>This is where we get to the crux of the matter. We are about to implement the Login page and the logic for handling the JWT and user authentication. In the <code>src/pages/</code> folder, create a new file named <code>LoginPage.js</code> and add the following content to it:</p>
+<pre><code class="jsx hljs raw">// src/pages/LoginPage.js
+
+import { useState } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+import { Link } from &quot;react-router-dom&quot;;
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+
+function LoginPage(props) {
+  const [email, setEmail] = useState(&quot;&quot;);
+  const [password, setPassword] = useState(&quot;&quot;);
+  const [errorMessage, setErrorMessage] = useState(undefined);
+
+  const handleEmail = (e) =&gt; setEmail(e.target.value);
+  const handlePassword = (e) =&gt; setPassword(e.target.value);
+
+  
+  const handleLoginSubmit = (e) =&gt; {};
+  
+  return (
+    &lt;div className=&quot;LoginPage&quot;&gt;
+      &lt;h1&gt;Login&lt;/h1&gt;
+
+      &lt;form onSubmit={handleLoginSubmit}&gt;
+        &lt;label&gt;Email:&lt;/label&gt;
+        &lt;input type=&quot;text&quot; name=&quot;email&quot; value={email} onChange={handleEmail} /&gt;
+
+        &lt;label&gt;Password:&lt;/label&gt;
+        &lt;input type=&quot;password&quot; name=&quot;password&quot; value={password} onChange={handlePassword} /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Login&lt;/button&gt;
+      &lt;/form&gt;
+      { errorMessage &amp;&amp; &lt;p className=&quot;error-message&quot;&gt;{errorMessage}&lt;/p&gt; }
+
+      &lt;p&gt;Don&#39;t have an account yet?&lt;/p&gt;
+      &lt;Link to={&quot;/signup&quot;}&gt; Sign Up&lt;/Link&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default LoginPage;
+</code></pre>
+<p>Same as before, we created a controlled component that displays a form with the <code>email</code> and <code>password</code> inputs and has the corresponding state variables and input handler functions.</p>
+<p>Before we move on, let’s import the <code>LoginPage</code> component in the <code>App.js</code> and add a new <code>&lt;Route/&gt;</code> to render it:</p>
+<pre><code class="jsx hljs raw">// src/App.js
+// ... previous imports stay unchanged
+
+import LoginPage from &quot;./pages/LoginPage&quot;;  // &lt;== IMPORT
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+
+      &lt;Switch&gt;      
+        &lt;Route exact path=&quot;/&quot; component={HomePage} /&gt;
+        &lt;Route exact path=&quot;/projects&quot; component={ProjectListPage} /&gt;
+        &lt;Route exact path=&quot;/projects/:id&quot; component={ProjectDetailsPage} /&gt;
+        &lt;Route exact path=&quot;/projects/edit/:id&quot; component={EditProjectPage} /&gt;
+        &lt;Route exact path=&quot;/signup&quot; component={SignupPage} /&gt;
+        
+        {/*  👇  ADD  👇  */}
+        &lt;Route exact path=&quot;/login&quot; component={LoginPage} /&gt;
+      &lt;/Switch&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<h4 class="raw">Send a Login Request with <code>axios</code></h4>
+<p>Once submitted, the form handler function <code>handleLoginSubmit</code> should make a login request containing the <code>email</code> and the <code>password</code> to the server’s endpoint <a href="http://localhost:5005/auth/login">http://localhost:5005/auth/login</a>. To do that we will make the following changes to the function <code>handleLoginSubmit</code>:</p>
+<pre><code class="jsx hljs raw">// src/pages/LoginPage.js
+
+// ...
+
+  const handleLoginSubmit = (e) =&gt; {
+    e.preventDefault();
+    const requestBody = { email, password };
+
+    axios.post(`${API_URL}/auth/login`, requestBody)
+      .then((response) =&gt; {
+        console.log(&#39;JWT token&#39;, response.data.authToken );
+      })
+      .catch((error) =&gt; {
+        const errorDescription = error.response.data.message;
+        setErrorMessage(errorDescription);
+      })
+  };
+
+  
+// ...
+</code></pre>
+<p>Once the request is sent to the server, the server’s login endpoint will verify the <code>email</code> and the <code>password</code> and if the authentication is successful it will return a JWT in the response.</p>
+<p>If you haven’t already, make a login request by submitting the form! After submitting the form, you will see a console log in the browser’s console, showing the JWT token returned in the response.</p>
+<br>
+<h2 class="raw">Set up the Authentication Logic</h2>
+<h3 class="raw">Save the Token in the localStorage</h3>
+<p>We will use the returned JWT token to access the server’s protected routes and to verify that the user is authenticated. To do this we will create a set of functions in the <code>auth.context.js</code> that we will use for handling the token and the authentication state. The first function that we will create in the <code>AuthProviderWrapper</code> will be the <code>logInUser</code> function:</p>
+<pre><code class="jsx hljs raw">// src/context/auth.context.js
+
+import React, { useState, useEffect } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+const API_URL = &quot;http://localhost:5005&quot;;
+
+const AuthContext = React.createContext();
+
+function AuthProviderWrapper(props) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  const logInUser = (token) =&gt; {                              //  &lt;==  ADD
+    localStorage.setItem(&#39;authToken&#39;, token);
+  }
+  
+
+  return (                                                   
+    &lt;AuthContext.Provider 
+      value={{ isLoggedIn, isLoading, user, logInUser }}    {/* &lt;== UPDATE  */}
+    &gt;
+      {props.children}
+    &lt;/AuthContext.Provider&gt;
+  )
+}
+
+export { AuthProviderWrapper, AuthContext };
+</code></pre>
+<p>Function <code>logInUser</code> expects a JWT token as the argument, which it then stores in the <code>localStorage</code>.</p>
+<p>You may wonder, why are we storing the token in the <code>localStorage</code>? This way we ensure that the token will persist even after we close the app or the browser. Also, it allows us to access the token from any file in our application (even if the file is not a component).</p>
+<p>We added the <code>logInUser</code> function to the <code>value</code> prop of the <code>AuthContext.Provider</code>. This way we make the function available through the Context and accessible to all our components.</p>
+<p>Let’s update the <code>LoginPage</code> component to bring in the <code>logInUser</code> function now available through the <code>AuthContext</code>:</p>
+<pre><code class="jsx hljs raw">// src/pages/LoginPage.js
+
+import { useState, useContext } from &quot;react&quot;;         // &lt;== IMPORT useContext HOOK
+import axios from &quot;axios&quot;;
+import { Link } from &quot;react-router-dom&quot;;
+import { AuthContext } from &#39;../context/auth.context&#39;;  // &lt;== IMPORT
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+
+function LoginPage(props) {
+  const [email, setEmail] = useState(&quot;&quot;);
+  const [password, setPassword] = useState(&quot;&quot;);
+  const [errorMessage, setErrorMessage] = useState(undefined);
+  
+  const { logInUser } = useContext(AuthContext);                //  &lt;== ADD
+
+  
+  const handleEmail = (e) =&gt; setEmail(e.target.value);
+  const handlePassword = (e) =&gt; setPassword(e.target.value);
+
+  
+  const handleLoginSubmit = (e) =&gt; {
+    e.preventDefault();
+    const requestBody = { email, password };
+
+    axios.post(`${API_URL}/auth/login`, requestBody)
+      .then((response) =&gt; {
+        console.log(&#39;JWT token&#39;, response.data.authToken );
+      
+        const token = response.data.authToken;               // &lt;== ADD
+        logInUser(token);                                   // &lt;== ADD
+        props.history.push(&#39;/&#39;);                            // &lt;== ADD
+      })
+      .catch((error) =&gt; {
+        const errorDescription = error.response.data.message;
+        setErrorMessage(errorDescription);
+      })
+  };
+  
+  return (
+    &lt;div className=&quot;LoginPage&quot;&gt;
+      &lt;h1&gt;Login&lt;/h1&gt;
+
+      &lt;form onSubmit={handleLoginSubmit}&gt;
+        &lt;label&gt;Email:&lt;/label&gt;
+        &lt;input type=&quot;text&quot; name=&quot;email&quot; value={email} onChange={handleEmail} /&gt;
+
+        &lt;label&gt;Password:&lt;/label&gt;
+        &lt;input type=&quot;password&quot; name=&quot;password&quot; value={password} onChange={handlePassword} /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Login&lt;/button&gt;
+      &lt;/form&gt;
+      { errorMessage &amp;&amp; &lt;p className=&quot;error-message&quot;&gt;{errorMessage}&lt;/p&gt; }
+
+      &lt;p&gt;Don&#39;t have an account yet?&lt;/p&gt;
+      &lt;Link to={&quot;/signup&quot;}&gt; Sign Up&lt;/Link&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default LoginPage;
+</code></pre>
+<p>Now, try and log in again! Once you submit the form, you will be redirected to the  <code>/</code> route which is our <em>home page</em>. If you now inspect the <code>localStorage</code> using the <strong>DevTools</strong> ( <em>Application</em> &gt;&gt; <em>Local Storage</em> ) you will see that the JWT token is now saved in the browser:</p>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/token-auth/jwt-auth-react-token-in-local-storage-1.png" alt="Screenshot - JWT token saved in the localStorage" class="raw md-image"></p>
+<br>
+<p>Now that we have the JWT token saved in the <code>localStorage</code> we will proceed with implementing the remaining functions in the <code>AuthProviderWrapper</code>, used for managing the authentication status and sharing it with all of our components.</p>
+<br>
+<h3 class="raw">Verify the Token upon Login</h3>
+<p>Now that we have the token stored on the client-side, we will need a function that makes a request to the server to verify the validity of that token. Only once the token is verified by the server as valid, we can conclude that the user is indeed authenticated and allow him access to the protected pages in our React app. We will call this function <code>verifyStoredToken</code>.</p>
+<p>Let’s update the <code>AuthProviderWrapper</code> component:</p>
+<pre><code class="jsx hljs raw">// src/context/auth.context.js
+
+import React, { useState, useEffect } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+const API_URL = &quot;http://localhost:5005&quot;;
+
+const AuthContext = React.createContext();
+
+function AuthProviderWrapper(props) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  
+  
+  const verifyStoredToken = () =&gt; {                           //  &lt;==  ADD  
+    // Get the stored token from the localStorage
+    const storedToken = localStorage.getItem(&#39;authToken&#39;);
+    
+    // If the token exists in the localStorage
+    if (storedToken) {
+      // We must send the JWT token in the request&#39;s &quot;Authorization&quot; Headers
+      axios.get(
+        `${API_URL}/auth/verify`, 
+        { headers: { Authorization: `Bearer ${storedToken}`} }
+      )
+      .then((response) =&gt; {
+        // If the server verifies that JWT token is valid  ✅
+        const user = response.data;
+        setUser(user);
+        setIsLoggedIn(true);
+        setIsLoading(false);
+      })
+      .catch((error) =&gt; {
+        // If the server sends an error response (invalid token) ❌
+        setIsLoggedIn(false);
+        setUser(null);
+        setIsLoading(false);
+      });      
+    } else {
+      // If the token is not available
+      setIsLoading(false);
+    }   
+  }
+
+    useEffect(() =&gt; {                                    
+    // to be updated in next step
+  }, []);
+  
+
+  const logInUser = (token) =&gt; {
+    localStorage.setItem(&#39;authToken&#39;, token);
+    verifyStoredToken();                             //  &lt;==  ADD 
+    
+    /* 
+      After saving the token in the localStorage we call the function `verifyStoredToken` which sends a new request to the server to verify the token. Upon receiving the response the function 
+      `verifyStoredToken` updates the state variables `isLoggedIn`, `user` and `isLoading`
+    */  
+  }
+
+  
+  return (                                                   
+    &lt;AuthContext.Provider 
+      value={{ isLoggedIn, isLoading, user, logInUser }}
+    &gt;
+      {props.children}
+    &lt;/AuthContext.Provider&gt;
+  )
+}
+
+export { AuthProviderWrapper, AuthContext };
+</code></pre>
+<p>Let’s explain in detail what the new function <code>verifyStoredToken</code> does:</p>
+<ol>
+<li class="raw">When invoked, the function first tries to get the stored token from the <code>localStorage</code>:</li>
+</ol>
+<pre><code class="jsx hljs raw"> const storedToken = localStorage.getItem(&#39;authToken&#39;);
+</code></pre>
+<ol start="2">
+<li class="raw">If the token exists in the <code>localStorage</code> the function will send a request to our server’s <strong>token verification endpoint</strong>. The token is sent through the request’s <code>Authorization</code> Headers:</li>
+</ol>
+<pre><code class="js hljs raw"> axios.get(
+   `${API_URL}/auth/verify`, 
+   { headers: { Authorization: `Bearer ${storedToken}`} }
+ )
+</code></pre>
+<ol start="3">
+<li class="raw">If  we receive a successful response it means that the token is valid. In that case we set the state variables to specify that user <strong>is authenticated</strong> <img class="emoji" alt=":white_check_mark:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/white_check_mark.png" /> :</li>
+</ol>
+<pre><code class="js hljs raw"> .then((response) =&gt; {
+   // If the server verifies that JWT token is valid ✅
+   const user = response.data;
+   setUser(user);
+   setIsLoggedIn(true);
+   setIsLoading(false);
+ })
+</code></pre>
+<ol start="4">
+<li class="raw">Otherwise, if the token is invalid the server will send an error response. In that case we set the state variables to specify that user <strong>is not authenticated</strong> ❌:</li>
+</ol>
+<pre><code class="js hljs raw"> .catch((error) =&gt; {
+   // If the server sends an error response (invalid token) ❌
+   setIsLoggedIn(false);
+   setUser(null);
+   setIsLoading(false);
+});
+</code></pre>
+<p>We invoke the function <code>verifyStoredToken</code> during the login, right after we store the token in the <code>localStorage</code>. The function will verify the token and update the state variables <code>isLoggedIn</code>, <code>user</code> and <code>isLoading</code> holding the information about the authentication status.</p>
+<br>
+<h3 class="raw">Verify the Token upon Initial App Load</h3>
+<p>Now, let’s think about the following scenario:</p>
+<ol>
+<li class="raw">The user logs in successfully.</li>
+<li class="raw">After the login user goes on to use the app.</li>
+<li class="raw">Eventually, while still being logged in, the user decides to close the app or the browser.</li>
+</ol>
+<p>What should happen next time the user opens the app in the browser? Should he continue being logged in or not?</p>
+<p>The answer is yes! If the user was <em>logged in</em> during the last visit the token will remain available in the <code>localStorage</code>. If the token didn’t expire, the user should be automatically logged in upon reopening the app.</p>
+<p>To do this we will need to verify the existing token during the initial app load, by making a request to the server’s <strong>token verification route</strong>. Fortunately, this is fairly easy to do!</p>
+<p>We will update the <code>AuthProviderWrapper</code> component and add an effect that will call our verification function, as soon as the <code>AuthProviderWrapper</code> loads for the first time with the rest of the app:</p>
+<pre><code class="jsx hljs raw">// src/context/auth.context.js
+
+// no changes in the file except in the useEffect() hook
+
+// ...
+
+
+useEffect(() =&gt; {                                    
+ verifyStoredToken();                   //  &lt;==  ADD
+}, []);
+
+  
+// ...
+</code></pre>
+<br>
+<h3 class="raw">Remove the Token on Logout</h3>
+<p>The last thing that we will add to the <code>AuthProviderWrapper</code> will be the <code>logOutUser</code> function:</p>
+<pre><code class="jsx hljs raw">// src/context/auth.context.js
+
+// ... set up stays unchanged
+
+function AuthProviderWrapper(props) {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  
+  
+  const verifyStoredToken = () =&gt; { 
+    // ... no changes      
+  }
+
+
+  const logInUser = (token) =&gt; {
+    // ... no changes    
+  }
+
+  const logOutUser = () =&gt; {                                    // &lt;== ADD
+    // Upon logout, remove the token from the localStorage
+    localStorage.removeItem(&quot;authToken&quot;);
+    
+    // Update the state variables
+    setIsLoggedIn(false);
+    setUser(null);
+  }  
+
+
+  useEffect(() =&gt; {
+    verifyStoredToken();
+  }, []);
+
+  
+  return (                                                   
+    &lt;AuthContext.Provider                        {/* 👇 UPDATE  👇 */}
+      value={{ isLoggedIn, isLoading, user, logInUser, logOutUser }}
+    &gt;
+      {props.children}
+    &lt;/AuthContext.Provider&gt;
+  )
+  
+}
+
+export { AuthProviderWrapper, AuthContext };
+</code></pre>
+<p>When called, function <code>logOutUser</code> removes the token stored from the <code>localStorage</code> and updates the state variables <code>isLoggedIn</code> and <code>user</code> to reflect that the user is logged out.</p>
+<p>We added the <code>logOutUser</code> function to the <code>value</code> prop of the <code>AuthContext.Provider</code>. This way we make the function available through the Context and accessible to all our components.</p>
+<br>
+<h4 class="raw">Update the Logout button in the Navbar</h4>
+<p>We can now update the <code>Navbar</code> and set the function <code>logOutUser</code> as callback for the <kbd>Logout</kbd> button:</p>
+<pre><code class="jsx hljs raw">// src/components/Navbar.js
+// ... previous imports stay unchanged
+
+function Navbar() {
+  const { isLoggedIn, user, logOutUser } = useContext(AuthContext);   // &lt;== UPDATE
+
+  return (
+    &lt;nav&gt;
+      &lt;Link to=&quot;/&quot;&gt;
+        &lt;button&gt;Home&lt;/button&gt;
+      &lt;/Link&gt;
+
+      {isLoggedIn
+        ? (&lt;&gt;
+            &lt;Link to=&quot;/projects&quot;&gt;
+              &lt;button&gt;Projects&lt;/button&gt;
+            &lt;/Link&gt;
+            &lt;button onClick={logOutUser}&gt;Logout&lt;/button&gt;    {/*  &lt;== UPDATE   */}
+            &lt;span&gt;{user.name}&lt;/span&gt;
+          &lt;/&gt;)
+        : 
+        (&lt;&gt;
+          &lt;Link to=&quot;/signup&quot;&gt; &lt;button&gt;Signup&lt;/button&gt; &lt;/Link&gt;
+          &lt;Link to=&quot;/login&quot;&gt; &lt;button&gt;Login&lt;/button&gt; &lt;/Link&gt;
+        &lt;/&gt;)
+      }
+    &lt;/nav&gt;
+  );
+}
+
+export default Navbar;
+
+</code></pre>
+<br>
+<h2 class="raw">Custom Route Components</h2>
+<h3 class="raw">PrivateRoute Component</h3>
+<p>To protect specific pages in our React app and allow access only to the authenticated user we will need to create custom <code>&lt;Route&gt;</code> components. We will start by creating the component <code>&lt;PrivateRoute /&gt;</code>. In the <code>src/components/</code> folder, create a new file named <code>PrivateRoute.js</code> and add the following content to it:</p>
+<pre><code class="jsx hljs raw">// src/components/PrivateRoute.js
+
+import { useContext } from &quot;react&quot;;
+import { AuthContext } from &quot;../context/auth.context&quot;;
+import { Redirect, Route } from &quot;react-router-dom&quot;;
+
+function PrivateRoute(props) {
+  // Destructure the props
+  const { to, exact, component: Component, ...restProps } = props;
+  
+  const { isLoggedIn, isLoading } = useContext(AuthContext);
+
+  // If the authentication is still loading ⏳
+  if (isLoading) return &lt;p&gt;Loading ...&lt;/p&gt;;
+
+  // If the user is not logged in ❌
+  if (!isLoggedIn) return &lt;Redirect to=&quot;/login&quot; /&gt;;
+
+  // If the user is logged in ✅
+  return &lt;Route to={to} exact={exact} component={Component} {...restProps} /&gt;
+}
+
+export default PrivateRoute;
+</code></pre>
+<p>Let’s go over the code and break it down into steps for better understanding:</p>
+<ol>
+<li class="raw">Our new component <code>PrivateRoute</code> acts as a wrapper around the actual <code>&lt;Route&gt;</code> component. This pattern allows us to add conditionals and check if the user is logged in or not.</li>
+</ol>
+<p>The component will use the same syntax as React Router <code>&lt;Route/&gt;</code>. Example:</p>
+<pre><code class="jsx hljs raw">&lt;PrivateRoute exact path=&quot;/projects&quot; component={ProjectListPage} /&gt;
+</code></pre>
+<ol start="2">
+<li class="raw">
+<p>On the top of the component we destructure the props that our wrapper component is receiving.</p>
+<p>The component props must be renamed to use a capital letter. For this reason, we rename it during the destructuring: <code>component: Component</code>.</p>
+<pre><code class="jsx hljs raw">  // Destructure the props
+  const { to, exact, component: Component, ...restProps } = props;
+</code></pre>
+</li>
+<li class="raw">
+<p>We pass these props to the actual <code>&lt;Route&gt;</code> component that the <code>PrivateRoute</code> is rendering:</p>
+<pre><code class="jsx hljs raw">return &lt;Route to={to} exact={exact} component={Component} {...restProps} /&gt;
+</code></pre>
+</li>
+<li class="raw">
+<p>Using the <code>useContext</code> Hook we access the values <code>isLoggedIn</code> and <code>isLoading</code>  from the <code>AuthContext</code>.</p>
+</li>
+<li class="raw">
+<p>If the authentication is still loading, the wrapper component will render a paragraph:</p>
+<pre><code class="jsx hljs raw">if (isLoading) return &lt;p&gt;Loading ...&lt;/p&gt;;
+</code></pre>
+</li>
+<li class="raw">
+<p>If the user is <strong>not logged in</strong> we will redirect the user to the login page:</p>
+<pre><code class="jsx hljs raw">if (!isLoggedIn) return &lt;Redirect to=&quot;/login&quot; /&gt;;
+</code></pre>
+</li>
+<li class="raw">
+<p>If the user is logged in we return the <code>&lt;Route&gt;</code> component which will render the protected page component.</p>
+</li>
+</ol>
+<br>
+<h3 class="raw">AnonRoute Component</h3>
+<p>Using the same approach we will create a custom Route component called  <code>&lt;AnonRoute /&gt;</code>. The purpose of the <code>&lt;AnonRoute /&gt;</code> is to make certain pages available only to the users who are not logged in. This route will be used to forbid access to the Login and Signup page for the users who are already logged in.</p>
+<p>Create a new file <code>src/components/AnonRoute.js</code> and add the following content to it:</p>
+<pre><code class="jsx hljs raw">// src/components/AnonRoute.js
+
+import { useContext } from &quot;react&quot;;
+import { AuthContext } from &quot;../context/auth.context&quot;;
+import { Redirect, Route } from &quot;react-router-dom&quot;;
+
+function AnonRoute(props) {
+  const { to, exact, component: Component, ...restProps } = props;
+  
+  const { isLoggedIn, isLoading } = useContext(AuthContext);
+
+  // If the authentication is still loading ⏳
+  if (isLoading) return &lt;p&gt;Loading ...&lt;/p&gt;;
+
+  // If the user is already logged in, redirect him to home page
+  if (isLoggedIn) return &lt;Redirect to=&quot;/&quot; /&gt;;
+
+  // If the user is not logged in yet, allow him to see the page
+  return &lt;Route to={to} exact={exact} component={Component} {...restProps} /&gt;
+}
+
+export default AnonRoute;
+</code></pre>
+<br>
+<h3 class="raw">Establish Public and Private Pages</h3>
+<p>Now that we have our custom Route components ready we can use them to establish which pages will be public and private. In fact, have three possibilities:</p>
+<ul>
+<li class="raw"><code>&lt;Route /&gt;</code> - use the regular React Router route to render pages that will be <strong>accessible to anyone</strong> (logged in and not logged in).</li>
+<li class="raw"><code>&lt;AnonRoute /&gt;</code> - use this custom Route to render pages that will be <strong>accessible only to the users who are <u>not logged in</u></strong>.</li>
+<li class="raw"><code>&lt;PrivateRoute /&gt;</code> - We will use this custom Route to render pages that will be <strong>accessible only to the users who are <u>logged in</u></strong>.</li>
+</ul>
+<p>We’ll import the new custom Route components to the <code>App.js</code> and use them to update our existing <em>front-end Routes</em> :</p>
+<pre><code class="jsx hljs raw">// src/App.js
+// ... previous imports stay unchanged
+
+import PrivateRoute from &quot;./components/PrivateRoute&quot;;    // &lt;== IMPORT
+import AnonRoute from &quot;./components/AnonRoute&quot;;        // &lt;== IMPORT
+
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+
+      &lt;Switch&gt;
+        &lt;Route exact path=&quot;/&quot; component={HomePage} /&gt;
+
+        {/* 👇 UPDATE THE EXISTING ROUTES 👇  */}
+        &lt;PrivateRoute exact path=&quot;/projects&quot; component={ProjectListPage} /&gt;
+        &lt;PrivateRoute exact path=&quot;/projects/:id&quot; component={ProjectDetailsPage} /&gt;
+        &lt;PrivateRoute exact path=&quot;/projects/edit/:id&quot; component={EditProjectPage} /&gt;
+        
+        &lt;AnonRoute exact path=&quot;/signup&quot; component={SignupPage} /&gt;
+        &lt;AnonRoute exact path=&quot;/login&quot; component={LoginPage} /&gt;
+        
+      &lt;/Switch&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<h2 class="raw">Set Request Headers</h2>
+<p>Some of the components in our app are making the requests to the server endpoints that are protected and require a valid JWT to be sent with the request.</p>
+<p>We’ll update these axios calls and add the JWT token in the request Headers. We will start by updating the <code>src/projects/ProjectListPage.js</code> file:</p>
+<pre><code class="jsx hljs raw">// src/projects/ProjectListPage.js
+
+// ...
+
+const getAllProjects = () =&gt; {
+  // Get the token from the localStorage
+  const storedToken = localStorage.getItem(&quot;authToken&quot;);
+
+  // Send the token through the request &quot;Authorization&quot; Headers
+  axios
+    .get(
+    `${API_URL}/api/projects`,
+    { headers: { Authorization: `Bearer ${storedToken}` } }
+  )
+    .then((response) =&gt; setProjects(response.data))
+    .catch((error) =&gt; console.log(error));
+};
+
+// ...
+</code></pre>
+<p>Next, we’ll update the <code>src/pages/ProjectDetailsPage.js</code> file:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectDetailsPage.js
+
+// ...
+
+const getProject = () =&gt; {
+  // Get the token from the localStorage
+  const storedToken = localStorage.getItem(&quot;authToken&quot;);
+
+  // Send the token through the request &quot;Authorization&quot; Headers
+  axios
+    .get(
+      `${API_URL}/api/projects/${projectId}`,
+      { headers: { Authorization: `Bearer ${storedToken}` } }
+    )
+    .then((response) =&gt; {
+      const oneProject = response.data;
+      setProject(oneProject);
+    })
+    .catch((error) =&gt; console.log(error));
+};
+
+// ...
+</code></pre>
+<p>And at last, we’ll update the <code>src/components/AddProject.js</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/AddProject.js
+
+// ...
+
+const handleSubmit = (e) =&gt; {
+  e.preventDefault();
+  const requestBody = { title, description };
+
+  // Get the token from the localStorage
+  const storedToken = localStorage.getItem(&#39;authToken&#39;);
+
+  // Send the token through the request &quot;Authorization&quot; Headers
+  axios
+    .post(
+    `${API_URL}/api/projects`,
+    requestBody,
+    { headers: { Authorization: `Bearer ${storedToken}` } }
+  )
+    .then((response) =&gt; {
+    // Reset the state
+    setTitle(&quot;&quot;);
+    setDescription(&quot;&quot;);
+    props.refreshProjects();
+  })
+    .catch((error) =&gt; console.log(error));
+};
+
+// ...
+</code></pre>
+<p>The components listed below include axios calls and are remaining to update. For the sake of brevity, we won’t do it at this time but we encourage you to finish updating them so that all of the axios call have a JWT token set in the Headers:</p>
+<ul>
+<li class="raw"><code>src/components/AddTask.js</code>  &gt;&gt;  function <code>handleSubmit</code></li>
+<li class="raw"><code>src/pages/EditProjectPage</code>  &gt;&gt;  useEffect</li>
+<li class="raw"><code>src/pages/EditProjectPage</code>  &gt;&gt;  function <code>handleFormSubmit</code></li>
+<li class="raw"><code>src/pages/EditProjectPage</code>  &gt;&gt;  function <code>deleteProject</code></li>
+</ul>
+<br>
+<p>Congrats!  <img class="emoji" alt=":tada:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/tada.png" />  You are now one step closer to your final project.</p>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-authentication-frontend/tree/master">react-authentication-frontend</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-authentication-frontend.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-authentication-frontend
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this lesson, we implemented the Token-based authentication with JWT on the frontend by integrating our application with the backend. We used Context API to manage the authentication state, the <code>useState</code> Hook to consume the data saved in the Context and the local storage to persist the JWT in the browser. To protect specific pages we created custom Route components <code>&lt;PrivateRoute /&gt;</code> and <code>&lt;AnonRoute /&gt;</code>.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://reactjs.org/docs/forms.html">React Forms</a></li>
+<li class="raw"><a href="https://reactjs.org/docs/context.html#api">React Context API</a></li>
+<li class="raw"><a href="https://github.com/axios/axios">Axios</a></li>
+</ul>

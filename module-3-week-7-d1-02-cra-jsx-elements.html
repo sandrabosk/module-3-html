@@ -1,0 +1,713 @@
+<!-- # React | Create React App, JSX and React elements -->
+<h2 class="raw">Learning goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Create React apps using the <code>create-react-app</code> CLI command</li>
+<li class="raw">Carry out the initial setup and render your React app in the DOM</li>
+<li class="raw">Utilize JSX properly</li>
+<li class="raw">Load images and files in React components</li>
+<li class="raw">Inspect React apps using the React Dev Tools</li>
+</ul>
+<h2 class="raw">Introduction</h2>
+<p>React is a front-end library used for building <a href="https://en.wikipedia.org/wiki/User_interfaces">user interfaces</a> or UI components. React provides us with the programming interface for organizing our code into components. Thanks to JSX we can put the markup, the logic, and the data together in the same file, called a component. In this lesson, we will explore the syntax of JSX and give you a chance to practice it by creating React components.</p>
+<p>Before we dive into JSX we’ll first need to create a React application. There are several ways to create a new React project and each requires a certain basic setup. First, you have to set up the file structure and install the supporting packages. Second, you must configure the project so that all these tools work together. In this lecture, we’ll see how to use the <em>Create React App</em> generator to create a new React project.</p>
+<br>
+<h2 class="raw">React project setup</h2>
+<!--
+
+&gt; Understand how *Create React App* generator automates the setup of a React project
+
+-->
+<p>As React is only a library it depends on other tools that provide a development environment.</p>
+<p>To set up a React project and the development environment <em>from scratch</em> you must install and configure the following:</p>
+<ul>
+<li class="raw">
+<p><strong>Supporting tools:</strong></p>
+<ul>
+<li class="raw">A <strong>package manager</strong>, such as <a href="https://yarnpkg.com/">Yarn</a> or <a href="https://www.npmjs.com/">npm</a>.</li>
+<li class="raw">A <strong>compiler</strong>, such as <a href="https://babeljs.io/">Babel</a> - used to convert JSX into JavaScript.</li>
+<li class="raw">A <strong>bundler</strong>, such as <a href="https://webpack.js.org/">webpack</a> or <a href="https://parceljs.org/">Parcel</a>. Bundlers provide a dev server and live reloading during development. They also bundle and minify the code.</li>
+</ul>
+</li>
+<li class="raw">
+<p><strong>React Core packages:</strong></p>
+<ul>
+<li class="raw"><a href="https://www.npmjs.com/package/react">React</a> - the core React library allowing us to work with JSX,</li>
+<li class="raw"><a href="https://www.npmjs.com/package/react-dom">ReactDOM</a> - library for rendering/displaying the React application in the DOM.</li>
+</ul>
+</li>
+</ul>
+<p>But we don’t have to worry about setting all this up from scratch! Developers at Facebook created an excellent tool to help set up our react project. This means that we don’t have to go through the tedious setup and configuration.</p>
+<p><strong><a href="https://github.com/facebook/create-react-app">Create React App</a> is a tool to help you build React applications</strong>. It saves you from time-consuming setup and configuration. It provides an out-of-the-box application setup: packages, configuration, and folder/file structure. Create React App, or CRA for short, allows you to get started quickly and to easily set up a React project that follows best practices.</p>
+<p>Thanks to <code>create-react-app</code>, we don’t have to do any manual setup and configuration of tools such as webpack and babel. They are already pre-configured.</p>
+<div class="alert alert-success">
+<p>You simply run one command, and <code>create-react-app</code> sets up the React project and the tools needed:</p>
+<pre><code class="bash hljs raw">$ npx create-react-app name-of-your-app
+</code></pre>
+<p>Thanks to <code>npx</code>, there is no need to <code>npm install</code> the package <code>create-react-app</code>, the latest version will be downloaded and executed.</p>
+</div>
+<div class="alert alert-danger">
+<p>However, if you have installed the <code>create-react-app</code> (locally in your <code>devDependencies</code> or even globally), <code>npx</code> will use this version.</p>
+<p>So if you have previously installed <code>create-react-app</code> globally, you may want to</p>
+<pre><code class="shell hljs raw">$ npm uninstall -g create-react-app
+</code></pre>
+<p>to ensure that npx always uses the latest version.</p>
+</div>
+<p><strong>Create React App is divided into two packages</strong>:</p>
+<ul>
+<li class="raw"><strong><code>create-react-app</code></strong> which is a global command-line utility that is used to create new projects,</li>
+<li class="raw"><strong><code>react-scripts</code></strong> which is a development dependency in the generated projects.</li>
+</ul>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Quiz</h4>
+<ol>
+<li class="raw">What packages are needed to set up a React project?</li>
+<li class="raw">What are the benefits of <em>Create React App</em> generator?</li>
+</ol>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Answers:</b></summary>
+<br>
+<ol>
+<li class="raw">
+<p>To set up a React project and the development environment you must install and configure the following tools and packages:</p>
+<ul>
+<li class="raw">Package manager (npm or Yarn),</li>
+<li class="raw">Babel,</li>
+<li class="raw">Webpack,</li>
+<li class="raw">React and</li>
+<li class="raw">ReactDOM.</li>
+</ul>
+<p>You may install and set up these manually and create everything from scratch <em>or</em> you can use a <em>generator</em> (also called a <a href="https://reactjs.org/docs/create-a-new-react-app.html#recommended-toolchains">Toolchain</a>) such as <em>Create React App</em> does this automatically.</p>
+</li>
+<li class="raw">
+<p><em>Create React App</em> generator automates the setup of a React project. It provides an out-of-the-box application setup that includes all necessary packages (React, ReactDOM, Babel, Webpack, ESLint), configuration, and folder/file structure. You simply run the <code>npx create-react-app</code> command and it will create a new React app and set up the tools you need to start your React project.</p>
+</li>
+</ol>
+</details>
+<br>
+<h2 class="raw">Create a new app</h2>
+<!--
+
+&gt; create React apps using the  `create-react-app` CLI command
+
+-->
+<p>Let’s create a new React app:</p>
+<pre><code class="bash hljs raw">$ npx create-react-app my-first-app
+</code></pre>
+<p>The above command will create a directory named <code>my-first-app</code>. Once the script is done running, you can open the project folder:</p>
+<pre><code class="bash hljs raw">$ cd my-first-app
+$ code .
+</code></pre>
+<p><strong>Sidenote</strong>: Alternative ways to run the create-react-app are using:</p>
+<ul>
+<li class="raw"><a href="https://github.com/facebook/create-react-app#npm">npm</a>: <code>npm init react-app my-first-app</code></li>
+<li class="raw"><a href="https://github.com/facebook/create-react-app#yarn">yarn</a>: <code>yarn create react-app my-first-app</code></li>
+</ul>
+<br>
+<h3 class="raw">Built-in scripts</h3>
+<p>Inside the newly created project, you can run some built-in commands:</p>
+<h4 class="raw"><code>npm start</code> or <code>yarn start</code></h4>
+<p>This will run the app in development mode. After running it, your app will launch on <a href="http://localhost:3000">http://localhost:3000</a>.</p>
+<p><strong>Best Part?</strong> The page will automatically reload if you make changes to the code. You will see the build errors and lint warnings in the console. No manual <code>Webpack</code> configuration is needed. <img class="emoji" alt=":rocket:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/rocket.png" /></p>
+<h4 class="raw"><code>npm test</code> or <code>yarn test</code></h4>
+<p>Starts the test runner. <code>create-react-app</code> now has built-in tools to start testing your app while you are developing it, and for this, by default, you can use <a href="https://jestjs.io/docs/en/tutorial-react">Jest</a>. This functionality is out of scope for our course, but feel free to <a href="https://create-react-app.dev/docs/running-tests/">read more about testing here</a>.</p>
+<h4 class="raw"><code>npm run build</code> or <code>yarn build</code></h4>
+<p>Builds the app for production to the build folder. It correctly bundles React in production mode, which means creates a bunch of static files and optimizes the build for the best performance. After successfully running this command, your app is ready to be deployed.</p>
+<div class="alert alert-info">
+<p><strong><a href="https://github.com/facebook/create-react-app"><code>create-react-app</code></a></strong> is an open-source project and there are a couple of thousands of contributors who collaboratively work on it together with the core team. Maybe you could be one of them!</p>
+</div>
+<p>At this moment, you have created your first React app using <code>create-react-app</code>. Currently, this template has just one component, the <code>App</code> component. We briefly mentioned <code>JSX</code> earlier, but let’s come back to it one more time, and then, let’s learn how to work with more than one component in our app.</p>
+<br>
+<h3 class="raw">Run the React App</h3>
+<p>To run your app use the previously mentioned command:</p>
+<pre><code class="shell hljs raw">$ npm start
+</code></pre>
+<p>As a first step, let’s replace the content generated by the <em>Create React App</em> with our own. Open the component <code>App.js</code> and remove the nested HTML content, leaving only the element <code>&lt;div className=&quot;App&quot;&gt; &lt;/div&gt;</code>.</p>
+<p>After removing the nested content your <code>App.js</code> should look like this:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+import logo from &#39;./logo.svg&#39;;
+import &#39;./App.css&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      {/*  We removed all of the content generated by Create React App */}
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>We can now start adding our content and components:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+import &#39;./App.css&#39;;
+import Header from &#39;./components/Header&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      
+      &lt;h1&gt;Hi YOUR_NAME!&lt;/h1&gt;
+      
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<h3 class="raw">Folder Structure</h3>
+<p>Inside the directory, the CRA (<em>Create React App</em>) will generate the initial project structure and install all the necessary dependencies:</p>
+<pre><code>📂 my-first-app
+├──📂 node_modules
+├──📂 public
+│   ├── favicon.ico
+│   ├── index.html
+│   ├── logo192.png
+│   ├── logo512.png
+│   ├── manifest.json
+│   └── robots.txt
+├──📂 src
+│   ├── App.css
+│   ├── App.js
+│   ├── App.test.js
+│   ├── index.css
+│   ├── index.js
+│   ├── logo.svg
+│   ├── serviceWorker.js
+│   └── setupTests.js
+├── README.md
+├── package.json
+└── yarn.lock
+</code></pre>
+<p>As you can see, there is no configuration or complicated folder structure, just the files you need to build your app.</p>
+<br>
+<h4 class="raw">Folder <code>public</code></h4>
+<p>The <strong><code>public</code></strong> folder contains files that will be read by your browser while you’re developing the app; the most important of these files is <code>index.html</code>.</p>
+<ul>
+<li class="raw">
+<p><strong><code>public/index.html</code></strong> is <strong>the only .html file for the entire React app</strong>. For this reason, we say that React is a Single-Page Application.</p>
+<p>Instead of having many HTML pages, the entire app content is managed and updated dynamically by JavaScript. The app and all its content are displayed on this HTML one page.</p>
+</li>
+</ul>
+<br>
+<h4 class="raw">Folder <code>src</code></h4>
+<p>The majority of the development work from our side as developers will be happening in the <strong><code>src</code></strong> folder.</p>
+<ul>
+<li class="raw">
+<p><code>src/index.js</code> file is the one where the main <em>render</em> call is happening thanks to the <em><code>ReactDOM.render()</code></em> method.
+The method <code>ReactDOM.render()</code> injects the React application into the <code>&lt;div id=&quot;root&quot;&gt;</code> so that the app can be rendered in the browser.</p>
+</li>
+<li class="raw">
+<p><code>src/App.js</code> is a React component called “App”. This component will be the <strong>root component</strong> to all the other components.</p>
+</li>
+<li class="raw">
+<p><code>src/index.css</code> comes with some basic styling for our app.</p>
+</li>
+<li class="raw">
+<p><code>src/App.css</code> stores styling targeting the <em>App</em> component specifically.</p>
+</li>
+<li class="raw">
+<p><code>src/App.test.js</code> is the first set of tests we can run against the sample App component that we start with.</p>
+</li>
+<li class="raw">
+<p><code>package.json</code> file lists all the dependencies and scripts needed to run the React app successfully.</p>
+</li>
+<li class="raw">
+<p>The <code>node_modules</code> folder is generated automatically and contains all of the installed dependencies.</p>
+</li>
+<li class="raw">
+<p><code>yarn.lock</code> or <code>package-lock.json</code> (depending on the package manager) will have the locked list of all installed dependencies of our app.</p>
+</li>
+</ul>
+<p>Although we mentioned this above, it is worthy of mentioning again:</p>
+<div class="alert alert-info">
+<ul>
+<li class="raw">
+<p><strong><code>public/index.html</code></strong> is <strong>the only <code>.html</code> file for the entire React app</strong>.</p>
+<p>React app is displayed in this HTML page, more precisely in the <code>&lt;div id=&quot;root&quot;&gt;&lt;/div&gt;</code>. The entire app content is managed dynamically by JavaScript and displayed on this one HTML page.</p>
+</li>
+<li class="raw">
+<p><strong><code>src/index.js</code></strong> file is considered to be <strong>the default entry point to any React app</strong>. This file contains the method <code>ReactDOM.render()</code> which <em>injects</em> the React application into the <code>&lt;div id=&quot;root&quot;&gt;</code> so that the app can be rendered in the browser.</p>
+</li>
+</ul>
+</div>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Check for Understanding - Create React App</h4>
+<!-- :clock10: 10 min (+ 10 min Review)  -->
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a new React app by running the command:</strong></p>
+<pre><code class="bash hljs raw">$ npx create-react-app my-first-app
+</code></pre>
+<p><strong>2. Open the created project in your VSCode</strong></p>
+<p><strong>3. Run your React app using the command</strong></p>
+<pre><code class="bash hljs raw">$ npm start
+</code></pre>
+<p><strong>4. Remove the content from the component <code>App.js</code> generated by <em>Create React App</em> and render the following content:</strong></p>
+<pre><code class="jsx hljs raw">&lt;div className=&quot;App&quot;&gt;
+  &lt;header className=&quot;App-header&quot;&gt;
+    &lt;h2&gt;Hello React!&lt;/h2&gt;
+    &lt;img src=&quot;https://i.imgur.com/8uPMJOs.png&quot; className=&quot;App-logo&quot; alt=&quot;logo&quot; /&gt;
+  &lt;/header&gt;
+&lt;/div&gt;
+</code></pre>
+<p><strong>5. Bonus - Convert the content nested in the <code>&lt;div className=&quot;App&quot;&gt;</code> into a component called Header and render it.</strong></p>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none;">
+    <summary><b>Click for solution</b></summary>
+<br>
+<p>Solution:</p>
+<pre><code class="jsx hljs raw">// src/App.js
+import &#39;./App.css&#39;;
+import Header from &#39;./components/Header&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;header className=&quot;App-header&quot;&gt;
+        &lt;h2&gt;Hello React!&lt;/h2&gt;
+        &lt;img src=&quot;https://i.imgur.com/8uPMJOs.png&quot; className=&quot;App-logo&quot; alt=&quot;logo&quot; /&gt;
+      &lt;/header&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<p>Solution - <strong>Bonus:</strong></p>
+<pre><code class="jsx hljs raw">// src/App.js
+import &#39;./App.css&#39;;
+import Header from &#39;./components/Header&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Header /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<pre><code class="jsx hljs raw">// src/components/Header.js
+import React from &#39;react&#39;;
+
+function Header() {
+  return (
+    &lt;header className=&quot;App-header&quot;&gt;
+      &lt;h2&gt;Hello React!&lt;/h2&gt;
+      &lt;img src=&quot;https://i.imgur.com/8uPMJOs.png&quot; className=&quot;App-logo&quot; alt=&quot;logo&quot; /&gt;
+    &lt;/header&gt;
+  );
+}
+
+export default Header;
+</code></pre>
+</details>
+<br>
+<h2 class="raw">Rendering the React App in the DOM</h2>
+<!--
+
+&gt; carry out the initial setup and render your React app in the DOM
+
+-->
+<p>As mentioned earlier, React is used to create Single-Page Applications. This means that React apps always have only one HTML file, <code>index.html</code>. This file serves as a container for loading the JavaScript code that the React app is made of and displaying it in the browser.</p>
+<br>
+<h4 class="raw">Rendering the App to the DOM</h4>
+<p>The <code>index.html</code> file contains only one element in the body, the <code>&lt;div id=&quot;root&quot;&gt;</code>.</p>
+<p>The <code>&lt;div id=&quot;root&quot;&gt;</code>  is a container element into which the entire React app is rendered. The React app is injected (appended) to the DOM thanks to the <code>ReactDOM.render()</code> method.</p>
+<p>You may wonder, if there is only one element <code>&lt;div id=&quot;root&quot;&gt;</code> how do we end up seeing all the other DOM content?</p>
+<p>The React app dynamically creates DOM elements from our JSX code.</p>
+<p>Let’s show this through an example. In the <code>index.js</code> you will find the <code>ReactDOM.render()</code> method. Here you can see that the <code>App</code> component is being rendered to the DOM with the <code>ReactDOM.render()</code> method.</p>
+<h6 class="raw">index.js</h6>
+<pre><code class="jsx hljs raw">// index.js
+// ... imports stay unchanged
+
+ReactDOM.render(
+  &lt;React.StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/React.StrictMode&gt;,
+  document.getElementById(&#39;root&#39;)
+);
+</code></pre>
+<p>The <code>ReactDOM.render()</code> method has the following syntax:</p>
+<pre><code class="jsx hljs raw">ReactDOM.render(whatToAppend, whereToAppend);
+</code></pre>
+<ul>
+<li class="raw">
+<p><code>whatToAppend</code> argument represents the JSX React content that we want to inject (append) to the DOM.</p>
+</li>
+<li class="raw">
+<p><code>whereToAppend</code> argument represents the DOM element to which we want to append the JSX React content.</p>
+</li>
+</ul>
+<p>If you remove the <code>whatToAppend</code> part and replace it with <code>null</code> you’ll notice the page in the browser turning blank. This is because nothing is rendered in the <code>&lt;div id=&quot;root&quot;&gt;</code> in the DOM:</p>
+<pre><code class="jsx hljs raw">// index.js
+// ... imports stay unchanged
+
+ReactDOM.render(null, document.getElementById(&#39;root&#39;));
+</code></pre>
+<p>So, to display any JSX React content on the page, we have to render it to the DOM using the <code>ReactDOM.render()</code> method. If you add the following JSX content you will see it appearing on the page:</p>
+<pre><code class="jsx hljs raw">// index.js
+// ... imports stay unchanged
+
+ReactDOM.render(
+  &lt;div&gt;
+    &lt;h1&gt; Hello Ironhacker! &lt;/h1&gt;
+    &lt;p&gt; You are rocking it! &lt;/p&gt;
+  &lt;/div&gt;,
+  document.getElementById(&#39;root&#39;)
+);
+</code></pre>
+<br>
+<h4 class="raw">Rendering the Root Component</h4>
+<p>We call <code>App</code> a <strong>root component</strong> as it is the first React component appended to the DOM. Any component, or any JSX code, we add to the <code>App.js</code> will be automatically appended to the DOM through the <code>App.js</code>.</p>
+<p>Go back and update the <code>index.js</code> to the previous state:</p>
+<pre><code class="jsx hljs raw">// index.js
+// ... imports stay unchanged
+
+ReactDOM.render(
+  &lt;React.StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/React.StrictMode&gt;,
+  document.getElementById(&#39;root&#39;)
+);
+</code></pre>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Check for Understanding - Render the root component</h4>
+<!-- :clock10: 5 min (+ 5 min Review) -->
+<details style="font-size: 14px; cursor: pointer; outline: none;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d1-react-jsx-cfu2-gy1rr?file=/src/index.js">CodeSandbox - Exercise 2</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>) CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Render the root component in the <code>index.js</code></strong></p>
+<p>Once you open the above React app you will notice a blank screen. This is because the root component <code>App</code> is not being rendered to the DOM.</p>
+<p>The task is very simple, update the call to the <code>ReactDOM.render()</code> in the <code>index.js</code> to render the <code>App</code>.</p>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none;">
+    <summary><b>Click for solution</b></summary>
+<br>
+<p>Solution:</p>
+<pre><code class="jsx hljs raw">// src/App.js
+
+import React from &#39;react&#39;;
+import ReactDOM from &#39;react-dom&#39;;
+import App from &#39;./App&#39;;
+
+ReactDOM.render(
+  &lt;React.StrictMode&gt;
+    &lt;App /&gt;
+  &lt;/React.StrictMode&gt;,
+  document.getElementById(&#39;root&#39;)
+);
+</code></pre>
+</details>
+<br>
+<h2 class="raw">JSX and elements</h2>
+<br>
+<p><img src="https://user-images.githubusercontent.com/23629340/42755262-bc6eac9a-88f7-11e8-9a6c-e592ce73e6ab.png" alt="image" class="raw md-image"></p>
+<br>
+<p><strong>JSX</strong> <strong>is a syntax extension to JavaScript</strong>. JSX may remind you of a template language, but it comes with the full power of JavaScript.</p>
+<p><strong>Browsers don’t understand JSX</strong>. The JSX code gets compiled into browser-understandable code thanks to Babel. This process happens automatically. All React components and any JSX code get converted to ES5 JavaScript.</p>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":gear:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/gear.png" /> The JSX code gets compiled into browser-understandable JavaScript thanks to Babel.
+You <strong>don’t</strong> need to install it or configure it manually, it comes together with <em>Create React App</em>.
+It is preconfigured and hidden so that you can focus on the code.</p>
+</div>
+<p>Let’s open the app. We will remove the code currently present inside the <code>function App(){}</code> and just leave the following structure:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+import React from &#39;react&#39;;
+import logo from &#39;./logo.svg&#39;;
+import &#39;./App.css&#39;;
+
+function App() {
+  return &lt;div className=&quot;App&quot;&gt;&lt;/div&gt;;
+}
+
+export default App;
+</code></pre>
+<br>
+<h4 class="raw">JSX Under the Hood</h4>
+<p>Let’s take a look at this variable declaration:</p>
+<pre><code class="jsx hljs raw">const element = &lt;h1&gt;Hello world!&lt;/h1&gt;;
+</code></pre>
+<p>The above code represents a very simple JSX code. Use this code snippet and paste it to the <a href="https://babeljs.io/repl">https://babeljs.io/repl</a> to see how Babel converts it into JavaScript. You will get the following JavaScript code:</p>
+<pre><code class="javascript hljs raw">var element = React.createElement(&#39;h1&#39;, null, &#39;Hello, world!&#39;);
+</code></pre>
+<p>Simply speaking, the elements you create using JSX are converted by Babel into plain JavaScript. React is a JavaScript library and actually uses the method <code>React.createElement()</code> to create the DOM elements.</p>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-intro/jsx-to-js-conversion.png" alt="image" class="raw md-image"></p>
+<br>
+<p>Add the following code to the <em>App.js</em>:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... imports stay unchanged
+
+const heading = &lt;h1&gt;🥁🥁🥁 React is cool! 🎉&lt;/h1&gt;;
+
+function App() {
+  return &lt;div className=&quot;App&quot;&gt;{heading}&lt;/div&gt;;
+}
+
+export default App;
+</code></pre>
+<p>We added our super simple JSX element (<code>heading</code>) in the <code>App.js</code> and, since <em>App</em> component is already rendered in the DOM, the <code>heading</code> gets shown inside of the component.</p>
+<p><small>If you haven’t run your app already, you can do it now and in the <code>localhost:3000</code>, this should be the expected result.</small></p>
+<br>
+<p><img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_afccfa2f8ee61e6f78ed97ddd3441a6a.png" alt class="raw md-image"></p>
+<br>
+<h3 class="raw">Embedding expressions in JSX</h3>
+<div class="alert alert-info">
+<p><strong>Two super important things to keep in mind when working with JSX</strong>:</p>
+<ol>
+<li class="raw">You can embed any valid JavaScript code into the JSX using the single curly braces: <strong><code>{}</code></strong>.</li>
+<li class="raw">You can use as many DOM elements as you wish inside JSX code in the React components. However, all of the elements in a component must be wrapped with a single enclosing HTML element, whichever you find the most suitable. This means that <strong>React components must always return content enclosed in a single HTML element</strong>.</li>
+</ol>
+<p>Example: <strong>Wrong</strong> - component is returning two adjacent HTML elements <code>h1</code> and <code>h3</code></p>
+<pre><code class="jsx hljs raw">// Wrong!
+function MyComponent() {
+  return (
+    &lt;h1&gt;Hello Ironhacker!&lt;/h1&gt;
+    &lt;h3&gt;Welcome To World of React&lt;/h3&gt;
+  )
+}
+</code></pre>
+<p>Example: <strong>Correct</strong> - component is returning content wrapped in a single enclosing <code>div</code> tag!</p>
+<pre><code class="jsx hljs raw">// Correct!
+function MyComponent() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Hello Ironhacker!&lt;/h1&gt;
+      &lt;h3&gt;Welcome To World of React&lt;/h3&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+</div>
+<br>
+<p>The full power of JSX comes with the ability to embed any JavaScript valid expression to the JSX element.</p>
+<br>
+<h4 class="raw">Example 1 - embed variables:</h4>
+<pre><code class="jsx hljs raw">// App.js
+// ... imports stay unchanged
+
+const heading = &lt;h1&gt;🥁🥁🥁 React is cool! 🎉&lt;/h1&gt;;
+
+const student = {
+  firstName: &#39;ana&#39;,
+  lastName: &#39;martinez&#39;
+};
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      {heading}
+
+      &lt;h3&gt;
+        Hi, {student.firstName} {student.lastName}!
+      &lt;/h3&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<br>
+<h4 class="raw">Example 2 - embed functions (or methods):</h4>
+<pre><code class="jsx hljs raw">// App.js
+// ... everything that we already added stays unchanged, except function App()
+
+const { firstName, lastName } = student;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      {heading}
+
+      &lt;h3&gt;
+        {/* You can turn this to {firstName} {lastName} */}
+        Hi, {student.firstName} {student.lastName}!
+      &lt;/h3&gt;
+
+      &lt;h4&gt;
+        In uppercase: {firstName.toUpperCase()} {lastName.toUpperCase()}.
+      &lt;/h4&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<br>
+<h4 class="raw">Example 3 - embed function execution:</h4>
+<pre><code class="jsx hljs raw">// App.js
+// ... everything that we already added stays unchanged, except function App()
+
+function capitalizeFirstLetter(str) {
+  return str[0].toUpperCase() + str.slice(1);
+}
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      {heading}
+
+      &lt;h3&gt;
+        {/* You can turn this to {firstName} {lastName} */}
+        Hi, {student.firstName} {student.lastName}!
+      &lt;/h3&gt;
+
+      &lt;h4&gt;
+        In uppercase: {firstName.toUpperCase()} {lastName.toUpperCase()}.
+      &lt;/h4&gt;
+
+      &lt;h4&gt;
+        Capitalized:
+        { capitalizeFirstLetter(firstName) } { capitalizeFirstLetter(lastName) }
+      &lt;/h4&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<br>
+<h4 class="raw">Example 4: embed the attribute value</h4>
+<p>In JSX, we can embed the attribute values as well:</p>
+<pre><code class="jsx hljs raw">const theId = &#39;home&#39;;
+
+const divElement = &lt;div id={theId}&gt;div with an id&lt;/div&gt;;
+</code></pre>
+<p>At this point, you probably don’t see the use case, but when it comes to styling in React, you will have plenty of opportunities to use the above syntax.</p>
+<br>
+<h4 class="raw">Example 5 - embed static files: images</h4>
+<p>To load a local image with plain HTML, we have to set the <code>src</code> attribute of the <code>&lt;img&gt;</code> to the local path of the file. To load an external image in plain HTML, we set the URL of the file.</p>
+<pre><code class="html hljs raw">&lt;!-- dummy example --&gt;
+&lt;img src=&quot;./assets/some-image.jpg&quot; alt=&quot;some image&quot; /&gt;
+&lt;img src=&quot;https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_129040de20781c45366fd2193fcbb5fd.png&quot; alt=&quot;react is cool&quot; /&gt;
+</code></pre>
+<p>In React, to load an image stored locally in the project, we must first <strong>import</strong> the file:</p>
+<pre><code class="jsx hljs raw">import ironhackLogo from &#39;./assets/ironhack-logo.png&#39;;
+
+// ...
+
+&lt;img src={ironhackLogo} alt=&quot;ironhack logo&quot; /&gt;
+</code></pre>
+<p>When it comes to using online-hosted images, the process stays the same as if we were using HTML.</p>
+<pre><code class="jsx hljs raw">&lt;img src=&quot;https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_129040de20781c45366fd2193fcbb5fd.png&quot; alt=&quot;react is cool&quot; /&gt;
+</code></pre>
+<br>
+<h3 class="raw">Self-closing tags</h3>
+<p>Any JSX element can be written as a self-closing tag:</p>
+<pre><code class="jsx hljs raw">&lt;MyComponent /&gt;
+// or
+&lt;MyComponent&gt; &lt;/MyComponent&gt;
+</code></pre>
+<pre><code class="jsx hljs raw">&lt;label /&gt;
+// or
+&lt;label&gt; &lt;/label&gt;
+</code></pre>
+<p>Additionaly,  self-closing HTML tags such as <code>&lt;br /&gt;</code>, <code>&lt;hr /&gt;</code>, and <code>&lt;img /&gt;</code> must always have a closing <code>/</code> to be valid JSX that can be transpiled.</p>
+<pre><code class="jsx hljs raw">&lt;br /&gt;         // Correct
+&lt;hr /&gt;         // Correct
+&lt;img src=&quot;&quot; /&gt; // Correct
+
+
+&lt;br&gt;          // Wrong!
+&lt;hr&gt;          // Wrong!
+&lt;img src=&quot;&quot;&gt;  // Wrong!
+</code></pre>
+<h3 class="raw">Attributes Names are camelCased</h3>
+<p>In React, compared to the HTML, <strong>all attributes with the <code>-</code> in their name are converted to their <em>camelCase</em> version</strong>. Example: <code>background-color</code> becomes <code>backgroundColor</code>.</p>
+<p>Some of the attributes without any case get renamed to their camelCase equivalent:</p>
+<ul>
+<li class="raw">onchange —&gt; onChange</li>
+<li class="raw">onclick —&gt; onClick</li>
+<li class="raw">onsubmit —&gt; onSubmit</li>
+</ul>
+<p>Overall <strong>exceptions</strong>: Because they are reserved words in JavaScript, <code>class</code> and <code>for</code> become:</p>
+<ul>
+<li class="raw">
+<p><code>class</code> —&gt; <code>className</code></p>
+</li>
+<li class="raw">
+<p><code>for</code> —&gt; <code>htmlFor</code></p>
+</li>
+</ul>
+<br>
+<p>Example</p>
+<pre><code class="jsx hljs raw">&lt;label htmlFor=&quot;username&quot; className=&quot;control-label&quot;&gt;
+  Username
+&lt;/label&gt;
+</code></pre>
+<br>
+<h3 class="raw">Adding comments in JSX</h3>
+<p>There are two rules when it comes to commenting out the code in JSX:</p>
+<ul>
+<li class="raw">when inside the HTML part, comments need to be in <code>{/* some comment here */}</code></li>
+<li class="raw">when inside JavaScript part, meaning between the curly braces where we can use the full power of JavaScript, comments are the same as in JS files <code>// some comment here</code></li>
+</ul>
+<pre><code class="jsx hljs raw">&lt;div&gt;
+  {/* some comment here */}
+
+  {friends.map(elem =&gt; {
+    // some comment here
+    return elem.name;
+  })}
+&lt;/div&gt;
+</code></pre>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Time to practice - Embed values in JSX</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Inside the <code>App.js</code>, create a variable and assign it a value equal to your full name.</strong></p>
+<p><strong>2. Use embedding techniques we demonstrated previously to:</strong></p>
+<ul>
+<li class="raw">display your name</li>
+<li class="raw">capitalize both first and last name</li>
+<li class="raw">create and invoke a function that will return just capitalized first letters of your first and last name.</li>
+<li class="raw">Import the image <em>logo</em> and display it.</li>
+</ul>
+</details>
+<br>
+<h2 class="raw">React Dev Tools</h2>
+<p>The React DevTools extension for <a href="https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en">Chrome</a> and <a href="https://addons.mozilla.org/en-US/firefox/addon/react-devtools/">Firefox</a> lets you inspect a React component tree in your browser dev tools. It lets you inspect the props and state of any of the components in the Component Tree.</p>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-dev-tools.jpeg" alt="React Dev Tools - screenshot" class="raw md-image"></p>
+<p>After installing it, you can right-click any element on the page, click “Inspect” to open the developer tools, and the two React tabs will appear as the last two tabs to the right. These are “Components” and “Profiler” tabs.</p>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-cra-jsx">react-cra-jsx</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="shell hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-cra-jsx
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-cra-jsx
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<h2 class="raw">Summary</h2>
+<p><code>create-react-app</code> helps us to start our projects with no need to do all the previous configuration and setups. Sometimes we will need to add more structure to the default one, but we save a lot of time.</p>
+<p>This is the best way to start a new project! Later on in the course, we will learn how we can build and deploy projects that have been generated with <code>create-react-app</code>.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://create-react-app.dev/">Create React App - Official Documentation</a></li>
+<li class="raw"><a href="https://youtu.be/fSHWc8RTJug?t=186">What is NPX?</a></li>
+</ul>

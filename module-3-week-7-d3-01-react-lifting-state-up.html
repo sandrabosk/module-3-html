@@ -1,0 +1,637 @@
+<!-- # React | Lifting the state up -->
+<h2 class="raw">Learning Goals</h2>
+<p>After this lesson you will be able to:</p>
+<ul>
+<li class="raw">Plan and organize the data flow between the components</li>
+<li class="raw">Lift the state up to the common ancestor component in an existing React app</li>
+<li class="raw">Pass functions as props from parent component to a child component</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>Organizing the components and deciding which component should be stateful (should contain state) may sometimes be hard. In this lesson, we will talk about the React technique called Lifting State Up, used for organizing the components and the data flow so that state data can be shared between the components that need it.</p>
+<br>
+<h2 class="raw">Getting Started</h2>
+<p>Let’s create a new React app that we’ll use for the following examples:</p>
+<pre><code class="bash hljs raw">$ npx create-react-app react-lifting-state-up
+$ cd react-lifting-state-up
+$ npm start
+</code></pre>
+<p>As a starting point, we will use the code provided below. Go ahead and create the files shown below by using the provided snippets:</p>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Click here for the code</summary>
+<br>
+<pre><code class="css hljs raw">/*  index.css  */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, &quot;Roboto&quot;, &quot;Oxygen&quot;,
+    &quot;Ubuntu&quot;, &quot;Cantarell&quot;, &quot;Fira Sans&quot;, &quot;Droid Sans&quot;, &quot;Helvetica Neue&quot;,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, &quot;Courier New&quot;,
+    monospace;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 40vmin;
+  pointer-events: none;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.todo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.task-card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid black;
+  border-radius: 10px;
+  padding: 20px 10px;
+  margin: 10px;
+  width: 250px;
+  min-height: 450px;
+}
+
+.task-card-half {
+  height: 50%;
+  overflow: hidden;
+}
+
+button {
+  width: 120px;
+  height: 60px;
+  margin: 10px;
+  border-radius: 10px;
+  font-size: 20px;
+}
+
+button.add {
+  background: rgb(101, 206, 118);
+}
+
+.tasks-completed {
+  font-size: 40px;
+  margin: 5px;
+}
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/components/ToDoList.js
+
+import { useState } from &quot;react&quot;;
+import Task from &quot;./Task&quot;;
+import Summary from &quot;./Summary&quot;;
+
+const initialTasks = [
+    {
+    _id: &quot;1a&quot;,
+    name: &quot;Task1&quot;,
+    description: &quot;Do something important&quot;,
+  },
+  {
+    _id: &quot;2b&quot;,
+    name: &quot;Task2&quot;,
+    description: &quot;Do something important&quot;,
+  },
+  {
+    _id: &quot;3c&quot;,
+    name: &quot;Task3&quot;,
+    description: &quot;Do something important&quot;,
+  },
+];
+
+function ToDoList() {
+  const [tasks, setTasks] = useState(initialTasks);
+
+  return (
+    &lt;div&gt;
+      &lt;Summary /&gt;
+      
+      &lt;div className=&quot;todo-container&quot;&gt;
+        {tasks.map((task) =&gt; &lt;Task key={task._id} task={task} /&gt; )}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ToDoList;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/components/Summary.js
+
+import React from &quot;react&quot;;
+
+function Summary(props) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;TASKS COMPLETED:&lt;/h1&gt;
+      &lt;p className=&quot;tasks-completed&quot;&gt;0&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Summary;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/components/Task.js
+
+import { useState } from &quot;react&quot;;
+
+function Task(props) {
+  const [taskCompleted, setTaskCompleted] = useState(false);
+
+  const toggleTask = () =&gt; setTaskCompleted(!taskCompleted);
+
+  return (
+    &lt;div className=&quot;task-card&quot;&gt;
+      &lt;div className=&quot;task-card-half&quot;&gt;
+        &lt;h1&gt;{props.task.name}&lt;/h1&gt;
+        {taskCompleted 
+          ? &lt;span&gt;DONE ✅&lt;/span&gt;
+          : &lt;span&gt;PENDING ⌛&lt;/span&gt;
+        }
+
+        &lt;h2&gt;Task Description&lt;/h2&gt;
+        &lt;p&gt;{props.task.description}&lt;/p&gt;
+
+        &lt;button className=&quot;add&quot; onClick={() =&gt; toggleTask()}&gt;
+          {taskCompleted 
+            ? &lt;span&gt;UNDO ❌&lt;/span&gt; 
+            : &lt;span&gt;✔️&lt;/span&gt;
+          }
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Task;
+</code></pre>
+<p>And lastly, clean the <code>App.js</code> a bit so that it has the following structure:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+import &#39;./App.css&#39;;
+
+import ToDoList from &#39;./components/ToDoList&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;ToDoList /&gt;
+    &lt;/div&gt;
+  );
+}
+export default App;
+</code></pre>
+</details>
+<br>
+<h2 class="raw">Lifting State Up</h2>
+<p>Usually, the state is first added to the component that needs it for rendering. Then, if other components also need to access that state data, you can lift it up to their closest common ancestor. Instead of trying to sync the state between different components, you should rely on the <a href="https://reactjs.org/docs/state-and-lifecycle.html#the-data-flows-down">top-down data flow</a>.</p>
+<p>Often, several components need to reflect the same changing data.  <strong>Moving the state up to the nearest parent component</strong> so that children component who need it can access it, <strong>is a technique called Lifting State Up</strong>.</p>
+<div class="alert alert-success">
+<p><img class="emoji" alt=":bulb:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/bulb.png" /> Lifting State Up is a React technique for sharing state between components by moving the shared state up to the nearest parent component, so all children components can access it.</p>
+</div>
+<br>
+<h3 class="raw">Our App Structure</h3>
+<p>Components in our current application are organized in the following way:</p>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-state/react-lifting-state-up-1.png" alt class="raw md-image"></p>
+<br>
+<p>Components <code>&lt;ToDoList&gt;</code>, <code>&lt;Task&gt;</code> and <code>&lt;Summary&gt;</code>  are all going to need to share common state.</p>
+<p><code>ToDoList</code> is the place where we are storing and rendering all of the tasks. It contains a state which is an array of objects representing tasks.</p>
+<p><code>&lt;Task&gt;</code> component is used to show each task coming from the state of the <code>ToDoList</code>. In addition, each <code>&lt;Task&gt;</code> has its own state, holding a state variable <code>taskCompleted</code>, used to set the task as <em>pending</em> or <em>done</em>.</p>
+<p>The <code>&lt;Summary&gt;</code> component, currently displays a number <em><strong>0</strong></em> at the top of the app. This is where we’re supposed to display the number of tasks completed.</p>
+<br>
+<h3 class="raw">The Problem</h3>
+<p>Currently,  <code>&lt;Summary&gt;</code> component is rendering a static value <strong>0</strong>. However, we want it to display the number of tasks completed. Now, to do this we have to solve the following problem:</p>
+<p>To display the total count of the completed tasks, <code>&lt;Summary &gt;</code> needs to somehow access the <code>taskCompleted</code> information stored in each <code>&lt;Task&gt;</code>.</p>
+<p>As we can see, <code>&lt;Summary &gt;</code> and <code>&lt;Task&gt;</code> components are very close. They are sibling components nested at the same level. However, in React there is no way to share the state between components directly. Instead, we rely on the <a href="https://reactjs.org/docs/state-and-lifecycle.html#the-data-flows-down">top-down data flow</a>.</p>
+<br>
+<h3 class="raw">How to Lift the State Up</h3>
+<p>To make the information about the <em>tasks completed</em> available for both <code>&lt;Summary&gt;</code> and <code>&lt;Task&gt;</code> components, we need to <strong>move the state up</strong> from <code>&lt;Task&gt;</code> to the closest common ancestor. <strong>The closest common ancestor</strong> of <code>&lt;Task&gt;</code> and <code>&lt;Summary&gt;</code> is the parent component <code>&lt;ToDoList&gt;</code>.</p>
+<p>We will do this in two steps:</p>
+<ol>
+<li class="raw">
+<p>First, we will <em>remove</em> the state (state variable <code>taskCompleted</code>) from <code>&lt;Task&gt;</code>,</p>
+</li>
+<li class="raw">
+<p>and <em>move up</em> the information about <em>tasks completed</em> to the state of <code>&lt;ToDoList&gt;</code>.</p>
+</li>
+</ol>
+<p>Here is a visual representation of how we will do it:</p>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-state/react-lifting-state-up-2.png" alt class="raw md-image"></p>
+<br>
+<p>Ok, so let’s refactor our app and <em>lift the state up</em> from <code>&lt;Task&gt;</code> to the <code>&lt;ToDoList&gt;</code> component.</p>
+<p>First, from the <code>Task</code> component we will remove the <em>state</em> and the handler function <code>toggleTask</code>. As we are removing the state, the function <code>toggleTask</code> that is used to update the state won’t be needed anymore. We’ll update the <code>Task</code> component in the following way:</p>
+<pre><code class="jsx hljs raw">// src/components/Task.js
+
+ // import { useEffect } from &#39;react&#39;;     //      &lt;== REMOVE
+
+function Task(props) {
+ // const [taskCompleted, setTaskCompleted] = useState(false);   //      &lt;== REMOVE
+ // const toggleTask = () =&gt; setTaskCompleted(!taskCompleted);   //      &lt;== REMOVE
+
+  return (
+    &lt;div className=&quot;task-card&quot;&gt;
+      &lt;div className=&quot;task-card-half&quot;&gt;
+        &lt;h1&gt;{props.task.name}&lt;/h1&gt;
+        {false                                                  {/* &lt;== UPDATE  */}
+          ? &lt;span&gt;DONE ✅&lt;/span&gt;
+          : &lt;span&gt;PENDING ⌛&lt;/span&gt;
+        }
+
+        &lt;h2&gt; Task Description &lt;/h2&gt;
+        &lt;p&gt;{props.task.description}&lt;/p&gt;
+
+        &lt;button className=&quot;add&quot; onClick={() =&gt; {}}&gt;                 {/* &lt;== UPDATE  */} 
+          {false                                                  {/* &lt;== UPDATE  */}
+            ? &lt;span&gt;UNDO ❌&lt;/span&gt; 
+            : &lt;span&gt;✔️&lt;/span&gt;
+          }
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Task;
+</code></pre>
+<p>After updating the code your <code>Task</code> component should look like this:</p>
+<pre><code class="jsx hljs raw">// src/components/Task.js
+
+function Task(props) {
+
+  return (
+    &lt;div className=&quot;task-card&quot;&gt;
+      &lt;div className=&quot;task-card-half&quot;&gt;
+        &lt;h1&gt;{props.task.name}&lt;/h1&gt;
+        {false
+          ? &lt;span&gt;DONE ✅&lt;/span&gt;
+          : &lt;span&gt;PENDING ⌛&lt;/span&gt;
+        }
+
+        &lt;h2&gt; Task Description &lt;/h2&gt;
+        &lt;p&gt;{props.task.description}&lt;/p&gt;
+
+        &lt;button className=&quot;add&quot; onClick={() =&gt; {}}&gt;
+          {false 
+            ? &lt;span&gt;UNDO ❌&lt;/span&gt; 
+            : &lt;span&gt;✔️&lt;/span&gt;
+          }
+        &lt;/button&gt;
+
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Task;
+</code></pre>
+<br>
+<p>Second, we will move the information about the <em>tasks completed</em> to the parent component <code>ToDoList</code>. We will create a new state variable named <code>tasksCompleted</code> and update the structure of the objects in the <em>tasks</em> array to be able to keep track of tasks that are done. Let’s update <code>ToDoList.js</code> :</p>
+<pre><code class="jsx hljs raw">// src/components/ToDoList.js
+// ... previous imports stay unchanged
+
+const initialTasks = [
+  {
+    _id: &quot;1a&quot;,
+    name: &quot;Task1&quot;,
+    description: &quot;Do something important&quot;,
+    isDone: false                                    // &lt;== ADD
+  },
+  {
+    _id: &quot;2b&quot;,
+    name: &quot;Task2&quot;,
+    description: &quot;Do something important&quot;,
+    isDone: false                                    // &lt;== ADD
+  },
+  {
+    _id: &quot;3c&quot;,
+    name: &quot;Task3&quot;,
+    description: &quot;Do something important&quot;,
+    isDone: false                                    // &lt;== ADD
+  }
+];
+
+
+function ToDoList() {
+  const [tasks, setTasks] = useState(initialTasks);
+  const [tasksCompleted, setTasksCompleted] = useState(0);    // &lt;== ADD
+
+  return (
+    &lt;div&gt;
+      &lt;Summary /&gt;
+
+      &lt;div className=&quot;todo-container&quot;&gt;
+        {tasks.map((task) =&gt; &lt;Task key={task._id} task={task} /&gt; )}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ToDoList;
+</code></pre>
+<p>Next, we need to create a function for toggling the task as <em>done</em> or <em>pending</em>. As <em>tasks</em> array is stored in the state of <code>ToDoList</code>,  to be able to access it, we must create the function inside of the <code>ToDoList</code> component.
+We’ll add the following function to the <code>ToDoList</code> component:</p>
+<pre><code class="jsx hljs raw">// src/components/ToDoList.js
+// ...
+
+const toggleTaskDone = (id) =&gt; {
+  const tasksCopy = [...tasks];
+    
+	tasksCopy.forEach((task) =&gt; {
+    // Find the selected task and update task&#39;s `isDone` property,
+    if (task._id === id) {
+      task.isDone = task.isDone ? false : true;
+
+      // then update `tasksCompleted` state variable
+      if (task.isDone) setTasksCompleted(tasksCompleted + 1);
+      else if (!task.isDone) setTasksCompleted(tasksCompleted - 1);        
+    }
+
+    setTasks(tasksCopy);
+  }); 
+}
+
+// ...
+</code></pre>
+<p>After updating the code following the above step, your <code>ToDoList.js</code> should look like this:</p>
+<pre><code class="jsx hljs raw">// src/components/ToDoList.js
+// ... previous imports stay unchanged
+
+
+function ToDoList() {
+  const [tasks, setTasks] = useState(initialTasks);
+  const [tasksCompleted, setTasksCompleted] = useState(0);
+  
+  
+  const toggleTaskDone = (id) =&gt; {                                      // &lt;== ADD
+    const tasksCopy = [...tasks];
+
+    tasksCopy.forEach((task) =&gt; {
+      // Find the selected task and update task&#39;s `isDone` property,
+      if (task._id === id) {
+        task.isDone = task.isDone ? false : true;
+
+        // then update `tasksCompleted` state variable
+        if (task.isDone) setTasksCompleted(tasksCompleted + 1);
+        else if (!task.isDone) setTasksCompleted(tasksCompleted - 1);        
+      }
+
+      setTasks(tasksCopy);
+    }); 
+  }
+  
+
+  return (
+    &lt;div&gt;
+      &lt;Summary /&gt;
+
+      &lt;div className=&quot;todo-container&quot;&gt;
+      {tasks.map((task) =&gt; &lt;Task key={task._id} task={task} /&gt; )}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ToDoList;
+</code></pre>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":point_up:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/point_up.png" /> As we explained before, the <em>state</em> belongs to the component itself. The state of a component can be changed only by the functions created directly in that component.</p>
+</div>
+<p>Looking at the <code>toggleTaskDone</code> function we created, you may wonder why did we make a new array <code>tasksCopy</code> by copying the state variable <code>tasks</code>?</p>
+<p>We went to <strong>create a copy</strong> of the existing <code>tasks</code> array using the <strong>spread operator</strong>, to not mutate the state directly:</p>
+<pre><code class="jsx hljs raw">const tasksCopy = [...tasks];
+</code></pre>
+<p>We are still not using this function, but we will in the following steps.</p>
+<div class="alert alert-danger :warning:  When updating the state, we should never mutate the state variables directly. We should instead update the state in an immutable way.">
+<p>If a state variable is holding an array or an object, we should first copy it. Then we update the copy and, at last, use the state updater function to update the state.</p>
+</div>
+<br>
+<h3 class="raw">Pass the State Down</h3>
+<p>In the last step, we removed the state from the <code>&lt;Task&gt;</code> component. We also removed the handler function that the <code>button</code> which toggled the <em>PENDING <img class="emoji" alt=":hourglass:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/hourglass.png" /> / DONE <img class="emoji" alt=":white_check_mark:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/white_check_mark.png" /></em> message shown in the Task card. As a result, the toggle is not working anymore.</p>
+<p>To fix the  <em>PENDING <img class="emoji" alt=":hourglass:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/hourglass.png" /> / DONE <img class="emoji" alt=":white_check_mark:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/white_check_mark.png" /></em> message toggle, we will update the <code>Task</code> component. We will access the <code>isDone</code> property that each task object now has. The value is accessible through the <code>props.task.isDone</code> . Let’s update the <code>Task</code> component to do this:</p>
+<pre><code class="jsx hljs raw">// src/components/Task.js
+
+function Task(props) {
+  
+  return (
+    &lt;div className=&quot;task-card&quot;&gt;
+      &lt;div className=&quot;task-card-half&quot;&gt;
+        &lt;h1&gt;{props.task.name}&lt;/h1&gt;
+        {props.task.isDone                                   // &lt;== UPDATE
+          ? &lt;span&gt;DONE ✅&lt;/span&gt;
+          : &lt;span&gt;PENDING ⌛&lt;/span&gt;
+        }
+
+        &lt;h2&gt; Task Description &lt;/h2&gt;
+        &lt;p&gt;{props.task.description}&lt;/p&gt;
+
+        &lt;button className=&quot;add&quot; onClick={() =&gt; {} }&gt;
+          {props.task.isDone                                 // &lt;== UPDATE
+            ? &lt;span&gt;UNDO ❌&lt;/span&gt; 
+            : &lt;span&gt;✔️&lt;/span&gt;
+          }  
+        &lt;/button&gt;
+
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Task;
+</code></pre>
+<br>
+<h3 class="raw">Pass the Function Down</h3>
+<p>To update each task and toggle its <code>isDone</code> property, we will have to pass the function <code>toggleTaskDone</code> as a <em>prop</em>. Let’s go back to the <code>ToDoList</code> component and pass this function as a prop to the  <code>&lt;Task&gt;</code> :</p>
+<pre><code class="jsx hljs raw">// src/components/ToDoList.js
+                                  {/*  👇 ADD   */}
+&lt;Task key={task._id} task={task} toggleTask={toggleTaskDone} /&gt;
+</code></pre>
+<p>After updating the code, your <code>ToDoList.js</code> should look like this:</p>
+<pre><code class="jsx hljs raw">// src/components/ToDoList.js
+// ... previous imports stay unchanged
+
+
+function ToDoList() {
+  const [tasks, setTasks] = useState(initialTasks);
+  const [tasksCompleted, setTasksCompleted] = useState(0);
+  
+  const toggleTaskDone = (id) =&gt; {
+    const tasksCopy = [...tasks];
+
+    tasksCopy.forEach((task) =&gt; {
+      // Find the selected task and update task&#39;s `isDone` property,
+      if (task._id === id) {
+        task.isDone = task.isDone ? false : true;
+
+        // then update `tasksCompleted` state variable
+        if (task.isDone) setTasksCompleted(tasksCompleted + 1);
+        else if (!task.isDone) setTasksCompleted(tasksCompleted - 1);        
+      }
+
+      setTasks(tasksCopy);
+    }); 
+  }
+  
+
+  return (
+    &lt;div&gt;
+      &lt;Summary tasksCompleted={tasksCompleted}/&gt;
+
+      &lt;div className=&quot;todo-container&quot;&gt;                         {/* 👇 ADD   */}
+      {tasks.map((task) =&gt; &lt;Task key={task._id} task={task} toggleTask={toggleTaskDone}/&gt; )}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ToDoList;
+</code></pre>
+<p>We can now access the function from the <code>Task</code> component. We’ll set it to run when the <code>button</code> is clicked. When invoked, as an argument, we will pass it the <code>_id</code> of the task:</p>
+<pre><code class="jsx hljs raw">// src/components/Task.js
+
+function Task(props) {
+  
+  return (
+    &lt;div className=&quot;task-card&quot;&gt;
+      &lt;div className=&quot;task-card-half&quot;&gt;
+        &lt;h1&gt;{props.task.name}&lt;/h1&gt;
+        {props.task.isDone
+          ? &lt;span&gt;DONE ✅&lt;/span&gt;
+          : &lt;span&gt;PENDING ⌛&lt;/span&gt;
+        }
+
+        &lt;h2&gt; Task Description &lt;/h2&gt;
+        &lt;p&gt;{props.task.description}&lt;/p&gt;
+
+        &lt;button 
+          className=&quot;add&quot;
+          onClick={() =&gt; props.toggleTask(props.task._id)}       // &lt;== UPDATE 
+        &gt;
+          {props.task.isDone 
+            ? &lt;span&gt;UNDO ❌&lt;/span&gt; 
+            : &lt;span&gt;✔️&lt;/span&gt;
+          }
+        &lt;/button&gt;
+
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Task;
+</code></pre>
+<br>
+<h3 class="raw">Pass State to Other Components</h3>
+<p>Now that we have the state centrally located in the parent component <code>&lt;ToDoList&gt;</code>, we can pass it down to the <code>&lt;Summary&gt;</code> component to show the number of tasks completed:</p>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-state/react-lifting-state-up-3.png" alt class="raw md-image"></p>
+<br>
+<p>First, we will pass the state variable <code>tasksCompleted</code> from the <code>ToDoList</code> as a prop to the <code>&lt;Summary&gt;</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/ToDoList.js
+// ...
+&lt;Summary tasksCompleted={tasksCompleted}/&gt;     {/*  👈 UPDATE   */}
+</code></pre>
+<p>After updating the code, your <code>ToDoList.js</code> should look like this:</p>
+<pre><code class="jsx hljs raw">// src/components/ToDoList.js
+// ... previous imports stay unchanged
+
+function ToDoList() {
+  const [tasks, setTasks] = useState(initialTasks);
+  const [tasksCompleted, setTasksCompleted] = useState(0);
+  
+  const toggleTaskDone = (id) =&gt; {
+    const tasksCopy = [...tasks];
+
+    tasksCopy.forEach((task) =&gt; {
+      // Find the selected task and update task&#39;s `isDone` property,
+      if (task._id === id) {
+        task.isDone = task.isDone ? false : true;
+
+        // then update `tasksCompleted` state variable
+        if (task.isDone) setTasksCompleted(tasksCompleted + 1);
+        else if (!task.isDone) setTasksCompleted(tasksCompleted - 1);        
+      }
+
+      setTasks(tasksCopy);
+    }); 
+  }
+  
+
+  return (
+    &lt;div&gt;
+      &lt;Summary tasksCompleted={tasksCompleted}/&gt;     {/*  👈 UPDATE   */}
+
+      &lt;div className=&quot;todo-container&quot;&gt;
+      {tasks.map((task) =&gt; &lt;Task key={task._id} task={task} toggleTask={toggleTaskDone}/&gt; )}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ToDoList;
+</code></pre>
+<p>And now the last step. The component <code>Summary</code> is currently displaying a static value <em><strong>0</strong></em>. We need to replace it with the value coming from the <code>props</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/Summary.js
+
+function Summary(props) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;TASKS COMPLETED:&lt;/h1&gt;
+      &lt;p className=&quot;tasks-completed&quot;&gt;{props.tasksCompleted}&lt;/p&gt;     {/*  👈 UPDATE   */}
+    &lt;/div&gt;
+  );
+}
+
+export default Summary;
+</code></pre>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-lifting-state-up/tree/master">react-lifting-state-up</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-lifting-state-up.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-lifting-state-up
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this lesson, we got familiar with the Lifting State Up technique. Lifting state up means moving the state up to the closes common ancestor when multiple components rely on the same data. We practiced how to pass a function as a prop and invoke it from the child component. We also saw how to avoid mutating the state using the spread operator and making a copy of the array first before making any changes.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://www.robinwieruch.de/learn-react-before-using-redux/">8 things to learn in React before using Redux</a></li>
+<li class="raw"><a href="https://reactjs.org/docs/lifting-state-up.html">Lifting State Up - official docs</a></li>
+</ul>

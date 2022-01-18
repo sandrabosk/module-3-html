@@ -1,0 +1,913 @@
+<!-- # React | List & Keys  -->
+<!--
+
+### Instructional Design Goals
+
+**0.** Review the syntax and use of array methods `map`, `filter`, and `sort`.
+
+**A.** *Demonstrate* how an array of elements is rendered in React
+
+**B.** *Demonstrate* how to create a simple list using the `map` method and how to set the `key` prop to list elements properly
+
+**C.** Demonstrate the use of unique `key` prop in the list elements
+
+**D.** Make an example of using the `filter` method to remove an item from the list stored.
+
+**E.** Make an example of how to compose content into a new component
+
+**F.** Demonstrate how to deconstruct props
+
+-->
+<h2 class="raw">Learning goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Display a list in a React app</li>
+<li class="raw">Correctly set a <code>key</code> attribute to the list of items</li>
+<li class="raw">Remove items from a list</li>
+<li class="raw">Extract new components and split responsibilities of components</li>
+</ul>
+<br>
+<h2 class="raw">Prerequisites</h2>
+<!--
+
+**0.** Review the syntax and use of array methods `map`, `filter`, and `sort`.
+
+-->
+<ul>
+<li class="raw">Familiarity with array and object data structures and syntax</li>
+<li class="raw">Be able to loop over and work with arrays using methods <code>map</code>, <code>filter</code>, and <code>sort</code></li>
+</ul>
+<p>Before starting, we suggest you <em>refresh your memory</em> on the <em>syntax</em> and use array methods <code>map</code>, <code>filter</code>, and <code>sort</code>.</p>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>Lists are one of the most common parts of the UI in web applications. These can be lists of posts and comments in apps like Facebook and Twitter, listings of properties on Airbnb, search results in Google, and so on. In this lesson, we’ll learn how to render lists in React.</p>
+<br>
+<h3 class="raw">Getting Started</h3>
+<p>Let’s create a new React app that we’ll use for the following examples:</p>
+<pre><code class="shell hljs raw">$ npx create-react-app react-lists
+$ cd react-lists
+$ npm start
+</code></pre>
+<p>Clean the <code>App.js</code> a bit, so that it has the following structure:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+import &#39;./App.css&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;&lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>In addition, you should add the following CSS styles to your <code>index.css</code> file. This will allow you to focus on React without having to worry about the styles:</p>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Click here for the code</summary>
+<br>
+<pre><code class="css hljs raw">/* index.css */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, &#39;Roboto&#39;, &#39;Oxygen&#39;, &#39;Ubuntu&#39;, &#39;Cantarell&#39;, &#39;Fira Sans&#39;, &#39;Droid Sans&#39;, &#39;Helvetica Neue&#39;, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, &#39;Courier New&#39;, monospace;
+}
+
+.App {
+  text-align: center;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.list {
+  width: 400px;
+  padding: 10px;
+  box-shadow: 0px 2px 3px grey;
+  margin-bottom: 20px;
+  background: white;
+}
+
+.list &gt; li,
+.list &gt; p,
+.list &gt; div {
+  margin: 10px;
+  border: 1px solid #f98a8a;
+}
+
+.MovieCard {
+  border: 1px solid grey;
+  box-shadow: 0px 2px 3px grey;
+  width: 400px;
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+h2 {
+  padding: 15px 30px;
+  border: 1px solid #6d6d6d;
+  background: lightcyan;
+  width: 200px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+}
+
+h3 {
+  padding: 5px 50px;
+  display: inline-block;
+}
+
+button,
+select {
+  padding: 3px 10px;
+  min-width: 50px;
+  height: 40px;
+  margin: 5px;
+  font-size: 1rem;
+}
+</code></pre>
+</details>
+<br>
+<h2 class="raw">Storing Elements in Arrays</h2>
+<!--
+
+&gt; **A.** *Demonstrate* how an array of elements is rendered in React
+
+-->
+<p>In React, you can store JSX elements (HTML content and components) in arrays. The elements stored in arrays can be displayed directly in your components by putting them between curly brackets <code>{}</code>.</p>
+<p>Let’s create a new component <code>SimpleList</code> to illustrate this:</p>
+<pre><code class="jsx hljs raw">// src/components/SimpleList.js
+
+// An array containing HTML elements
+const numbersList = [&lt;li&gt;1&lt;/li&gt;, &lt;li&gt;2&lt;/li&gt;, &lt;li&gt;3&lt;/li&gt;, &lt;li&gt;4&lt;/li&gt;];
+
+function SimpleList() {
+  return (
+    &lt;div className=&quot;list&quot;&gt;
+      &lt;h2&gt;List&lt;/h2&gt;
+
+      {numbersList}
+    &lt;/div&gt;
+  );
+}
+
+export default SimpleList;
+</code></pre>
+<p>This code displays a bullet list of numbers between 1 and 4.</p>
+<p>To see the result, we’ll import and render the <code>SimpleList</code> component in <code>App.js</code>:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous import stays unchanged
+
+import SimpleList from &#39;./components/SimpleList&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;SimpleList /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Storing Elements in Arrays</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Working in a team, complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d2-lists-cfu1-45xml">CodeSandbox - React Lists (Exercise 1)</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>), CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Create and display a <code>List</code> component</strong></p>
+<p>Your task is to replicate the previous lesson example. In the component <code>List</code>, create an array containing several <code>&lt;li&gt;&lt;/li&gt;</code> elements with the <em>text content</em> of your choice.</p>
+<p>Import and render the <code>List</code> component in <code>App.js</code>.</p>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<pre><code class="jsx hljs raw">// ./src/components/List.js
+
+// An array containing HTML elements
+const myProjects = [
+  &lt;li&gt;M1: Frogger - HTML, CSS and JS&lt;/li&gt;, 
+  &lt;li&gt;M2: Roomster - Node, Express, MongoDB, HBS&lt;/li&gt;, 
+  &lt;li&gt;M3: Recipease - React, Redux, Express, MongoDB&lt;/li&gt;
+];
+
+function List() {
+  return (
+    &lt;div className=&quot;list&quot;&gt;
+      &lt;h2&gt;My List&lt;/h2&gt;
+
+      { myProjects }
+    &lt;/div&gt;
+  );
+}
+
+export default List;
+</code></pre>
+<pre><code class="jsx hljs raw">// ./src/App.js
+// ... previous import stays unchanged
+
+import List from &#39;./components/List&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;List /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+</details>
+<br>
+<h2 class="raw">Rendering a List</h2>
+<!--
+
+&gt; **B.** *Demonstrate* how to create a simple list using the `map` method and how to properly set the key attribute to list elements
+
+-->
+<p>In the previous example, we displayed a list of static elements stored in an array. But what if we want to convert an array of data, for example - strings:</p>
+<pre><code class="jsx hljs raw">const students = [&#39;Marc&#39;, &#39;Lucy&#39;, &#39;Anna&#39;];
+</code></pre>
+<p>into a list of elements:</p>
+<pre><code class="jsx hljs raw">[&lt;p&gt;Marc&lt;/p&gt;, &lt;p&gt;Lucy&lt;/p&gt;, &lt;p&gt;Anna&lt;/p&gt;];
+</code></pre>
+<p>The array method <code>map()</code> allows us to convert an array holding data to an array of elements and display it right away.</p>
+<div class="alert alert-info">
+<p>The <code>map()</code> method <strong>returns a new array</strong> populated with the results coming from calling the given function for each element in the original array.</p>
+</div>
+<p>We will create a new component <code>StudentList</code> to show this:</p>
+<pre><code class="jsx hljs raw">// src/components/StudentList.js
+
+function StudentList() {
+  const students = [&#39;Marc&#39;, &#39;Lucy&#39;, &#39;Anna&#39;];
+
+  return (
+    &lt;div className=&quot;list&quot;&gt;
+      &lt;h2&gt;Student List&lt;/h2&gt;
+      
+      { students.map(name =&gt; {
+        return &lt;p&gt; { name } &lt;/p&gt;
+      })}
+      
+    &lt;/div&gt;
+  );
+}
+
+export default StudentList;
+</code></pre>
+<p>By embedding the <code>students.map((name) =&gt; &lt;p&gt;{name}&lt;/p&gt;)</code> in curly braces <code>{ }</code> the array of strings is converted to an array of <code>&lt;p&gt;&lt;/p&gt;</code> elements, and displayed immediately.</p>
+<p>Next, we’ll import and display the <code>StudentList</code> component in <code>App.js</code>:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import StudentList from &#39;./components/StudentList&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      {/* &lt;List /&gt; */}
+
+      &lt;StudentList /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<div class="alert alert-info">
+<p>You may have noticed that the <code>.map()</code> is missing the usual curly braces <code>{}</code> and a <code>return</code> statement. Remember the syntax of the <em>concise arrow function</em>? This is the one we’re using here. The concise arrow function is frequently used in React, and you may come across it in many React code examples.</p>
+</div>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Render a list using <code>.map()</code></h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d2-lists-cfu2-xj1ls?file=/src/App.js">CodeSandbox - React Lists (Exercise 2)</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>), CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Render a list of paragraphs in the <code>CourseList</code> component</strong></p>
+<p>Render a list of paragraphs <code>&lt;p&gt;&lt;/p&gt;</code> in the <code>CourseList</code> component by mapping over the provided <code>courses</code> array. The component <code>CourseList</code> is already imported and rendered in <code>App.js</code>.</p>
+</details>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<pre><code class="jsx hljs raw">// src/components/CourseList.js
+
+const courses = [&#39;Web Development&#39;, &#39;Data Analytics&#39;, &#39;UX/UI&#39;, &#39;Cybersecurity&#39;];
+
+function CourseList() {
+  return (
+    &lt;div className=&quot;list&quot;&gt;
+      &lt;h2&gt;List of Courses&lt;/h2&gt;
+
+      {courses.map(courseName =&gt; {
+        return &lt;p&gt;{courseName}&lt;/p&gt;;
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default CourseList;
+</code></pre>
+</details>
+<br>
+<h2 class="raw">Keys</h2>
+<!--
+
+&gt; - **C.** Demonstrate the use of unique key attributes in the list elements
+
+-->
+<p>When you run the previous example’s code, you’ll see a warning in the console saying that a <em>key</em> should be provided for list items. You are probably wondering, what is a <em>key</em>?</p>
+<p>:::</p>
+<p><img class="emoji" alt=":rotating_light:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/rotating_light.png" /> If we open the console to check on the result, we’ll see an error:</p>
+<blockquote class="raw">
+<p>Warning: Each child in a list should have a unique “key” prop.</p>
+</blockquote>
+<p>:::</p>
+<p>A “key” is a special <em>prop</em> you must include when creating lists. <strong>React uses <em>keys</em> to identify which items in the list have changed, are added, or are removed (<a href="https://reactjs.org/docs/reconciliation.html#keys">read more</a>).</strong></p>
+<br>
+<h3 class="raw">Index as a key</h3>
+<p>To fix the missing <em>key</em> warning, we need to update the <code>StudentList</code> component and add a <code>key</code> prop to our list items inside the <code>students.map() </code>. We will use the array element <code>index</code> as the key:</p>
+<pre><code class="jsx hljs raw">// src/components/StudentList.js
+
+const students = [&#39;Marc&#39;, &#39;Lucy&#39;, &#39;Anna&#39;];
+
+function StudentList() {
+  return (
+    &lt;div className=&quot;list&quot;&gt;
+      &lt;h2&gt;Student List&lt;/h2&gt;
+      {students.map((name, index) =&gt; (
+        &lt;p key={index}&gt; 
+          {name} 
+        &lt;/p&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+
+export default StudentList;
+</code></pre>
+<p>We used the <em>index</em> of each element <code>key={index}</code> as a <em>key</em> value. Using <em>indexes</em> for keys is fine when rendering static lists. However, this is a <em>bad practice</em> in the list where the order of items may change. This can negatively impact performance and cause bugs in component re-rendering (<a href="https://robinpokorny.medium.com/index-as-a-key-is-an-anti-pattern-e0349aece318">read more</a>).</p>
+<div class="alert alert-warning">
+<p><img class="emoji" alt=":warning:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/warning.png" /> You should not use <em>index</em> of the <code>map</code> as <em>key</em>. This is considered an <em>anti-pattern</em> that may lead to unpredictable results.</p>
+</div>
+<p>You may ask yourself - then why do we use it here if it is not a good practice?</p>
+<p>We did it because it is an easy way to demo the importance of “keys” and we used it as a transitioning step. Next, we will show you how to properly set up <em>key</em> props in a list.</p>
+<br>
+<h3 class="raw">Unique keys</h3>
+<div class="alert alert-success">
+<p>As a <code>key</code> prop for the list item, you should always try to assign a unique and permanent value.</p>
+</div>
+<p>The best way to pick a key is to use a string that uniquely identifies a list item among its siblings. Most often, you would use IDs from your data as keys.</p>
+<p>As an example, we’ll create a new component called <code>ProjectList.js</code> that has an array of objects with unique IDs:</p>
+<pre><code class="jsx hljs raw">// src/components/ProjectList.js
+
+const projects = [
+  { _id: &#39;127fae&#39;, name: &#39;EatBCN&#39;, techStack: &#39;React, Express, MongoDB&#39; },
+  { _id: &#39;985afw&#39;, name: &#39;TravelLite&#39;, techStack: &#39;React, Express, Redux&#39; },
+  { _id: &#39;347eef&#39;, name: &#39;IronClub&#39;, techStack: &#39;Express, HBS, MongoDB&#39; },
+  { _id: &#39;90af21&#39;, name: &#39;ChatApp&#39;, techStack: &#39;React, Express, SocketIO&#39; }
+];
+
+function ProjectList() {
+  return (
+    &lt;div className=&quot;list&quot;&gt;
+      &lt;h2&gt;Project List&lt;/h2&gt;
+
+      {projects.map(project =&gt; {
+        return (
+          &lt;div key={project._id}&gt;
+            &lt;h3&gt;{project.name}&lt;/h3&gt;
+            &lt;p&gt;Tech Stack: {project.techStack}&lt;/p&gt;
+          &lt;/div&gt;
+        );
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectList;
+</code></pre>
+<p>In the example above, each object in the <code>projects</code> array has an <code>_id</code> property that holds a unique string value. We used this unique <code>_id</code> value as a <code>key</code>.</p>
+<div class="alert alert-warning">
+<p>An important thing to note: When creating lists, we must always assign the <code>key</code> prop to the outermost (enclosing) element <em>returned</em> from the <code>.map()</code>.</p>
+</div>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Render a list with unique keys</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d2-lists-cfu3-zkcus?file=/src/App.js">CodeSandbox - React Lists (Exercise 3)</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>), CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Render a list of apartments in the <code>Results</code> component</strong></p>
+<p>You will be working in the <code>Results.js</code> file, which contains the component itself and an array named <code>apartments</code> holding the objects representing the apartments for rent.</p>
+<p>Your task is to display the apartments as a list in the <code>Results</code> component. Each list item should have the following HTML structure:</p>
+<pre><code class="html hljs raw">&lt;div className=&quot;card&quot;&gt;
+  &lt;img src=&quot;IMAGE&quot; alt=&quot;apartment&quot; /&gt;
+  &lt;h3&gt;TITLE&lt;/h3&gt;
+  &lt;p&gt;Price: PRICE $&lt;/p&gt;
+&lt;/div&gt;
+</code></pre>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<pre><code class="jsx hljs raw">// src/components/Results.js
+
+const apartments = [
+  {
+    _id: &#39;127fae&#39;,
+    img: &#39;https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/ironbnb-house.43.png&#39;,
+    title: &#39;3 Bedroom House&#39;,
+    pricePerDay: 195
+  },
+  {
+    _id: &#39;985afw&#39;,
+    img: &#39;https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/ironbnb-house.50.png&#39;,
+    title: &#39;Amazing Studio&#39;,
+    pricePerDay: 90
+  },
+  {
+    _id: &#39;347eef&#39;,
+    img: &#39;https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/ironbnb-house.58.png&#39;,
+    title: &#39;Luxurious Flat&#39;,
+    pricePerDay: 195
+  },
+  {
+    _id: &#39;90af21&#39;,
+    img: &#39;https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/ironbnb-house.43.png&#39;,
+    title: &#39;High-end Comfy Apartment&#39;,
+    pricePerDay: 195
+  }
+];
+
+function Results() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Results&lt;/h1&gt;
+
+      {apartments.map(apartment =&gt; {
+        return (
+          &lt;div key={apartment._id} className=&quot;card&quot;&gt;
+            &lt;img src={apartment.img} alt=&quot;apartment&quot; /&gt;
+            &lt;h3&gt;{apartment.title}&lt;/h3&gt;
+            &lt;p&gt;Price: {apartment.pricePerDay} $&lt;/p&gt;
+          &lt;/div&gt;
+        );
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default Results;
+</code></pre>
+</details>
+<br>
+<h2 class="raw">Removing elements from a list</h2>
+<!--
+
+&gt; **D.** Make an example of using the `filter` method to remove an item from the list stored.
+
+-->
+<p>Let’s keep practicing with the arrays that hold objects. In this section, we’ll look at how to make a dynamic list component that lets us remove items from the list.</p>
+<p>To create a dynamic component, we will need a <em>state</em>. So, instead of storing the array with data in a variable, we will store it directly in the state. This will give us complete control of the list, allowing us to <em>remove</em>, <em>update</em> and <em>add</em> elements to the list. In this example, we will focus on removing elements.</p>
+<p>For the sake of clarity, we will save our array with data in a separate file. In the <code>/src</code> folder, create a new file called <code>movies-data.json</code> and paste the following content into it:</p>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+</details>
+<br>
+<summary>Click here for the code</summary>
+<br>
+<h5 class="raw"><code>src/movies-data.json</code></h5>
+<pre><code class="json hljs raw">[
+  {
+    &quot;_id&quot;: &quot;1ae23ef1&quot;,
+    &quot;title&quot;: &quot;The Godfather&quot;,
+    &quot;director&quot;: &quot;Francis Coppola&quot;,
+    &quot;hasOscars&quot;: true,
+    &quot;IMDBRating&quot;: 9.2
+  },
+  {
+    &quot;_id&quot;: &quot;1ae23ef2&quot;,
+    &quot;title&quot;: &quot;Star Wars&quot;,
+    &quot;director&quot;: &quot;George Lucas&quot;,
+    &quot;hasOscars&quot;: true,
+    &quot;IMDBRating&quot;: 8.7
+  },
+  {
+    &quot;_id&quot;: &quot;1ae23ef3&quot;,
+    &quot;title&quot;: &quot;The Shawshank Redemption&quot;,
+    &quot;director&quot;: &quot;Frank Darabont&quot;,
+    &quot;hasOscars&quot;: false,
+    &quot;IMDBRating&quot;: 9.3
+  },
+  {
+    &quot;_id&quot;: &quot;1ae23ef4&quot;,
+    &quot;title&quot;: &quot;Jurassic Park&quot;,
+    &quot;director&quot;: &quot;Steven Spielberg&quot;,
+    &quot;hasOscars&quot;: false,
+    &quot;IMDBRating&quot;: 8.0
+  },
+  {
+    &quot;_id&quot;: &quot;1ae23ef5&quot;,
+    &quot;title&quot;: &quot;Sharknado&quot;,
+    &quot;director&quot;: &quot;Anthony C. Ferrante&quot;,
+    &quot;hasOscars&quot;: false,
+    &quot;IMDBRating&quot;: 5.2
+  },
+  {
+    &quot;_id&quot;: &quot;1ae23ef6&quot;,
+    &quot;title&quot;: &quot;Titanic&quot;,
+    &quot;director&quot;: &quot;James Cameron&quot;,
+    &quot;hasOscars&quot;: true,
+    &quot;IMDBRating&quot;: 8.9
+  }
+]
+</code></pre>
+</details>
+<br>
+<h3 class="raw">Store the List Array in the State</h3>
+<p>Inside our <code>src/components</code> folder, let’s create a <code>MovieList.js</code> file. This time we’ll create a stateful component using the <code>useState()</code> hook, which will also allow us to practice working with the state:</p>
+<pre><code class="jsx hljs raw">// src/components/MovieList.js
+
+import { useState } from &#39;react&#39;;
+
+// import the array of movie objects
+import moviesData from &#39;../movies-data.json&#39;;
+
+function MovieList() {
+  // Declare a state variable &quot;movies&quot;
+  // and set the array from movies-data.json as the initial state
+  const [movies, setMovies] = useState(moviesData);
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Movie List&lt;/h2&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default MovieList;
+</code></pre>
+<p>We created a new state variable <code>movies</code> and we set its initial state to the imported array of movie objects <code>moviesData</code>.</p>
+<p>To create a list we will need to iterate over the state variable <code>movies</code>. This approach will allow us to update our list by updating the state variable <code>movies</code>.</p>
+<div class="alert alert-info">
+<p>To create a dynamic list component, which re-renders every time the list updates (remove an item, add an item, modify it), we must use state and store the array data in the state.</p>
+<p>Remember, a <strong>React component re-renders only when it receives new props and when its <em>state</em> changes</strong>.</p>
+</div>
+<p>Before we render the list, let’s first import and display the <code>MovieList</code> component in <code>App.js</code>. To make things clearer, we’ll comment out all of the previously displayed components:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import MovieList from &#39;./components/MovieList&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      {/* &lt;List /&gt; */}
+      {/* &lt;StudentList /&gt; */}
+      {/* &lt;ProjectList /&gt; */}
+
+      &lt;MovieList /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<h3 class="raw">Render the List Array from the State</h3>
+<p>Now, let’s update <code>MovieList</code> to show the movies. Remember, to make our list dynamic, we must render the array stored in the state! This means that we will be mapping over the state variable <code>movies</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/MovieList.js
+// ... previous imports stay unchanged
+
+function MovieList() {
+  const [movies, setMovies] = useState(moviesData);
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Movie List&lt;/h2&gt;
+      {movies.map(movie =&gt; {
+        return (
+          &lt;div key={movie._id} className=&quot;MovieCard&quot;&gt;
+            &lt;h3&gt;{movie.title}&lt;/h3&gt;
+            &lt;p&gt;Director: {movie.director}&lt;/p&gt;
+            &lt;p&gt;Rating: {movie.IMDBRating}&lt;/p&gt;
+            &lt;button className=&quot;btn-delete&quot;&gt;Delete 🗑&lt;/button&gt;
+          &lt;/div&gt;
+        );
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default MovieList;
+</code></pre>
+<br>
+<h3 class="raw">Delete Button</h3>
+<p>This is getting better and better! Each of our movie cards now has a delete button. These buttons are not functional at the moment, but we will implement this next. Let’s add an <code>onClick</code> event to our delete button and create a function for deleting a movie:</p>
+<pre><code class="jsx hljs raw">// src/components/MovieList.js
+// ... previous imports stay unchanged
+
+function MovieList() {
+  const [movies, setMovies] = useState(moviesData);
+
+  const deleteMovie = movieId =&gt; {
+    const filteredMovies = movies.filter(movie =&gt; {
+      return movie._id !== movieId;
+    });
+
+    setMovies(filteredMovies);
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Movie List&lt;/h2&gt;
+      {movies.map(movie =&gt; {
+        return (
+          &lt;div key={movie._id} className=&quot;MovieCard&quot;&gt;
+            &lt;h3&gt;{movie.title}&lt;/h3&gt;
+            &lt;p&gt;Director: {movie.director}&lt;/p&gt;
+            &lt;p&gt;Rating: {movie.IMDBRating}&lt;/p&gt;
+            &lt;button onClick={() =&gt; deleteMovie(movie._id)} className=&quot;btn-delete&quot;&gt;
+              Delete 🗑
+            &lt;/button&gt;
+          &lt;/div&gt;
+        );
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default MovieList;
+</code></pre>
+<p>Let’s summarize how the deleting a movie and <code>deleteMovie</code> function work and check our understanding:</p>
+<ol>
+<li class="raw">
+<p>When clicked, the delete button calls the <code>deleteMovie</code> function and passes it the <code>_id</code> of that specific movie: <code>onClick={ () =&gt; deleteMovie(movie._id) }</code>.</p>
+</li>
+<li class="raw">
+<p>The function <code>deleteMovie</code> then filters the existing movies array using the <code>.filter()</code> method, to remove the clicked movie: <code>return movie._id !== movieId;</code>.</p>
+</li>
+<li class="raw">
+<p>The <code>filter()</code> method will create a new array called <code>filteredMovies</code> and exclude the clicked movie from that new array.</p>
+</li>
+<li class="raw">
+<p>At last, the new <code>filteredMovies</code> array is set as the new state via the state updater function <code>setMovies</code>. Updating the state (state variable) will cause the component to re-render:</p>
+</li>
+</ol>
+<pre><code class="jsx hljs raw">setMovies(filteredMovies)
+</code></pre>
+<h4 class="raw">The result</h4>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/react-lists-delete-items.gif" alt="Example - deleting movies from the list" class="raw md-image"></p>
+<br>
+<h2 class="raw">Extracting Components</h2>
+<!--
+
+&gt; **E.** Make an example of how to extract the content into a new component
+&gt;
+&gt; **F.** Demonstrate how to deconstruct props
+
+-->
+<p>One of the main strong points of React is the component-based approach to building applications. It allows us to <strong>organize our user interfaces (UI) into components and to clearly separate concerns and responsibilities</strong>.</p>
+<p>One of the best practices for improving the code and readability of a React app is splitting large complex components into smaller ones, also referred to as <a href="https://reactjs.org/docs/components-and-props.html#extracting-components">extracting components</a>.</p>
+<p>Our <code>MovieList</code> component is slowly getting out of shape, with too many things happening in one place. We can improve it by extracting a part of its code and moving it to a new, smaller component.</p>
+<p>We will take out the following portion of code from the <code>MovieList</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/MovieList.js
+// ...
+
+&lt;div key={movie._id} className=&quot;MovieCard&quot;&gt;
+  &lt;h3&gt;{movie.title}&lt;/h3&gt;
+  &lt;p&gt;Director: {movie.director}&lt;/p&gt;
+  &lt;p&gt;Rating: {movie.IMDBRating}&lt;/p&gt;
+  &lt;button onClick={() =&gt; deleteMovie(movie._id)} className=&quot;btn-delete&quot;&gt;
+    Delete 🗑
+  &lt;/button&gt;
+&lt;/div&gt;
+
+// ...
+</code></pre>
+<p>and create a new component <code>MovieCard</code> out of it, in the following way:</p>
+<pre><code class="jsx hljs raw">// src/components/MovieCard.js
+
+function MovieCard(props) {
+  const { movie } = props;
+
+  return (
+    &lt;div className=&quot;MovieCard&quot;&gt;
+      &lt;h3&gt;{movie.title}&lt;/h3&gt;
+      &lt;p&gt;Director: {movie.director}&lt;/p&gt;
+      &lt;p&gt;Rating: {movie.IMDBRating}&lt;/p&gt;
+      {/* Keep the button commented out for now */}
+      {/* &lt;button onClick={() =&gt; deleteMovie(movie._id)} className=&quot;btn-delete&quot;&gt;
+        Delete 🗑
+      &lt;/button&gt; */}
+    &lt;/div&gt;
+  );
+}
+
+export default MovieCard;
+</code></pre>
+<br>
+<p>Notice this line:</p>
+<pre><code class="jsx hljs raw">// ...
+const { movie } = props;
+// ...
+</code></pre>
+<p>This means that “movie” now comes from the PROPS, that it is passed as a prop from the parent component (the “MovieList” component).</p>
+<p>If we haven’t destructured the props object, we would have to substitute the previous:</p>
+<pre><code class="jsx hljs raw">movie.title;
+movie.director;
+movie.IMDBRating;
+movie._id;
+</code></pre>
+<p>for</p>
+<pre><code class="jsx hljs raw">props.movie.title;
+props.movie.director;
+props.movie.IMDBRating;
+props.movie._id;
+</code></pre>
+<p>As previously explained, this means that now we need to pass the <code>movie</code> object to our new component <code>MovieCard</code> through props, as the data is not directly available in the <code>MovieCard</code> component.</p>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/react-lists-extracting-components.png" alt="Example - Extracting a component" class="raw md-image"></p>
+<br>
+<p>The last step is to import the new <code>MovieCard</code> component to <code>MovieList</code> and use it in the place from which we extracted its code previously:</p>
+<pre><code class="jsx hljs raw">// src/components/MovieList.js
+// ... previous imports stay unchanged
+
+import MovieCard from &#39;./MovieCard&#39;;
+
+function MovieList() {
+  const [movies, setMovies] = useState(moviesData);
+
+  const deleteMovie = movieId =&gt; {
+    const filteredMovies = movies.filter(movie =&gt; {
+      return movie._id !== movieId;
+    });
+
+    setMovies(filteredMovies);
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Movie List&lt;/h2&gt;
+      {movies.map(movie =&gt; {
+        return &lt;MovieCard key={movie._id} movie={movie} /&gt;;
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default MovieList;
+</code></pre>
+<p><img class="emoji" alt=":star:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/star.png" /> That looks much better than before! We <em>separated the responsibility</em> of iterating through the list from displaying the item itself. <code>MovieList</code> is now in charge of rendering the list, while <code>MovieCard</code> is responsible only for displaying the movie content.</p>
+<p>Now, let’s try to delete a movie from the list. Go ahead and un-comment the delete button in the MovieCard component. What happens when you try deleting one?</p>
+<p>With all restructuring we did, it doesn’t work any longer. The delete stopped working because we moved the delete button to a separate component and the <code>deleteMovie</code> function is no longer accessible. The delete button can’t access the <code>deleteMovie</code> function as it is located in another component.</p>
+<br>
+<div class="alert alert-info">
+<p>How would you remedy this? <strong>Give it a few minutes and try to solve this issue on your own.</strong> We included a hint and the solution below, but we would like to challenge you to exercise your developers’ muscles and come up with a solution on your own. <img class="emoji" alt=":muscle:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/muscle.png" /></p>
+</div>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click here for the hint</b></summary>
+<br>
+<p>The <code>deleteMovie</code> function lives in the <code>MovieList</code> component. To access it from the <code>MovieCard</code> you should pass it to the <code>MovieCard</code> as a prop.</p>
+</details>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Solution</summary>
+<br>
+<p>The solution is to pass the <code>deleteMovies</code> function down to the <code>MovieCard</code> as a prop, like this:</p>
+<pre><code class="jsx hljs raw">// src/components/MovieList.js
+// ... previous imports stay unchanged
+
+function MovieList() {
+  const [movies, setMovies] = useState(moviesData);
+
+  const deleteMovie = movieId =&gt; {
+    const filteredMovies = movies.filter(movie =&gt; {
+      return movie._id !== movieId;
+    });
+
+    setMovies(filteredMovies);
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Movie List&lt;/h2&gt;
+      {movies.map(movie =&gt; {
+        return &lt;MovieCard key={movie._id} movie={movie} clickToDelete={deleteMovie} /&gt;;
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default MovieList;
+</code></pre>
+<br>
+<p>This way we pass the reference of the function <code>deleteMovie</code> down to the <code>MovieCard</code>. We basically borrow the function <code>deleteMovie</code> to the <code>MovieCard</code>. From here <code>MovieCard</code> will be able to access the function through <em>props</em> and call it:</p>
+<pre><code class="jsx hljs raw">// ./src/components/MovieCard.js
+// ... previous imports stay unchanged
+
+function MovieCard(props) {
+  const { movie, clickToDelete } = props;
+
+  return (
+    &lt;div className=&quot;MovieCard&quot;&gt;
+      &lt;h3&gt;{movie.title}&lt;/h3&gt;
+      &lt;p&gt;Director: {movie.director}&lt;/p&gt;
+      &lt;p&gt;Rating: {movie.IMDBRating}&lt;/p&gt;
+      &lt;button onClick={() =&gt; clickToDelete(movie._id)} className=&quot;btn-delete&quot;&gt;
+        Delete 🗑
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default MovieCard;
+</code></pre>
+</details>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Create a dynamic list component</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d2-lists-cfu4-1i3vh?file=/src/components/App.js">CodeSandbox - React Lists (Exercise 4)</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>) CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Create a stateful component <code>Launches</code></strong></p>
+<p>You will be working on this component in the <code>Launches.js</code> file. The <code>Launches.js</code> file contains the component itself and an imported array of data coming from the file <code>spacex-launches.json</code>. The component <code>Launches</code> is already imported and rendered in <code>App.js</code>.</p>
+<p><strong>Task:</strong> Using a <code>useState()</code> hook, create a state variable named <code>launches</code> and as its initial value set the imported array <code>launchesData</code>.</p>
+<br>
+<p><strong>3. Render a list in the <code>Launches</code> component</strong></p>
+<p>Now that you have your <code>Launches</code> component ready and the data stored in the state, render a list by mapping over the array of launches from the state. Each list item should have the following structure and content:</p>
+<pre><code class="html hljs raw">&lt;div&gt;
+  &lt;h2&gt;Mission: LAUNCH.MISSION_NAME&lt;/h2&gt;
+  &lt;img src=&quot;LAUNCH.LINKS.MISSION_PATCH_SMALL&quot; alt=&quot;mission patch&quot; /&gt;
+  &lt;button&gt;Delete Item&lt;/button&gt;
+&lt;/div&gt;
+</code></pre>
+<br>
+<p><strong>4. Add the delete button functionality</strong></p>
+<p>Each item in the list already includes a delete button <code> &lt;button&gt; Delete Item &lt;/button&gt;</code>.</p>
+<p>Add an <code>onClick</code> event listener and implement the delete functionality to remove an item from the list when the button is clicked.</p>
+<br>
+<p><strong>5. Extract list items into a component <code>LaunchCard</code></strong></p>
+<p>The last step is to extract the item content from the <code>Launches</code> component to a new component. Name this new component <code>LaunchCard</code>.</p>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<p><strong>Exercise Solution: <a href="https://codesandbox.io/s/solution-m3-d2-lists-cfu4-35ftc">Link</a></strong></p>
+</details>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-list-and-keys/tree/master">react-list-and-keys</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-list-and-keys.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-list-and-keys
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>Lists are common parts of UI in web applications. To render a list in React we use the array method <code>map()</code>. With the method <code>map()</code> we convert an array of data into an array of elements. When creating lists we should always assign a <code>key</code> prop to the list elements. As a value for the <code>key</code> props, we should always use a unique value. As our components grow the code usually becomes harder to read and reason about. Larger components can be easily broken into smaller ones by extracting content into a new component. When extracting components, we have to be careful to provide all of the necessary data through props.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://reactjs.org/docs/lists-and-keys.html">React Lists and Keys</a></li>
+<li class="raw"><a href="https://reactpatterns.com/#jsx-spread-attributes">JSX Spread Attributes</a></li>
+<li class="raw"><a href="https://medium.com/byte-sized-react/component-arrays-in-react-a46e775fae7b">Arrays in React</a></li>
+</ul>

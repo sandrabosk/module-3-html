@@ -1,0 +1,794 @@
+<!-- # React | Conditional Rendering -->
+<!--
+
+### Instructional Design Goals
+
+**Prerequisites:**
+
+- Familiarity with JavaScript conditional statements and operators
+- Be able to create conditional statements and expressions using `if else` statements and operators `?` and `&&`
+
+
+
+**A.**  *Introduce* the concept of Conditional Rendering
+
+**B.** *explain* and *illustrate* the use of conditional statements `if` `else`  and operators `&&` `?` to conditionally return different content:
+
+- B1 - *explain* and *exemplify* use of `if` `else` to conditionally return different content.
+- B2 - *explain* and *exemplify* use of `&&` operator to conditionally render content
+- B3 - *explain* and *exemplify* use of `?` operator to conditionally render content
+
+
+
+**C.** *explain* and *demonstrate* how to use the state to render content conditionally.
+
+**D.** *explain* and *demonstrate* how to abstract part of conditional rendering to a function - Convert the example of too many if-else into a simpler one using icons: 🏆 🔝
+
+-->
+<h2 class="raw">Learning goals</h2>
+<p>After this lesson you will be able to:</p>
+<ul>
+<li class="raw">Render components and content according to conditions</li>
+<li class="raw">Use operators <code>?</code> and <code>&amp;&amp;</code> to conditionally render content</li>
+<li class="raw">Organize and abstract conditional rendering logic into functions</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>In React, you can create distinct components that encapsulate the behavior you need. Then, using the conditionals you can render only some of them, depending on the state of your application.</p>
+<p>Conditional rendering in React works the same way conditions work in JavaScript. You can use JavaScript <code>if-else</code> statements or the conditional operators <code>?</code> and <code>&amp;&amp;</code> to render the elements representing the current state and React will update the UI to match them.</p>
+<div class="alert alert-success">
+<p><strong>Conditional rendering</strong> means rendering different UI (user interface) content depending on whether a condition is <code>true</code> or <code>false</code>.</p>
+</div>
+<br>
+<h3 class="raw">Getting Started</h3>
+<p>Let’s create a new React app that we’ll use for the following examples:</p>
+<pre><code class="shell hljs raw">$ npx create-react-app react-conditional-rendering
+$ cd react-conditional-rendering
+$ npm start
+</code></pre>
+<p>As a starting point, we will reuse some of the code from the previous lesson <em><a href="https://github.com/ironhack-labs/lesson-code-h-react-list-and-keys/tree/master">React - Lists and Keys</a></em>.</p>
+<p>Below you will find the starter code that we need for this lesson. Go ahead and create the following files by using the provided code:</p>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Click here for the code</summary>
+<br>
+<pre><code class="jsx hljs raw">// src/components/MovieList.js
+
+import { useState } from &#39;react&#39;;
+import moviesData from &#39;../movies-data.json&#39;;
+
+import MovieCard from &#39;./MovieCard&#39;;
+
+function MovieList() {
+  const [movies, setMovies] = useState(moviesData);
+
+  const deleteMovie = movieId =&gt; {
+    const filteredMovies = movies.filter(movie =&gt; {
+      return movie._id !== movieId;
+    });
+
+    setMovies(filteredMovies);
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Movie List&lt;/h2&gt;
+      {movies.map(movie =&gt; {
+        return &lt;MovieCard key={movie._id} movie={movie} clickToDelete={deleteMovie} /&gt;;
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default MovieList;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/components/MovieCard.js
+
+import React from &#39;react&#39;;
+
+function MovieCard(props) {
+  const { movie, clickToDelete } = props;
+
+  return (
+    &lt;div className=&quot;MovieCard&quot;&gt;
+      &lt;h3&gt;{movie.title}&lt;/h3&gt;
+      &lt;p&gt;Director: {movie.director}&lt;/p&gt;
+      &lt;p&gt;Rating: {movie.IMDBRating}&lt;/p&gt;
+      &lt;button onClick={() =&gt; clickToDelete(movie._id)} className=&quot;btn-delete&quot;&gt;
+        Delete 🗑
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default MovieCard;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/App.js
+
+import &#39;./App.css&#39;;
+import MovieList from &#39;./components/MovieList&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;MovieList /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<h5 class="raw"><code>src/movie-data.json</code></h5>
+<pre><code class="jsx hljs raw">[
+  {
+    &quot;_id&quot;: &quot;1ae23ef1&quot;,
+    &quot;title&quot;: &quot;The Godfather&quot;,
+    &quot;director&quot;: &quot;Francis Coppola&quot;,
+    &quot;hasOscars&quot;: true,
+    &quot;IMDBRating&quot;: 9.2
+  },
+  {
+    &quot;_id&quot;: &quot;1ae23ef2&quot;,
+    &quot;title&quot;: &quot;Star Wars&quot;,
+    &quot;director&quot;: &quot;George Lucas&quot;,
+    &quot;hasOscars&quot;: true,
+    &quot;IMDBRating&quot;: 8.7
+  },
+  {
+    &quot;_id&quot;: &quot;1ae23ef3&quot;,
+    &quot;title&quot;: &quot;The Shawshank Redemption&quot;,
+    &quot;director&quot;: &quot;Frank Darabont&quot;,
+    &quot;hasOscars&quot;: false,
+    &quot;IMDBRating&quot;: 9.3
+  },
+  {
+    &quot;_id&quot;: &quot;1ae23ef4&quot;,
+    &quot;title&quot;: &quot;Jurassic Park&quot;,
+    &quot;director&quot;: &quot;Steven Spielberg&quot;,
+    &quot;hasOscars&quot;: false,
+    &quot;IMDBRating&quot;: 8.0
+  },
+  {
+    &quot;_id&quot;: &quot;1ae23ef5&quot;,
+    &quot;title&quot;: &quot;Sharknado&quot;,
+    &quot;director&quot;: &quot;Anthony C. Ferrante&quot;,
+    &quot;hasOscars&quot;: false,
+    &quot;IMDBRating&quot;: 5.2
+  },
+  {
+    &quot;_id&quot;: &quot;1ae23ef6&quot;,
+    &quot;title&quot;: &quot;Titanic&quot;,
+    &quot;director&quot;: &quot;James Cameron&quot;,
+    &quot;hasOscars&quot;: true,
+    &quot;IMDBRating&quot;: 8.9
+  }
+]
+</code></pre>
+<br>
+<pre><code class="css hljs raw">/* index.css */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, &#39;Roboto&#39;, &#39;Oxygen&#39;, &#39;Ubuntu&#39;, &#39;Cantarell&#39;, &#39;Fira Sans&#39;, &#39;Droid Sans&#39;, &#39;Helvetica Neue&#39;, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, &#39;Courier New&#39;, monospace;
+}
+
+div,
+section,
+main {
+  box-sizing: border-box;
+}
+
+nav {
+  background: #cec8db;
+  color: white;
+  padding: 0px 20px;
+  box-shadow: 0px 1px 2px gray;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+nav p {
+  color: white;
+  margin-left: 0px;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+h2 {
+  padding: 15px 30px;
+  border: 1px solid #6d6d6d;
+  background: lightcyan;
+  width: 300px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+}
+
+h3 {
+  padding: 5px 50px;
+  display: inline-block;
+}
+
+button,
+select {
+  padding: 3px 10px;
+  min-width: 50px;
+  height: 40px;
+  margin: 5px;
+  font-size: 1rem;
+}
+
+.App {
+  text-align: center;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.list {
+  width: 400px;
+  padding: 10px;
+  box-shadow: 0px 2px 3px grey;
+  margin-bottom: 20px;
+  background: white;
+}
+
+.list &gt; li,
+.list &gt; p,
+.list &gt; div {
+  margin: 10px;
+  border: 1px solid #f98a8a;
+}
+
+.MovieCard {
+  border: 1px solid grey;
+  box-shadow: 0px 2px 3px grey;
+  width: 400px;
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.Spinner {
+  width: 100%;
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Spinner img {
+  width: 100px;
+  height: 100px;
+}
+
+span.green,
+span.red,
+span.black {
+  display: inline-block;
+  padding: 3px 10px;
+  width: 25px;
+  border-radius: 3px;
+  color: white;
+  font-weight: 600;
+}
+
+.green {
+  background: green;
+}
+
+.red {
+  background: red;
+}
+
+.black {
+  background: black;
+}
+</code></pre>
+</details>
+<br>
+<h2 class="raw">Conditional Rendering</h2>
+<h3 class="raw">Basic <code>if-else</code> conditional</h3>
+<!--
+
+&gt; - B1 - *explain* and *exemplify* use of `if` `else` to conditionally return different content.
+
+-->
+<p>We can use <code>if</code> <code>else</code> statements to conditionally render content in a component by declaring what content should be returned for a specific condition.</p>
+<p>Here is a simplified example of how this works:</p>
+<pre><code class="jsx hljs raw">if (true) {
+  return &lt;SomeComponentGoesHere /&gt;;
+} else {
+  return &lt;OtherComponentGoesHere /&gt;;
+}
+</code></pre>
+<p>We will create a new component <code>Spinner.js</code> that we’ll use in the following example:</p>
+<pre><code class="jsx hljs raw">// src/components/Spinner.js
+
+const spinner = &#39;https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/spinner.gif&#39;;
+
+function Spinner() {
+  return (
+    &lt;div className=&quot;Spinner&quot;&gt;
+      &lt;img src={spinner} alt=&quot;loading spinner&quot; /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Spinner;
+</code></pre>
+<p><code>Spinner</code> is a simple component displaying a spinner <em>gif</em> that we can show to the user while some content is loading.</p>
+<p>We will update the <code>App.js</code> in the following way:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import Spinner from &#39;./components/Spinner&#39;; // &lt;-- add
+import { useState } from &#39;react&#39;; // &lt;-- add
+
+function App() {
+  // Declare a new state variable, which we&#39;ll call &quot;isLoading&quot;
+  const [isLoading, setIsLoading] = useState(true); // &lt;-- add
+
+  if (isLoading) {
+    return &lt;Spinner /&gt;;
+  } 
+  else {
+    return (
+      &lt;div className=&quot;App&quot;&gt;
+        &lt;MovieList /&gt;
+      &lt;/div&gt;
+    );
+  } 
+}
+
+export default App;
+</code></pre>
+<p>In the above example, we imported the <code>Spinner</code> component and the <code>useState</code> hook. We created a new state variable <code>isLoading</code>  holding a boolean. The state variable <code>isLoading</code> is used as a condition to either display a spinner <em>or</em> show the entire app content and the <code>MovieList</code> component.</p>
+<p>To conditionally render the content we used the <code>if-else</code> statement.</p>
+<p>For the sake of brevity, we skipped adding a button and an event handler. To toggle between displaying the spinner and seeing the content change the initial value of the state variable <code>isLoading</code> to <code>false</code>:</p>
+<pre><code class="jsx hljs raw">// const [isLoading, setIsLoading] = useState(true);
+const [isLoading, setIsLoading] = useState(false);
+</code></pre>
+<br>
+<h3 class="raw">Inline <code>if</code> with logical operator <code>&amp;&amp;</code></h3>
+<!--
+
+&gt; - B2 - *explain* and *exemplify* use of `&&` operator to conditionally render content
+&gt; - B3 - *explain* and *exemplify* use of `?` operator to conditionally render content
+
+-->
+<p>While using <code>if-else</code> statements is a fine way to conditionally render content, sometimes you may need to use a different syntax. There are a few ways to inline conditions in JSX.</p>
+<p>JSX allows you to <a href="https://reactjs.org/docs/introducing-jsx.html#embedding-expressions-in-jsx">embed expressions</a> by wrapping them in curly braces <code>{}</code>. This includes the JavaScript logical <code>&amp;&amp;</code> operator. Logical operator <code>&amp;&amp;</code> can be handy for conditionally including an element.</p>
+<p>We’ll use the existing component <code>MovieCard</code> to give an example. We will update the component to conditionally render different text depending on if the movie won an Oscar or not:</p>
+<pre><code class="jsx hljs raw">// src/components/MovieCard.js
+// ... previous imports stay unchanged
+
+function MovieCard(props) {
+  const { movie, clickToDelete } = props;
+
+  return (
+    &lt;div className=&quot;MovieCard&quot;&gt;
+      &lt;h3&gt;{movie.title}&lt;/h3&gt;
+      &lt;p&gt;Director: {movie.director}&lt;/p&gt;
+      &lt;p&gt;Rating: {movie.IMDBRating}&lt;/p&gt;
+
+      {movie.hasOscars &amp;&amp; &lt;p&gt;Got the Oscar Award! 🏆&lt;/p&gt;}
+      {!movie.hasOscars &amp;&amp; &lt;p&gt;Great movie but no Oscars! &lt;/p&gt;}
+
+      &lt;button onClick={() =&gt; clickToDelete(movie._id)} className=&quot;btn-delete&quot;&gt;
+        Delete 🗑
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default MovieCard;
+</code></pre>
+<br>
+<p>Let’s summarize how the above conditional rendering works and check our understanding:</p>
+<ol>
+<li class="raw">
+<p>Each movie object rendered in the <code>MovieCard</code> is coming through the props, and has a boolean property <code>hasOscars</code>:</p>
+<pre><code class="json hljs raw">{
+  &quot;_id&quot;: &quot;1ae23ef1&quot;,
+  &quot;title&quot;: &quot;The Godfather&quot;,
+  &quot;director&quot;: &quot;Francis Coppola&quot;,
+  &quot;hasOscars&quot;: true,
+  &quot;IMDBRating&quot;: 9.2
+}
+</code></pre>
+</li>
+<li class="raw">
+<p>We added two new embedded expressions that use logical operator <code>&amp;&amp;</code>:</p>
+<pre><code class="jsx hljs raw">{
+  movie.hasOscars &amp;&amp; &lt;p&gt;Got the Oscar Award! 🏆&lt;/p&gt;;
+}
+{
+  !movie.hasOscars &amp;&amp; &lt;p&gt;Great movie but no Oscars! &lt;/p&gt;;
+}
+</code></pre>
+</li>
+<li class="raw">
+<p>The logical <code>&amp;&amp;</code> expression is evaluated left to right and it is tested for possible “short-circuit” evaluation.</p>
+<p>It works because in JavaScript, <code>true &amp;&amp; expression</code> always evaluates to <code>expression</code>, and <code>false &amp;&amp; expression</code> always evaluates to <code>false</code>.</p>
+<ul>
+<li class="raw">
+<p>If the condition on the left side is <code>true</code>, the content right after <code>&amp;&amp;</code> will appear in the output.</p>
+</li>
+<li class="raw">
+<p>If the condition on the left side is <code>false</code>, the content won’t be rendered.</p>
+</li>
+</ul>
+</li>
+</ol>
+<div class="alert alert-success">
+<p><strong>Logical operator <code>&amp;&amp;</code> - “short-circuit” evaluation</strong></p>
+<ul>
+<li class="raw">If the condition on the left-hand side is <em>true</em>, the code on the right side is executed.</li>
+<li class="raw">If the condition on the left-hand side is <em>false</em>, <code>&amp;&amp;</code> operator will “short-circuit” to stop the execution, and the code on the right will not run.</li>
+</ul>
+</div>
+<br>
+<h3 class="raw">Inline if-else with ternary operator <code>?</code></h3>
+<!--
+
+&gt; - B3 - *explain* and *exemplify* use of `?` operator to conditionally render content
+
+-->
+<div class="alert alert-warning">
+<p><img class="emoji" alt=":exclamation:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/exclamation.png" /> In JSX, <strong><code>if-else</code> statements can’t be used directly in the markup.</strong> The following example code will throw an error:</p>
+<pre><code class="jsx hljs raw">function Example () {
+  const showTitle = true;
+
+  return(
+    &lt;div&gt;
+      {
+        if (showTitle) {
+          &lt;h1&gt; Example &lt;/h1&gt;
+        }
+      }
+    &lt;/div&gt;
+  )
+}
+
+export default Example;
+</code></pre>
+</div>
+<p>However, there is another technique used to supplement this. Another way to conditionally render elements inline is to use the JavaScript conditional (ternary) operator <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Reference/Operators/Conditional_Operator"><code>condition ? true : false</code></a>.</p>
+<br>
+<p>We’ll make another example of how to display content conditionally. This time we will use the ternary <code>?</code> operator. Let’s update the code in our <code>MovieCard.js</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/MovieCard.js
+// ... previous imports stay unchanged
+
+function MovieCard(props) {
+  const { movie, clickToDelete } = props;
+
+  return (
+    &lt;div className=&quot;MovieCard&quot;&gt;
+      &lt;h3&gt;{movie.title}&lt;/h3&gt;
+      &lt;p&gt;Director: {movie.director}&lt;/p&gt;
+      &lt;p&gt;Rating: {movie.IMDBRating}&lt;/p&gt;
+
+      {/*   {movie.hasOscars &amp;&amp; &lt;p&gt;Got the Oscar Award! 🏆&lt;/p&gt;}   */}
+      {/*   {!movie.hasOscars &amp;&amp; &lt;p&gt;Great movie but no Oscars! &lt;/p&gt;}   */}
+      
+
+      {movie.hasOscars ? &lt;p&gt;Got the Oscar Award! 🏆&lt;/p&gt; : &lt;p&gt;Great movie but no Oscars!&lt;/p&gt;}
+
+      &lt;button onClick={() =&gt; clickToDelete(movie._id)} className=&quot;btn-delete&quot;&gt;
+        Delete 🗑
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default MovieCard;
+</code></pre>
+<p>The ternary <code>?</code> operator acts as an in-line <code>if...else</code> statement.</p>
+<p>As you can see, the above example gives the same result as the previous one, which is using <code>&amp;&amp;</code>. It is up to you to choose an appropriate style based on what you and your team consider more readable.</p>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Inline Conditionals <code>?</code> and <code>&amp;&amp;</code></h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d2-lists-cfu5-dbxcg?file=/src/components/LaunchCard.js">CodeSandbox - React Lists (Exercise 5)</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>) CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Display information in the <code>LaunchCard</code></strong></p>
+<p>The existing component <code>LaunchCard</code> is already imported and rendered in <code>Launches.js</code>. You will be working on this component in the <code>LaunchCard.js</code> file.</p>
+<p>Each <code>launch</code> object contains a <code>launch_success</code> property holding a boolean. You can check the file <code>spacex-launches.json</code> for more details.</p>
+<p>Using a ternary operator <code>? </code> render a paragraph with the following text:</p>
+<ul>
+<li class="raw">if <code>launch_success</code> is <em>true</em>: <code>&quot;Mission Successful! ✅&quot;</code></li>
+<li class="raw">if <code>launch_success</code> is <em>false</em>: <code>&quot;Launch Failed ❌&quot;</code></li>
+</ul>
+<br>
+<p><strong>3. Display <em>launch failure details</em> in the <code>LaunchCard</code></strong></p>
+<p>Each <code>launch</code> object where <code>launch_success</code> property is <em>false</em>, contains an additional property <code>launch_failure_details</code> with the <em>reason</em> of the mission failure.</p>
+<p>Using a logical operator <code>&amp;&amp;</code> display the <code>launch_failure_details</code> for every <code>launch</code> object that has this property available.</p>
+<br>
+<h4 class="raw">Expected Result</h4>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/react-conditional-rendering-cfu-5-result.png" alt="Expected Result" class="raw md-image"></p>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<p><strong>Exercise Solution: <a href="https://codesandbox.io/s/solution-m3-d2-lists-cfu5-3usvn?file=/src/components/LaunchCard.js">Link</a></strong></p>
+</details>
+<br>
+<h2 class="raw">Conditionally render based on the State</h2>
+<!--
+
+&gt; - **C.** *explain* and *demonstrate* how to use the state to render content conditionally.
+
+-->
+<p>State variables are commonly used together with conditionals to specify how the UI should look. We can use state variables to show or hide content in the component.</p>
+<p>To show this, we will create a new file <code>ImprovedMovieList.js</code>, and reuse the code from the existing component <code>MovieList</code>. In addition to the code we copied from the <code>MovieList</code> we will add a new state variable <code>showMovies</code> and a <em>button</em> with an event listener:</p>
+<pre><code class="jsx hljs raw">// src/components/ImprovedMovieList.js
+
+import { useState } from &#39;react&#39;;
+import moviesData from &#39;../movies-data.json&#39;;
+import MovieCard from &#39;./MovieCard&#39;;
+
+function ImprovedMovieList() {
+  const [movies, setMovies] = useState(moviesData);
+  // Declare a new state variable, which we&#39;ll call &quot;showMovies&quot;
+  const [showMovies, setShowMovies] = useState(true);
+
+  const deleteMovie = movieId =&gt; {
+    const filteredMovies = movies.filter(movie =&gt; {
+      return movie._id !== movieId;
+    });
+
+    setMovies(filteredMovies);
+  };
+
+  const toggleShowMovies = () =&gt; {
+    setShowMovies(!showMovies);
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Improved Movie List&lt;/h2&gt;
+
+      &lt;button onClick={toggleShowMovies}&gt;{showMovies ? &#39;Hide&#39; : &#39;Show&#39;}&lt;/button&gt;
+
+      {showMovies &amp;&amp;
+        movies.map(movie =&gt; {
+          return &lt;MovieCard key={movie._id} movie={movie} clickToDelete={deleteMovie} /&gt;;
+        })}
+    &lt;/div&gt;
+  );
+}
+
+export default ImprovedMovieList;
+</code></pre>
+<p>We will update the <code>App.js</code> to import and display the <code>ImprovedMovieList</code> component:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import ImprovedMovieList from &#39;./components/ImprovedMovieList&#39;;
+
+function App() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (isLoading) {
+    return &lt;Spinner /&gt;;
+  } else {
+    return (
+      &lt;div className=&quot;App&quot;&gt;
+        {/* &lt;MovieList /&gt; */}
+        &lt;ImprovedMovieList /&gt;;
+      &lt;/div&gt;
+    );
+  }
+}
+
+export default App;
+</code></pre>
+<p>Let’s explain the above example by breaking it up into parts:</p>
+<ol>
+<li class="raw">
+<p>We copied the code of the existing component <code>MovieList</code> and used it to create a new component <code>ImprovedMovieList</code>.</p>
+</li>
+<li class="raw">
+<p>To the new component <code>ImprovedMovieList</code>, we added a state variable <code>showMovies</code> which we are using to <em>hide</em> and <em>show</em> the list of movies:</p>
+</li>
+</ol>
+<pre><code class="jsx hljs raw">const [showMovies, setShowMovies] = useState(true);
+</code></pre>
+<ol start="3">
+<li class="raw">We also added a button with an <code>onClick</code> event listener:</li>
+</ol>
+<pre><code class="jsx hljs raw">&lt;button onClick={ toggleShowMovies }&gt; { showMovies ? &#39;Hide&#39; : &#39;Show&#39; } &lt;/button&gt;
+</code></pre>
+<ol start="4">
+<li class="raw">
+<p>The function <code>toggleShowMovies</code> is invoked every time the user clicks on the button.</p>
+</li>
+<li class="raw">
+<p>The function <code>toggleShowMovies</code> is used to update the value of <code>showMovies</code>.</p>
+<p>We use the (NOT) operator <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_NOT"><code>!</code></a> to flip the value of <code>showMovies</code> to the opposite boolean: <code>!showMovies</code>:</p>
+<ul>
+<li class="raw">If <code>showMovies</code> is <code>true</code> it is flipped to <code>false</code>.</li>
+<li class="raw">If <code>showMovies</code> is <code>false</code> it is flipped to <code>true</code>.</li>
+</ul>
+<p>This flipped value is then set as the new state <code>setShowMovies(!showMovies)</code>, which will cause the component to re-render.</p>
+</li>
+<li class="raw">
+<p>Lastly, we used the <code>&amp;&amp;</code> operator to <em>show</em> or <em>hide</em> the list of movies depending on if <code>showMovies</code> is <em>true</em> or <em>false</em>:</p>
+</li>
+</ol>
+<pre><code class="jsx hljs raw">{
+  showMovies &amp;&amp;
+    movies.map(movie =&gt; {
+      /* rest of the code */
+    });
+}
+</code></pre>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>See the Result</b></summary>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/react-conditional-rendering-result.gif" alt="Example - Hide and show Improved Movie List" class="raw md-image"></p>
+</details>
+<br>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: State Conditional Rendering</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d2-lists-cfu6-s073j?file=/src/components/Launches.js">CodeSandbox - React Lists (Exercise 6)</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>) CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Create a show/hide toggle button for the list</strong></p>
+<p>Using the conditional operators and state create a show/hide toggle button inside of the <code>Launches</code> component. The component <code>Launches</code> is already imported and rendered in <code>App.js</code>.</p>
+<p>Check the <em>Expected Result</em> image below for more details.</p>
+<br>
+<h4 class="raw">Expected Result</h4>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/react-conditional-rendering-cfu-6-result.gif" alt="Expected Result - Toggle Show and Hide" class="raw md-image"></p>
+</details>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<p><strong>Exercise Solution: <a href="https://codesandbox.io/s/solution-m3-d2-lists-cfu6-hbwq3?file=/src/components/Launches.js">Link</a></strong></p>
+</details>
+<br>
+<h2 class="raw">Extracting conditions to functions</h2>
+<!--
+
+&gt; - D. *explain* and *demonstrate* how to abstract part of conditional rendering to a function
+
+-->
+<p>We should always keep an eye on and strive to keep our code clean and readable. The conditional logic of our components may at times get too complex and hard to reason about.</p>
+<p>When our conditionals become too big and hard to reason about we should simplify the code. We can do this by extracting parts of the logic into functions.</p>
+<p>Let’s create a new component <code>ImprovedMovieCard</code> to show an example of how to do this:</p>
+<pre><code class="jsx hljs raw">// src/components/ImprovedMovieCard.js
+
+import React from &#39;react&#39;;
+
+function ImprovedMovieCard(props) {
+  const { movie, clickToDelete } = props;
+
+  function generateScoreLabel(score) {
+    if (score &gt; 9) {
+      return &lt;span className=&quot;green&quot;&gt;9+&lt;/span&gt;;
+    } else if (score &lt; 7) {
+      return &lt;span className=&quot;red&quot;&gt;{score}&lt;/span&gt;;
+    } else {
+      return &lt;span className=&quot;black&quot;&gt;{score}&lt;/span&gt;;
+    }
+  }
+
+  return (
+    &lt;div className=&quot;MovieCard&quot;&gt;
+      &lt;h3&gt;{movie.title}&lt;/h3&gt;
+      &lt;p&gt;Director: {movie.director}&lt;/p&gt;
+      &lt;p&gt;IMDB Rating: {generateScoreLabel(movie.IMDBRating)}&lt;/p&gt;
+
+      {movie.hasOscars ? &lt;p&gt;Got the Oscar Award! 🏆&lt;/p&gt; : &lt;p&gt;Great movie but no Oscars!&lt;/p&gt;}
+
+      &lt;button onClick={() =&gt; clickToDelete(movie._id)} className=&quot;btn-delete&quot;&gt;
+        Delete 🗑
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ImprovedMovieCard;
+</code></pre>
+<p>We placed part of the conditional logic, responsible for displaying the IMDB score of the movie, into a function.</p>
+<p>To avoid writing the conditionals inline we created a function named <code>generateScoreLabel</code>. The function <code>generateScoreLabel</code> takes one argument <code>score</code>, and returns a differently formatted span element, depending on what the movie score is.</p>
+<p>To see the result, we’ll import the new <code>ImprovedMovieCard</code> component to <code>ImprovedMovieList.js</code> and use it in place of the <code>MovieCard</code> component:</p>
+<pre><code class="jsx hljs raw">// src/components/ImprovedMovieList.js
+// ... previous imports stay unchanged
+
+import ImprovedMovieCard from &#39;./ImprovedMovieCard&#39;;
+
+function ImprovedMovieList() {
+  const [movies, setMovies] = useState(moviesData);
+  const [showMovies, setShowMovies] = useState(true);
+
+  const deleteMovie = movieId =&gt; {
+    const filteredMovies = movies.filter(movie =&gt; {
+      return movie._id !== movieId;
+    });
+    setMovies(filteredMovies);
+  };
+
+  const toggleShowMovies = () =&gt; {
+    setShowMovies(!showMovies);
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Improved Movie List&lt;/h2&gt;
+
+      &lt;button onClick={toggleShowMovies}&gt;{showMovies ? &#39;Hide&#39; : &#39;Show&#39;}&lt;/button&gt;
+
+      {showMovies &amp;&amp;
+        movies.map(movie =&gt; {
+          return (
+            &lt;ImprovedMovieCard 
+              key={movie._id} 
+              movie={movie} 
+              clickToDelete={deleteMovie} 
+            /&gt;);
+        })}
+    &lt;/div&gt;
+  );
+}
+
+export default ImprovedMovieList;
+</code></pre>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-conditional-rendering/tree/master">react-conditional-rendering</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-conditional-rendering.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-conditional-rendering
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>Conditional rendering allows us to conditionally render content within a component. Simply explained, conditional rendering is used to show/hide content in React apps.</p>
+<p>To conditionally render content in react we commonly use <code>?</code> and <code>&amp;&amp;</code> operators. The <code>if-else</code> statement can be used as well, but not directly in the JSX markup.</p>
+<p>The conditional logic of our components may at times get too complex and hard to reason about. When our conditionals become too complex, we should break them down into separate functions.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://reactjs.org/docs/conditional-rendering.html">React Conditional Rendering</a></li>
+<li class="raw"><a href="https://codeburst.io/javascript-short-circuit-conditionals-bbc13ac3e9eb">JavaScript — Short Circuit Conditionals</a></li>
+</ul>

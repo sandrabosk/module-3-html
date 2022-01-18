@@ -1,0 +1,650 @@
+<!-- # React | Building the REST API -->
+<!--
+
+### Instructional Design Goals
+
+**A.** Introduce REST guidelines and provide a basic overview of the most important ones.
+
+**B.** Demonstrate how to create basic API documentation that lists endpoints and data models
+
+**C.** Demonstrate how to create REST API that implements CRUD actions on Mongo Database
+
+**D.** Demonstrate how to use Postman to test the API.
+
+
+
+**Prerequisites:**
+
+- Students should be familiar with the Node and ExpressJS framework.
+- Students should know how to do the initial setup of the server, MongoDB database, and the middlewares.
+- Students should have [Postman](https://www.postman.com/downloads/) installed and register and verify an account (free) on Postman.
+
+-->
+<h2 class="raw">Learning Goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Describe what REST architectural style is and understand why it is used</li>
+<li class="raw">Create a REST API following best practices</li>
+<li class="raw">Test your REST API using Postman</li>
+<li class="raw">Configure CORS (Cross-Origin Resource Sharing) in your Express server</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>In this lesson, we will focus on the backend. We will introduce the <em>REST architectural style</em> and talk about best practices for designing REST APIs. To help us solidify our knowledge, we will practice creating a REST API from scratch. At the end of the lesson, we will have a well-tested REST API providing data for our front-end React app.</p>
+<br>
+<h2 class="raw">REST (REpresentational State Transfer)</h2>
+<!-- 
+&gt; **A.** Introduce REST guidelines and provide a basic overview of the most important ones.
+ -->
+<h3 class="raw">What is the REST?</h3>
+<p>REST, which stands for <strong>RE</strong>presentational <strong>S</strong>tate <strong>T</strong>ransfer, is a Web <em>architecture style</em> created to make the communication between the systems on the Web easier and uniform. REST architectural style outlines several guiding principles, also called <em>constraints</em>. Let’s mention the most important ones:</p>
+<br>
+<h4 class="raw">Client-server</h4>
+<p>In REST architecture, client and server interfaces are decoupled. By separating the <em>client</em> concerns (frontend) from the <em>server and data storage</em> concerns (backend), we allow these two systems (frontend and backend) to evolve independently.</p>
+<p>Put in simple terms, the server and the client are independent systems. The <em>server</em> acts as a data store, and the <em>client</em> retrieves and consumes data.</p>
+<br>
+<h4 class="raw">Stateless</h4>
+<p>The stateless constraint says that the server is not required to memorize the state of the client. Requests coming from the client must contain all of the information necessary for the server to understand the request.</p>
+<br>
+<h4 class="raw">Uniform Interface</h4>
+<p>RESTful API should provide a uniform interface so that software applications written in different programming languages or running on different platforms may all access the <em>resources</em> in the same way.</p>
+<br>
+<div class="alert alert-info">
+<p><strong>REST</strong>ful - We say that a service is RESTful when it follows and implements REST guidelines/constraints.</p>
+</div>
+<br>
+<h4 class="raw">Resources</h4>
+<p>REST APIs are handling data which in the REST terminology is known as <em>resources</em>. Any information that can be named can be a resource: JSON object, document, image, or service that the <em>client</em> can access. The data format of a resource is known as a <strong><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types">media type</a></strong>.</p>
+<p>Each resource should have a <em>unique identifier</em>, a URI that is used to identify the resource.</p>
+<p>Most of the web services are representing resources using either XML or JSON format. We will be focusing on and creating a REST API that handles <em>JSON</em> objects.</p>
+<br>
+<h3 class="raw">REST API Design - Best Practices</h3>
+<p>When endpoints that represent resources are named well, an API is intuitive and easy to use. Each resource must have a <em>unique identifier</em>, which is a URI used to access the resource. The following are best practices for naming endpoints:</p>
+<br>
+<h4 class="raw">Use lowercase letters when naming endpoints</h4>
+<p>As <a href="https://www.ietf.org/rfc/rfc3986.txt">URIs</a> on the Internet are case-sensitive and for consistency, lowercase letters should be used when naming endpoints.</p>
+<br>
+<h4 class="raw">Do not use underscores ( _ ), use hyphens (-)</h4>
+<p>You should use hyphens <code>-</code> instead of underscores <code>_</code> in your endpoints. Overly complex URLs, especially those containing underscores <code>_</code> can cause problems for web crawlers.</p>
+<p>It is also worth mentioning that underscore characters <code>_</code>  are not permitted in domain names. Therefore for the sake of consistency, do not use underscores <code>_</code> when naming your endpoints. Instead, use hyphens <code>-</code>.</p>
+<br>
+<h4 class="raw">Use nouns instead of verbs in endpoint paths</h4>
+<p>We should <strong>use <em>nouns</em> to name endpoint paths</strong> to represent the resources (resource collection) we’re retrieving or manipulating. You should avoid using verbs in endpoint paths as HTTP requests already include an action verb (GET, POST, etc.). Using verbs in the endpoint path would make the path redundantly long without any real benefit.</p>
+<p>Here is an example of the commonly used URI structure that follows this naming rule:</p>
+<pre><code class="shell hljs raw">&lt;protocol&gt;://&lt;domain&gt;/&lt;context&gt;/&lt;resource-collection&gt;/&lt;resource-id&gt;
+</code></pre>
+<p>Following the above structure, an example endpoint of a REST API that handles customer orders would look like this:</p>
+<pre><code class="shell hljs raw">http://example.com/api/orders/3a56
+</code></pre>
+<br>
+<h4 class="raw">Use HTTP verbs to indicate the action</h4>
+<p>To specify the action performed on a resource, we should use HTTP verbs. The most common ones are GET, POST, PUT and DELETE:</p>
+<ul>
+<li class="raw"><code>GET</code> - retrieves resources</li>
+<li class="raw"><code>POST</code> - creates new resources on the server</li>
+<li class="raw"><code>PUT</code> - updates existing resources</li>
+<li class="raw"><code>DELETE</code> - removes resources</li>
+</ul>
+<p>As you may have noticed, HTTP verbs map well to the CRUD operations. <img class="emoji" alt=":star:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/star.png" /></p>
+<br>
+<p><strong>Example</strong></p>
+<p>BAD <img class="emoji" alt=":x:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/x.png" /> - Below endpoint contains a verb:  <code>get-order</code>.</p>
+<pre><code class="shell hljs raw">GET   http://example.com/shop/get-order/3
+</code></pre>
+<br>
+<p>GOOD <img class="emoji" alt=":white_check_mark:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/white_check_mark.png" /> - Endpoint name contains only nouns, and HTTP verb <strong>GET</strong> is used to specify the action.</p>
+<pre><code>GET   http://example.com/shop/orders/3
+</code></pre>
+<br>
+<h4 class="raw">Handle errors uniformly and respond with standard HTTP status codes</h4>
+<p>The HTTP status codes are used to indicate the status of the executed operation. The REST API should respond to each request with a proper HTTP status code.</p>
+<p>If an error occurs during the request, REST API should respond with an HTTP status code that indicates why the error occurred.</p>
+<p>Commonly used <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">HTTP response status codes</a> are:</p>
+<ul>
+<li class="raw"><strong>200</strong> - OK</li>
+<li class="raw"><strong>201</strong> - Created</li>
+<li class="raw"><strong>204</strong> - No Content</li>
+<li class="raw"><strong>301</strong> - Moved Permanently (Redirect)</li>
+<li class="raw"><strong>400</strong> - Bad Request</li>
+<li class="raw"><strong>401</strong> - Unauthorized</li>
+<li class="raw"><strong>404</strong> - Not Found</li>
+<li class="raw"><strong>500</strong> - Internal Server Error</li>
+</ul>
+<div class="alert alert-info">
+<p>Although correct HTTP verb usage and the above best practices are not explicitly mentioned in the REST architecture constraints, they can help with implementation and creation of a uniform REST API.</p>
+</div>
+<br>
+<h3 class="raw">Example | RESTful Endpoints</h3>
+<p>Following the above best practices, REST APIs should have endpoints structured along these lines:</p>
+<table>
+<thead>
+<tr>
+<th>HTTP verb</th>
+<th>URL</th>
+<th>Request body</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/api/orders</code></td>
+<td>JSON</td>
+<td>Creates a new order</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/orders</code></td>
+<td>(empty)</td>
+<td>Returns all orders</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/orders/:id</code></td>
+<td>JSON</td>
+<td>Edits a single order by id</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/order/:id</code></td>
+<td>(empty)</td>
+<td>Deletes a single order by id</td>
+</tr>
+</tbody>
+</table>
+<br>
+<h2 class="raw">Project Management API</h2>
+<!-- 
+&gt; **B.** Demonstrate how to create basic API documentation that lists endpoints and data models
+&gt;
+&gt; **C.** Demonstrate how to create REST API that implements CRUD actions on Mongo Database
+&gt;
+&gt; **D.** Demonstrate how to use Postman to test the API. -->
+<p>We are going to create the backend for our <strong>Project Management</strong> app.</p>
+<p>We will start with a boilerplate created with the <strong><a href="https://www.npmjs.com/package/ironlauncher">IronLauncher</a></strong> introduced in the lesson <strong>Express Generator</strong>. So, navigate to the folder where you keep all the class materials and run the following commands:</p>
+<pre><code class="bash hljs raw">$ npx ironlauncher project-management-server --json
+
+# wait until it finishes installing...
+
+$ cd project-management-server
+$ code .
+$ npm run dev
+</code></pre>
+<p><em>Side note</em>: We’ve decided to use the word <em>server</em> in the name of the app to be more descriptive. The front-end app that we will create later will be named <em>project-management-client</em>.</p>
+<!-- :::info
+:bulb: Eventually, we will be building a client for this application, and using the same approach we have had so far, we will set the `PORT` of the server to `5005` (and our frontend/client will run on `3000`). This being said, open the `.env` fine and update the `PORT`:
+
+```bash
+PORT=5005
+```
+
+::: -->
+<p>Great, now we have the app so let’s start from the beginning. In the following section, we’ll see how to structure our database and define the routes to access the resources.</p>
+<br>
+<h3 class="raw">API Documentation</h3>
+<p>We will start our project by first documenting all of the routes and data models for our API. Following best practices, we will use <em>verbs</em> to specify the type of operation and <em>nouns</em> when naming endpoints.</p>
+<h4 class="raw">Server Routes / Endpoints</h4>
+<h5 class="raw">Project routes / endpoints</h5>
+<table>
+<thead>
+<tr>
+<th>HTTP verb</th>
+<th>URL</th>
+<th>Request body</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/api/projects</code></td>
+<td>JSON</td>
+<td>Creates a new project</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/projects</code></td>
+<td>(empty)</td>
+<td>Returns all the projects</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/projects/:projectId</code></td>
+<td>(empty)</td>
+<td>Returns the specified project</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/projects/:projectId</code></td>
+<td>JSON</td>
+<td>Edits the specified project</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/api/projects/:projectId</code></td>
+<td>(empty)</td>
+<td>Deletes the specified project</td>
+</tr>
+</tbody>
+</table>
+<h5 class="raw">Task routes / endpoints</h5>
+<table>
+<thead>
+<tr>
+<th>HTTP verb</th>
+<th>URL</th>
+<th>Request body</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/api/tasks</code></td>
+<td>JSON</td>
+<td>Creates a new task</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h4 class="raw">Models</h4>
+<h5 class="raw">Project Model</h5>
+<pre><code class="js hljs raw">{
+  title: String,
+  description: String,
+  tasks: [ { type: Schema.Types.ObjectId, ref: &#39;Task&#39; } ]
+}
+</code></pre>
+<h5 class="raw">Task Model</h5>
+<pre><code class="js hljs raw">{
+  title: String,
+  description: String,
+  project: { type: Schema.Types.ObjectId, ref: &#39;Project&#39; }
+}
+</code></pre>
+<hr>
+<br>
+<h3 class="raw">Create the models</h3>
+<p>Let’s start! We are creating a <em>project</em> management app so let’s define a schema and create the model for our <em>projects</em>.</p>
+<p>Let’s add a <code>Project.model.js</code> file to the <code>models/</code> folder:</p>
+<pre><code class="js hljs raw">// models/Project.model.js
+
+const mongoose = require(&#39;mongoose&#39;);
+const { Schema, model } = mongoose;
+
+const projectSchema = new Schema({
+  title: String,
+  description: String,
+  tasks: [{ type: Schema.Types.ObjectId, ref: &#39;Task&#39; }]
+  // owner will be added later on
+});
+
+module.exports = model(&#39;Project&#39;, projectSchema);
+</code></pre>
+<br>
+<p>Our projects will have the <code>title</code> and <code>description</code> properties both as type <em>String</em> and <code>tasks</code> property being an array of  <code>ObjectId</code>s referencing the <code>Task</code> model. Later we will add the <code>owner</code> property. Mongo will automatically add an auto-generated unique <code>_id</code> field, so we don’t need to specify it.</p>
+<p>Each project will hold a reference to one or more <code>Task</code> documents coming from another collection, so let’s create the model for that collection. Inside the <code>models/</code> folder, create a new file <code>Task.model.js</code>. Tasks will have the following properties:</p>
+<pre><code class="js hljs raw">// models/Task.model.js
+
+const mongoose = require(&#39;mongoose&#39;);
+const { Schema, model } = mongoose;
+
+const taskSchema = new Schema({
+  title: String,
+  description: String,
+  project: { type: Schema.Types.ObjectId, ref: &#39;Project&#39; }
+});
+
+module.exports = model(&#39;Task&#39;, taskSchema);
+</code></pre>
+<p>Great! We have defined our data models. Next, we’ll proceed to create the routes.</p>
+<br>
+<h3 class="raw">Create the routes</h3>
+<p>Let’s go and create two files inside the <code>routes/</code> folder: <code>project.routes.js</code> and <code>task.routes.js</code>.</p>
+<p>We already outlined all of the <code>/api/projects</code> and <code>/api/tasks</code> routes, so let’s start building them.</p>
+<br>
+<h3 class="raw">First route</h3>
+<p>The first thing we will do is allow users to add projects to the database. So we’ll start with the <code>POST</code> route for creating a project.
+In the <code>project.routes.js</code> file import <code>express</code>, <code>mongoose</code> and the <em>models</em> and add the mentioned route:</p>
+<pre><code class="js hljs raw">// routes/project.routes.js
+
+const router = require(&quot;express&quot;).Router();
+
+// const mongoose = require(&#39;mongoose&#39;);
+
+const Project = require(&#39;../models/Project.model&#39;);
+const Task = require(&#39;../models/Task.model&#39;);
+
+//  POST /api/projects  -  Creates a new project
+router.post(&#39;/projects&#39;, (req, res, next) =&gt; {
+  const { title, description } = req.body;
+
+  Project.create({ title, description, tasks: [] })
+    .then(response =&gt; res.json(response))
+    .catch(err =&gt; res.json(err));
+});
+
+module.exports = router;
+</code></pre>
+<p>Here we used the <code>create()</code> method to create a new project and save it into the database by passing it the values from the request body <code>req.body</code>.
+Now, let’s go to <code>app.js</code> and towards the end of the file <strong>require</strong> the newly created <code>project.routes.js</code> file. Also, we will add the <code>/api</code> prefix to the routes (this step is not mandatory, but it will help us in the long run).</p>
+<pre><code class="js hljs raw">// app.js
+// ...
+
+// Start handling routes here
+const allRoutes = require(&quot;./routes/index&quot;);
+app.use(&quot;/api&quot;, allRoutes);
+
+const projectRouter = require(&#39;./routes/project.routes&#39;);     // &lt;== IMPORT
+app.use(&#39;/api&#39;, projectRouter);                           // &lt;== ADD
+
+// ...
+</code></pre>
+<br>
+<h4 class="raw">Test the route with Postman</h4>
+<p>Using <a href="https://www.getpostman.com/">Postman</a>, test the newly created route <code>POST</code> - <code>/api/projects</code>.</p>
+<h5 class="raw">Method</h5>
+<pre><code>POST
+</code></pre>
+<h5 class="raw">URL</h5>
+<pre><code class="bash hljs raw">http://localhost:5005/api/projects
+</code></pre>
+<h5 class="raw">Request Body (<code>JSON</code>):</h5>
+<pre><code class="json hljs raw">{
+  &quot;title&quot;: &quot;Learn React&quot;,
+  &quot;description&quot;: &quot;Get react skills and build an awesome final project&quot;
+}
+</code></pre>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Screenshot - Test route (POST /api/project) with Postman </summary>
+ <br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-front-back-integration/01-rest-api-postman-post-projects-1.png" alt="postman post projects example 1" class="raw md-image"></p>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-front-back-integration/02-rest-api-postman-post-projects-2.png" alt="postman post projects example 2" class="raw md-image"></p>
+</details>
+<br>
+<p>If we check the database now, we should see our first project saved. One of the properties inside a project object is the tasks <code> array</code>, which is referencing the <code>Task</code> model and holding the task <code>_id</code>s. This array is currently empty since we haven’t created any task routes or any tasks. Let’s move forward and create the first task route.</p>
+<br>
+<h3 class="raw">Second Route</h3>
+<p>Inside the <code>routes/task.routes.js</code> file, add the following code:</p>
+<pre><code class="js hljs raw">// routes/task.routes.js
+
+const router = require(&quot;express&quot;).Router();
+// const mongoose = require(&#39;mongoose&#39;);
+
+const Task = require(&#39;../models/Task.model&#39;);
+const Project = require(&#39;../models/Project.model&#39;);
+
+//  POST /api/tasks  -  Creates a new task
+router.post(&#39;/tasks&#39;, (req, res, next) =&gt; {
+  const { title, description, projectId } = req.body;
+
+  Task.create({ title, description, project: projectId })
+    .then(newTask =&gt; {
+      return Project.findByIdAndUpdate(projectId, { $push: { tasks: newTask._id } } );
+    })
+    .then(response =&gt; res.json(response))
+    .catch(err =&gt; res.json(err));
+});
+
+module.exports = router;
+</code></pre>
+<p>This route performs two actions on the database: <em>creates a new task</em> and <em>updates an existing project</em>. Once the <em>new task</em> document is created, we use its <code>_id</code> to update the corresponding <em>project</em> document. We update the <em>project</em> document by pushing the <code>_id</code> of the new task to the <code>tasks</code> array:</p>
+<pre><code class="js hljs raw">{ $push: { tasks: newTask._id } }
+</code></pre>
+<p>We need to import the file with the <em>tasks</em> routes, using <code>require()</code>, and set it up as the routes middleware in the <code>app.js</code>:</p>
+<pre><code class="js hljs raw">// app.js
+// ...
+
+// ... previous routes stay unchanged
+
+const taskRouter = require(&#39;./routes/task.routes&#39;);    // &lt;== IMPORT
+app.use(&#39;/api&#39;, taskRouter);                        // &lt;== ADD
+
+// ...
+</code></pre>
+<p>At this point, we can create a <em>project</em> and then a <em>task</em> that belongs to that project.  Below is the schema that visually represents the relationship between the <em>project</em> and the <em>task</em> documents:</p>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary> Visual representation of project &lt;--> task relationship </summary>
+  <br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-front-back-integration/03-rest-api-referencing-documents.png" alt="Visual representation of project &lt;--&gt; task relationship" class="raw md-image"></p>
+</details>
+<br>
+<h4 class="raw">Test the route with Postman - <code>POST</code> <code>/api/tasks</code></h4>
+<p>Using <a href="https://www.getpostman.com/">Postman</a>, test the newly created route.</p>
+<h5 class="raw">Method</h5>
+<pre><code>POST
+</code></pre>
+<h5 class="raw">URL</h5>
+<pre><code class="bash hljs raw">http://localhost:5005/api/tasks
+</code></pre>
+<h5 class="raw">Request Body (<code>JSON</code>):</h5>
+<pre><code class="json hljs raw">{
+  &quot;title&quot;: &quot;Learn React&quot;,
+  &quot;description&quot;: &quot;Get react skills and build an awesome final project&quot;,
+  &quot;projectId&quot;: &quot;&lt;_ID-OF-THE-EXISTING-PROJECT-DOCUMENT&gt;&quot;
+}
+</code></pre>
+<br>
+<p><img class="emoji" alt=":exclamation:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/exclamation.png" /> <strong>NOTE:</strong> You should include a <strong>string</strong> with the <code>_id</code> of a project document already existing in your database ( replace the placeholder <code>&lt;_ID-OF-THE-EXISTING-PROJECT-DOCUMENT&gt;</code> in the above example ).</p>
+<br>
+<h3 class="raw">Third Route</h3>
+<p>Now let’s proceed with the rest of the routes. We’ll create the first GET route for the collection of <em>projects</em>:</p>
+<pre><code class="js hljs raw">// routes/project.routes.js
+// ...
+
+// GET /api/projects -  Retrieves all of the projects
+router.get(&#39;/projects&#39;, (req, res, next) =&gt; {
+  Project.find()
+    .populate(&#39;tasks&#39;)
+    .then(allProjects =&gt; res.json(allProjects))
+    .catch(err =&gt; res.json(err));
+});
+
+// ...
+</code></pre>
+<p>Let’s break down the implementation of this route:</p>
+<ol>
+<li class="raw">We use the <code>Project</code> model to operate on the collection of the <code>projects</code>.</li>
+<li class="raw">Calling the <code>find()</code> method we retrieve all of the documents from the <code>projects</code> collection.</li>
+<li class="raw">We chain the <code>populate()</code> method to swap the <code>_id</code> references of the task documents for the actual document. See the below image to understand better how calling <code>populate()</code> affects the retrieved <em>project</em> documents:</li>
+<li class="raw">We send the retrieved <em>project</em> documents as a JSON: <code>res.json(allProjects)</code>.</li>
+<li class="raw"><code>catch()</code> deals with errors.</li>
+</ol>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary> Retrieving all the projects without and with <b>populate()</b> </summary>
+<br>
+<ul>
+<li class="raw"><strong>Without</strong> <code>populate()</code></li>
+</ul>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-front-back-integration/04-rest-api-find-without-populate.png" alt="Retrieved documents - without using populate()" class="raw md-image"></p>
+<ul>
+<li class="raw"><strong>With</strong> <code>populate()</code></li>
+</ul>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-front-back-integration/05-rest-api-find-with-populate.png" alt="Retrieved documents - with populate()" class="raw md-image"></p>
+</details>
+<br>
+<h4 class="raw">Test the route with Postman - <code>GET</code> <code>/api/projects</code></h4>
+<p>Same as before, let’s go ahead and test this new route with <a href="https://www.getpostman.com/">Postman</a>.</p>
+<h5 class="raw">Method</h5>
+<pre><code>GET
+</code></pre>
+<h5 class="raw">URL</h5>
+<pre><code class="bash hljs raw">http://localhost:5005/api/projects
+</code></pre>
+<h5 class="raw">Request Body:</h5>
+<p><img class="emoji" alt=":exclamation:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/exclamation.png" /> No request body. HTTP <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body"><code>GET</code> messages use only Headers</a>.</p>
+<br>
+<h3 class="raw">Create the Remaining Routes - Projects</h3>
+<p>Now that we validated our first three routes, let’s complete the remaining routes of our REST API:</p>
+<pre><code class="js hljs raw">// routes/project.routes.js
+// ...
+
+//  GET /api/projects/:projectId -  Retrieves a specific project by id
+router.get(&#39;/projects/:projectId&#39;, (req, res, next) =&gt; {
+  const { projectId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    res.status(400).json({ message: &#39;Specified id is not valid&#39; });
+    return;
+  }
+
+  // Each Project document has `tasks` array holding `_id`s of Task documents
+  // We use .populate() method to get swap the `_id`s for the actual Task documents
+  Project.findById(projectId)
+    .populate(&#39;tasks&#39;)
+    .then(project =&gt; res.status(200).json(project))
+    .catch(error =&gt; res.json(error));
+});
+
+
+// PUT  /api/projects/:projectId  -  Updates a specific project by id
+router.put(&#39;/projects/:projectId&#39;, (req, res, next) =&gt; {
+  const { projectId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    res.status(400).json({ message: &#39;Specified id is not valid&#39; });
+    return;
+  }
+
+  Project.findByIdAndUpdate(projectId, req.body, { new: true })
+    .then((updatedProject) =&gt; res.json(updatedProject))
+    .catch(error =&gt; res.json(error));
+});
+
+
+// DELETE  /api/projects/:projectId  -  Deletes a specific project by id
+router.delete(&#39;/projects/:projectId&#39;, (req, res, next) =&gt; {
+  const { projectId } = req.params;
+  
+  if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    res.status(400).json({ message: &#39;Specified id is not valid&#39; });
+    return;
+  }
+
+  Project.findByIdAndRemove(projectId)
+    .then(() =&gt; res.json({ message: `Project with ${projectId} is removed successfully.` }))
+    .catch(error =&gt; res.json(error));
+});
+
+
+// ...
+</code></pre>
+<p>Nothing fancy here. We have just used three <code>mongoose</code> methods to achieve what we needed:</p>
+<ul>
+<li class="raw"><code>findById()</code> - Retrieves the specific project document.</li>
+<li class="raw"><code>findByIdAndUpdate()</code> - Updates the specific project document. By default, this method updates the document and returns a previous version that existed before the update. We used the <code>{ new: true }</code> option to get the updated version of the project document.</li>
+<li class="raw"><code>findByIdAndRemove()</code> - Deletes the specific project document and returns a status object.</li>
+</ul>
+<br>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":point_up:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/point_up.png" />  You may have noticed that some of the new routes in the above example include a conditional statement that checks if the request contains a valid MongoDB <code>ObjectId</code>. This way, we check if the <em>projectId</em> string provided through the URL parameter is a valid Hexadecimal string.</p>
+</div>
+<br>
+<h4 class="raw">Test new Routes with Postman - Projects</h4>
+<p><img class="emoji" alt=":exclamation:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/exclamation.png" /> Before moving to the next step, we should test all of the newly created <code>/api/projects</code> routes using Postman.</p>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Click here for the code</summary>
+<h4 class="raw"><img class="emoji" alt=":wrench:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/wrench.png" /> Test the route:  <code>GET</code> <code>/api/projects/:projectId</code></h4>
+<p>Using <a href="https://www.getpostman.com/">Postman</a>, test the newly created route <code>GET</code> <code>/api/projects/:projectId</code>.</p>
+<h5 class="raw">Method</h5>
+<pre><code>GET
+</code></pre>
+<h5 class="raw">URL</h5>
+<pre><code class="bash hljs raw">http://localhost:5005/api/projects/:projectId
+</code></pre>
+<p>❗<strong>NOTE:</strong> Remember to include the <code>ObjectId</code> of a project document already existing in your database (replace the <strong><code>:projectId</code></strong> part of the above <strong>URL</strong> with an <code>_id</code> of a <em>project</em> document from your database).</p>
+<hr>
+<br>
+<h4 class="raw"><img class="emoji" alt=":wrench:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/wrench.png" /> Test the route:  <code>PUT</code> <code>/api/projects/:projectId</code></h4>
+<p>Using <a href="https://www.getpostman.com/">Postman</a>, test the newly created route <code>PUT</code> <code>/api/projects/:projectId</code>.</p>
+<h5 class="raw">Method</h5>
+<pre><code>PUT
+</code></pre>
+<h5 class="raw">URL</h5>
+<pre><code class="bash hljs raw">http://localhost:5005/api/projects/:projectId
+</code></pre>
+<p>❗<strong>NOTE:</strong> Remember to include the <code>ObjectId</code> of a project document already existing in your database ( replace the <strong><code>:projectId</code></strong> part of the above <strong>URL</strong> with an <code>_id</code> of a <em>project</em> document from your database ).</p>
+<h5 class="raw">Request Body (<code>JSON</code>):</h5>
+<pre><code class="json hljs raw">{
+  &quot;title&quot;: &quot;Learn Redux&quot;,
+  &quot;description&quot;: &quot;Upgrade my React skills!&quot;
+}
+</code></pre>
+<hr>
+<br>
+<h4 class="raw"><img class="emoji" alt=":wrench:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/wrench.png" /> Test the route:  <code>DELETE</code> <code>/api/projects/:projectId</code></h4>
+<p>Using <a href="https://www.getpostman.com/">Postman</a>, test the newly created route <code>DELETE</code> <code>/api/projects/:projectId</code>.</p>
+<h5 class="raw">Method</h5>
+<pre><code>DELETE
+</code></pre>
+<h5 class="raw">URL</h5>
+<pre><code class="bash hljs raw">http://localhost:5005/api/projects/:projectId
+</code></pre>
+<p>❗<strong>NOTE:</strong> Remember to include the <code>ObjectId</code> of a project document already existing in your database ( replace the <strong><code>:projectId</code></strong> part of the above <strong>URL</strong> with an <code>_id</code> of a <em>project</em> document from your database ).</p>
+<hr>
+</details>
+<br>
+<h2 class="raw">Enable CORS requests</h2>
+<p>We know we will use this API for requests coming from a different application. Our client (front-end) will be running at <code>PORT</code> 3000.</p>
+<p>By default, browsers block the communication between apps that run on different <strong>origins</strong> ( <strong>IP:PORT</strong> /  <strong>Domain</strong>) for security reasons. Our server is running on the origin <code>localhost:5005</code>, and our React app will run on the origin <code>localhost:3000</code>. As you can see these are different origins, and the browser will by default block any requests we try to make from the browser to our server <code>localhost:5005</code>.</p>
+<p>To address this, we have to configure our server to allow all future requests coming from our React front-end app <code>localhost:3000</code>.</p>
+<p><strong>Cross-Origin Resource Sharing (<a href="https://developer.mozilla.org/en-US/docs/Glossary/CORS">CORS</a>) is a mechanism that is configured on the server.</strong> When CORS is configured on the server, the server uses additional HTTP headers to tell the browser that it allows requests from specific origins.</p>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":book:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/book.png" /> CORS is one of the core browser mechanisms that you as a Web developer should understand. We suggest you taking a few moments to get familiar with it. MDN Web Documentation has an <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS">excellent article</a> that explains how CORS works. <img class="emoji" alt=":wink:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/wink.png" /></p>
+</div>
+<br>
+<p>Luckily configuring CORS is very simple in Express. To do it we use a <a href="https://github.com/expressjs/cors">cors</a> middleware for Express.</p>
+<p>If you are not using <code>ironlauncher</code> to generate the server, then you would have to do the following setup manually. Click below to see the details:</p>
+<details>
+  <summary> Set up the CORS </summary>
+  <br>
+<p>Install it by running the following command:</p>
+<pre><code class="bash hljs raw">$ npm install cors
+</code></pre>
+<br>
+<p>Next, open the <code>config/index.js</code> file, import <code>cors</code> at the top of the file with all the other imports, and set it up anywhere inside the <code>module.exports</code> function.</p>
+<pre><code class="js hljs raw">// config/index.js
+// ... previous imports stay unchanged
+
+const cors = require(&#39;cors&#39;);               // &lt;== IMPORT
+
+// ...
+
+module.exports = app =&gt; {
+  // ...
+
+  
+  // ADD CORS MIDDLEWARE INSIDE module.exports TO ALLOW CROSS-ORIGIN INTERACTION:
+  app.use(
+    cors({
+      origin: [&#39;http://localhost:3000&#39;]  // &lt;== URL of our future React app
+    })
+  );
+
+  
+  // ...
+};
+</code></pre>
+<br>
+<p>The <code>origins</code> option is used to configure the <strong>Access-Control-Allow-Origin</strong> CORS header. This may sound more complicated than it is. Basically, this option takes an array with URLs of valid origins. In this array, we should list all of the origins (URLs of front-end apps) that we want to allow to make requests to our server.</p>
+</details>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code example from this lesson: <a href="https://github.com/ironhack-labs/lesson-code-project-management-server-v2/tree/master">project-management-server</a>.</p>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this lesson, we covered the basics of REST architectural style and refreshed our knowledge of the backend by creating an API. We used Express to create our API server and the routes, Mongoose to create data models and implement CRUD actions, and finally Postman to test our API. While creating our REST API, we focused on best practices: properly naming endpoints, using a HTTP verb to specify the action performed, and properly handling errors. In summary, we refreshed our knowledge on working with the backend.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://www.codecademy.com/articles/what-is-rest">What is REST?</a> - Codecademy Blog</li>
+<li class="raw"><a href="https://stackoverflow.blog/2020/03/02/best-practices-for-rest-api-design">Best practices for REST API design</a> - Stack Overflow Blog</li>
+<li class="raw"><a href="https://www.ibm.com/docs/en/odm/8.8.1?topic=api-rest-response-codes-error-messages">REST API response codes and error messages</a> - IBM</li>
+<li class="raw"><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS">CORS</a> - Mozilla Developer Network</li>
+</ul>

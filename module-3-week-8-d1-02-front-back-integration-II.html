@@ -1,0 +1,1423 @@
+<!-- # React | Integrating the React App -->
+<!--
+
+### Instructional Design Goals
+
+**A.** Demonstrate how to create React components that make requests to a API to perform CRUD actions.
+
+**B.** Demonstrate how to organize stateful React components and automatically re-fetch the latest data from the API
+
+**C.** Provide a public API for students who didn't finish creating the REST API locally.
+-->
+<h2 class="raw">Learning goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Make POST, GET, DELETE and PUT requests from React components using <code>axios</code></li>
+<li class="raw">Dynamically fetch the latest data from the API without navigating to a new page</li>
+<li class="raw">Understand how to integrate backend and front-end parts of your application</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>In this lesson, we will create a simple <code>React</code> application to consume our REST API. We will have a page showing all the projects in the database. Selecting one of the projects from the list will show all of its tasks and details and will allow you to edit and delete the projects.</p>
+<p>The first thing we need to do is install <a href="https://reactrouter.com/web/guides/quick-start">React Router DOM</a>, so let’s go ahead and do that:</p>
+<br>
+<h2 class="raw">Getting Started</h2>
+<p>Let’s start by creating a new React app.</p>
+<pre><code class="bash hljs raw">$ npx create-react-app project-management-client
+$ cd project-management-client
+</code></pre>
+<p>Since we know that we will have routes for different pages, Inside the project folder <em>install</em> the <code>react-router-dom</code>:</p>
+<pre><code class="bash hljs raw">$ npm install react-router-dom
+</code></pre>
+<p>We will be using <code>axios</code> to make requests to our REST API. Run the following command to install <code>axios</code> in the project:</p>
+<pre><code class="bash hljs raw">$ npm install axios 
+</code></pre>
+<br>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":point_up:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/point_up.png" /> Remember to import <code>axios</code> on the top of each component that is making requests to the backend.</p>
+<pre><code class="js hljs raw">import axios from &quot;axios&quot;;
+</code></pre>
+</div>
+<p>And then start the app:</p>
+<pre><code class="bash hljs raw">$ npm start
+</code></pre>
+<p>Clean the <code>App.js</code> a bit so that it has the following structure:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+import &#39;./App.css&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;&lt;/div&gt;
+  );
+}
+export default App;
+</code></pre>
+<br>
+<p>Below you will find the starter code that we need for this lesson. Go ahead and create the following files by using the provided snippets:</p>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click here for the code</b></summary>
+<br>
+<pre><code class="css hljs raw">/* index.css */
+
+body {
+  margin: 0;
+}
+
+a {
+  list-style: none;
+  color: black;
+}
+
+button,
+select {
+  padding: 5px 10px;
+  min-width: 50px;
+  margin: 5px;
+  font-size: 18px;
+}
+
+label {
+  width: 200px;
+  display: block;
+}
+
+input,
+textarea {
+  width: 200px;
+  padding: 10px;
+  display: inline-block;
+  margin: 10px;
+}
+
+.Navbar {
+  background: #515f7d;
+  color: white;
+  padding: 0px 20px;
+  box-shadow: 0px 1px 2px gray;
+  width: 100%;
+  margin-bottom: 15px;
+  padding: 5px;
+}
+
+.Navbar li {
+  list-style: none;
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.card {
+  width: 400px;
+  padding: 10px;
+  box-shadow: 0px 2px 3px grey;
+  margin: 0 auto;
+  margin-bottom: 20px;
+  background: #94a7c8;
+  border-radius: 4px;
+}
+
+.ProjectCard h3::after {
+  content: url(&quot;https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/icon-expand.png&quot;);
+  margin-left: 5px;
+}
+
+.EditProjectPage,
+.AddProject,
+.AddTask {
+  background: #f9eec3;
+  border: 1px solid grey;
+  box-shadow: 0px 2px 3px grey;
+  width: 400px;
+  text-align: center;
+  margin: 0 auto;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.EditProjectPage {
+  background-color: rgb(239, 196, 88);
+}
+
+.EditProjectPage form,
+.AddTask form,
+.AddProject form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.AddTask button,
+.AddProject button {
+  display: block;
+}
+
+.TaskCard {
+  background-color: #dfeef9;
+}
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">import { Link } from &quot;react-router-dom&quot;;
+
+function Navbar() {
+  return (
+    &lt;nav&gt;
+      &lt;Link to=&quot;/&quot;&gt;
+        &lt;button&gt;Home&lt;/button&gt;
+      &lt;/Link&gt;
+
+      &lt;Link to=&quot;/projects&quot;&gt;
+        &lt;button&gt;Projects&lt;/button&gt;
+      &lt;/Link&gt;
+    &lt;/nav&gt;
+  );
+}
+
+export default Navbar;
+</code></pre>
+<br>
+<hr>
+</details>
+<br>
+<h2 class="raw">React Router Setup</h2>
+<p>We will start by setting up front-end navigation using React Router to enable navigation between multiple pages in our app.</p>
+<p>Let’s start by updating the <code>index.js</code> file and setting up the <code>Router</code>:</p>
+<pre><code class="jsx hljs raw">// src/index.js
+
+import React from &quot;react&quot;;
+import ReactDOM from &quot;react-dom&quot;;
+import &quot;./index.css&quot;;
+import App from &quot;./App&quot;;
+import reportWebVitals from &quot;./reportWebVitals&quot;;
+
+import { BrowserRouter as Router } from &quot;react-router-dom&quot;;
+
+ReactDOM.render(
+  &lt;React.StrictMode&gt;
+    &lt;Router&gt;
+      &lt;App /&gt;
+    &lt;/Router&gt;
+  &lt;/React.StrictMode&gt;,
+  document.getElementById(&quot;root&quot;)
+);
+
+reportWebVitals();
+</code></pre>
+<br>
+<p>Next, we will create a new file <code>src/pages/HomePage.js</code> use it as our first page component:</p>
+<pre><code class="jsx hljs raw">// src/pages/HomePage.js
+
+function HomePage() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Home Page&lt;/h1&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default HomePage;
+</code></pre>
+<p>As you can tell, it is just a simple component representing our home page. At the moment this page serves as a placeholder. In the next steps, we will create additional page components and use them to show data from our API.</p>
+<p>Now, let’s finish setting up the routing by adding the <code>&lt;Routes&gt;</code> and <code>&lt;Route&gt;</code> to the <code>App.js</code> file to render  the new component <code>HomePage</code>. We’ll also import and render the <code>Navbar</code>:</p>
+<pre><code class="jsx hljs raw">// src/App.js
+
+import &quot;./App.css&quot;;
+import { Routes, Route } from &quot;react-router-dom&quot;; // &lt;== IMPORT
+
+import Navbar from &quot;./components/Navbar&quot;;     // &lt;== IMPORT
+import HomePage from &quot;./pages/HomePage&quot;;     // &lt;== IMPORT
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      
+     {/* 👇 ADD &lt;Navbar&gt;, &lt;Routes&gt; &amp; &lt;Route&gt; 👇 */}
+      &lt;Navbar /&gt;
+
+      &lt;Routes&gt;      
+        &lt;Route path=&quot;/&quot; element={ &lt;HomePage /&gt; } /&gt;
+      &lt;/Routes&gt;
+      
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>The initial routing setup is done! If you navigate to the <a href="http://localhost:3000/"><code>http://localhost:3000/</code></a> you should be able to see the home page.</p>
+<p>So far, our project has the following structure:</p>
+<pre><code>📂src
+ ┣ 📂components
+ ┃ ┗ 📜Navbar.js
+ ┃
+ ┣ 📂pages
+ ┃ ┗ 📜HomePage.js
+ ┃
+ ┣ 📜App.css
+ ┣ 📜App.js
+ ┣ 📜index.css
+ ┣ 📜index.js
+ ┃ ... other files ...
+</code></pre>
+<p>To be able to navigate our code faster and have better clarity about what belongs where, we organized our code in the following way:</p>
+<ul>
+<li class="raw">
+<p>The <code>/components</code> folder will be used to store components that represent smaller pieces of the UI of our application, like for example Navbar.</p>
+</li>
+<li class="raw">
+<p>The <code>/pages</code> folder will be used to store route-level components.</p>
+</li>
+</ul>
+<br>
+<h2 class="raw">Project List Page</h2>
+<p>After finishing the initial setup, let’s move on and implement the logic in our React app to display the list of all the projects coming from the Project Management API. We will create a <code>ProjectListPage</code> component using the following code:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectListPage.js
+
+import { useState, useEffect } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+import { Link } from &quot;react-router-dom&quot;;
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+
+function ProjectListPage() {
+  const [projects, setProjects] = useState([]);
+
+  const getAllProjects = () =&gt; {
+    axios
+      .get(`${API_URL}/api/projects`)
+      .then((response) =&gt; setProjects(response.data))
+      .catch((error) =&gt; console.log(error));
+  };
+
+  // We set this effect will run only once, after the initial render
+  // by setting the empty dependency array - []
+  useEffect(() =&gt; {
+    getAllProjects();
+  }, [] );
+
+  
+  return (
+    &lt;div className=&quot;ProjectListPage&quot;&gt;
+      
+        {projects.map((project) =&gt; {
+          return (
+            &lt;div className=&quot;ProjectCard card&quot; key={project._id} &gt;
+              &lt;Link to={`/projects/${project._id}`}&gt;
+                &lt;h3&gt;{project.title}&lt;/h3&gt;
+              &lt;/Link&gt;
+            &lt;/div&gt;
+          );
+        })}     
+       
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectListPage;
+</code></pre>
+<p>Let’s go over the above code and check our understanding:</p>
+<ol>
+<li class="raw">
+<p>At the top of the file we imported the following things:</p>
+<ul>
+<li class="raw"><code>useState</code> Hook: we will need the <code>useState</code> to create a stateful component that will be storing and displaying a list of projects from the state.</li>
+<li class="raw"><code>useEffect</code> Hook: to run an <em>effect</em> that will retrieve the data from the backend, we’ll need to employ the <code>useEffect</code> Hook.</li>
+<li class="raw"><code>axios</code>:  we will use <code>axios</code> for making requests to our backend.</li>
+<li class="raw"><code>Link</code> from the <code>react-router-dom</code>: we will use the <code>Link</code> component to create a clickable link that navigates to the page with the details of each project.</li>
+</ul>
+</li>
+<li class="raw">
+<p>We created a variable <code>API_URL</code> holding the <em>base URL</em> of our backend. We capitalized the name of the variable to signal that this value is a constant and will remain unchanged (this is a common naming convention).</p>
+</li>
+<li class="raw">
+<p>Our component has one state variable <code>projects</code>, that we initialize it as an empty array. We will use it to store the list of projects that we will fetch from the backend.</p>
+</li>
+<li class="raw">
+<p>We set up an effect with the <code>useEffect</code> Hook. We set the effect to run only once, after the initial render by providing the empty dependency array <code>[]</code>. When it runs, the effect invokes a function <code>getAllProjects</code>:</p>
+</li>
+</ol>
+<pre><code class="jsx hljs raw">useEffect(() =&gt; {
+  getAllProjects();
+}, [] );
+</code></pre>
+<ol start="5">
+<li class="raw">The function <code>getAllProjects</code> makes a GET request using <code>axios</code> to the following backend endpoint:</li>
+</ol>
+<pre><code class="htt[ hljs raw">http://localhost:5005/api/projects
+</code></pre>
+<p>This endpoint returns all of the projects in the database. After the request resolves we call the <code>setProjects</code> updater function to update the state variable <code>projects</code>. We pass it the data from the <code>response</code> containing the list of projects:</p>
+<pre><code class="jsx hljs raw">axios
+  .get(`${API_URL}/api/projects`)
+  .then((response) =&gt; setProjects(response.data))
+</code></pre>
+<ol start="6">
+<li class="raw">Last, we render the list of projects by <em>mapping</em> over the state variable <code>projects</code>.</li>
+</ol>
+<p>To see our new <code>ProjectListPage</code> component in action we need to render it. We will import it in the <code>App.js</code> file and create a new <code>&lt;Route&gt;</code> to render this page:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import ProjectListPage from &quot;./pages/ProjectListPage&quot;; //  &lt;== IMPORT
+
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+
+      &lt;Routes&gt;
+        &lt;Route path=&quot;/&quot; element={ &lt;HomePage /&gt; } /&gt;   
+        
+        {/*    ADD    */}
+        &lt;Route path=&quot;/projects&quot; element={&lt;ProjectListPage /&gt;} /&gt;
+      &lt;/Routes&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<h2 class="raw">Add Project Form</h2>
+<h3 class="raw">Create a Form Component</h3>
+<p>Our app is now displaying a list of projects coming from the API. Now let’s take it a step further and create a form that will allow us to create new projects.</p>
+<p>Create a new file <code>src/components/AddProject.js</code> and add the following logic code:</p>
+<pre><code class="jsx hljs raw">// src/components/AddProject.js
+
+import { useState } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+function AddProject(props) {
+  const [title, setTitle] = useState(&quot;&quot;);
+  const [description, setDescription] = useState(&quot;&quot;);
+
+
+  return (
+    &lt;div className=&quot;AddProject&quot;&gt;
+      &lt;h3&gt;Add Project&lt;/h3&gt;
+
+      &lt;form&gt;
+        &lt;label&gt;Title:&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;title&quot;
+          value={title}
+          onChange={(e) =&gt; setTitle(e.target.value)}
+        /&gt;
+
+        &lt;label&gt;Description:&lt;/label&gt;
+        &lt;textarea
+          type=&quot;text&quot;
+          name=&quot;description&quot;
+          value={description}
+          onChange={(e) =&gt; setDescription(e.target.value)}
+        /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Submit&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AddProject;
+</code></pre>
+<br>
+<p>The above component <code>AddProject</code> is a controlled component with two input elements, one for the <em>title</em> and the other for the <em>description</em> of the new project. As this is a controlled component we created two state variables <code>title</code> and <code>description</code> and linked them with the input elements.</p>
+<p>We left one part of the component’s logic incomplete. Can you guess what that is? We are still missing the logic that handles the <em>form submission</em>.</p>
+<p>Let’s update the <code>AddProject</code> component and add an <em>on submit</em> event to the form. We will also need a handler function that will run <em>on submit</em>:</p>
+<pre><code class="jsx hljs raw">// // src/components/AddProject.js
+
+import { useState } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+function AddProject(props) {
+  const [title, setTitle] = useState(&quot;&quot;);
+  const [description, setDescription] = useState(&quot;&quot;);
+
+  
+  const handleSubmit = (e) =&gt; {                          // &lt;== ADD
+    e.preventDefault();
+
+    const requestBody = { title, description };
+    axios
+      .post(`${API_URL}/api/projects`, requestBody)
+      .then((response) =&gt; {
+        // Reset the state
+        setTitle(&quot;&quot;);
+        setDescription(&quot;&quot;);
+      })
+      .catch((error) =&gt; console.log(error));
+  };
+
+  
+  return (
+    &lt;div className=&quot;AddProject&quot;&gt;
+      &lt;h3&gt;Add Project&lt;/h3&gt;
+
+      &lt;form onSubmit={handleSubmit}&gt;          {/*  &lt;== UPDATE   */}
+        &lt;label&gt;Title:&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;title&quot;
+          value={title}
+          onChange={(e) =&gt; setTitle(e.target.value)}
+        /&gt;
+
+        &lt;label&gt;Description:&lt;/label&gt;
+        &lt;textarea
+          type=&quot;text&quot;
+          name=&quot;description&quot;
+          value={description}
+          onChange={(e) =&gt; setDescription(e.target.value)}
+        /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Submit&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AddProject;
+</code></pre>
+<p>We use the handler function <code>handleSubmit</code> to make a POST request to the server and create a new project. Once the POST request is resolved successfully, we reset the <em>state variables</em> which clears the inputs.</p>
+<br>
+<h3 class="raw">Connect the Nested Form Component</h3>
+<p>We are going to display the from component <code>AddProject</code> inside of the <code>ProjectListPage</code>. This way we can create new projects from the same page. We will <code>AddProject</code> component by passing it a callback function from the parent component <code>ProjectListPage</code>, through <em>props</em>.</p>
+<p>Update the <code>ProjectListPage.js</code> in the following way:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectListPage.js
+// ... previous imports stay unchanged
+
+import AddProject from &quot;./../components/AddProject&quot;; //  &lt;== IMPORT
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+
+function ProjectListPage() {
+  const [projects, setProjects] = useState([]);
+
+  const getAllProjects = () =&gt; {
+    axios
+      .get(`${API_URL}/api/projects`)
+      .then((response) =&gt; setProjects(response.data))
+      .catch((error) =&gt; console.log(error));
+  };
+
+  useEffect(() =&gt; {
+    getAllProjects();
+  }, [] );
+
+  
+  return (
+    &lt;div className=&quot;ProjectListPage&quot;&gt;
+      
+      {/*    ADD     */}
+      &lt;AddProject refreshProjects={getAllProjects} /&gt;
+      
+        {projects.map((project) =&gt; {
+          return (
+            &lt;div className=&quot;ProjectCard card&quot; key={project._id} &gt;
+              &lt;Link to={`/projects/${project._id}`}&gt;
+                &lt;h3&gt;{project.title}&lt;/h3&gt;
+              &lt;/Link&gt;
+            &lt;/div&gt;
+          );
+        })}     
+       
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectListPage;
+</code></pre>
+<p>Other than rendering <code>&lt;AddProject /&gt;</code> we also passed it the function <code>getAllProjects</code> as a prop. This will allow us to automatically re-fetch the list of projects in the <code>ProjectListPage</code> after creating each new project.</p>
+<p>Let’s update the <code>handleSubmit</code> function in <code>AddProject</code> component. We will invoke the function <code>getAllProjects</code> passed through the props once the form is submitted:</p>
+<pre><code class="jsx hljs raw">// src/components/AddProject.js
+// ... previous imports stay unchanged
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+function AddProject(props) {
+  const [title, setTitle] = useState(&quot;&quot;);
+  const [description, setDescription] = useState(&quot;&quot;);
+
+  
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+
+    const requestBody = { title, description };
+
+    axios
+      .post(`${API_URL}/api/projects`, requestBody)
+      .then((response) =&gt; {
+        // Reset the state
+        setTitle(&quot;&quot;);
+        setDescription(&quot;&quot;);
+      
+        props.refreshProjects();      //   &lt;== ADD
+      })
+      .catch((error) =&gt; console.log(error));
+  };
+
+// ...
+</code></pre>
+<br>
+<p>This way we are refreshing the list of projects and dynamically fetching data each time we create a new project using the form.</p>
+<br>
+<h2 class="raw">Project Details Page</h2>
+<h3 class="raw">Create the Component</h3>
+<p>At the moment, in our app, we can display the list of projects and create a new project. Next, we will create a new page component <code>ProjectDetailsPage</code> that will be displaying the project details.</p>
+<p>Create a new file <code>src/pages/ProjectDetailsPage.js</code> and add the following content to it:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectDetailsPage.js
+
+import { useState, useEffect } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+import { Link } from &quot;react-router-dom&quot;;
+
+
+function ProjectDetailsPage (props) {
+  const [project, setProject] = useState(null);
+
+  
+  return (
+    &lt;div className=&quot;ProjectDetails&quot;&gt;
+      {project &amp;&amp; (
+        &lt;&gt;
+          &lt;h1&gt;{project.title}&lt;/h1&gt;
+          &lt;p&gt;{project.description}&lt;/p&gt;
+        &lt;/&gt;
+      )}
+
+      {project &amp;&amp;
+        project.tasks.map((task) =&gt; (
+          &lt;li className=&quot;TaskCard card&quot; key={task._id}&gt;
+            &lt;h3&gt;{task.title}&lt;/h3&gt;
+            &lt;h4&gt;Description:&lt;/h4&gt;
+            &lt;p&gt;{task.description}&lt;/p&gt;
+          &lt;/li&gt;
+      ))}
+
+      &lt;Link to=&quot;/projects&quot;&gt;
+        &lt;button&gt;Back to projects&lt;/button&gt;
+      &lt;/Link&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectDetailsPage;
+</code></pre>
+<p>As you can probably tell, our new component is meant to display the <code>title</code> and the <code>description</code> of the project. Pretty simple, right? In addition to this, it has a button that will allow the users to navigate back to the page with the project list.</p>
+<br>
+<h3 class="raw">Create a New Route</h3>
+<p>To see our new <code>ProjectDetailsPage</code> component as a page we will need to create a new <code>Route</code> that renders it. Let’s import <code>ProjectDetailsPage</code> in the <code>App.js</code> file and set up a new <code>&lt;Route&gt;</code> for it:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import ProjectDetailsPage from &quot;./pages/ProjectDetailsPage&quot;;      //  &lt;== IMPORT
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+
+      &lt;Routes&gt;
+        &lt;Route path=&quot;/&quot; element={ &lt;HomePage /&gt; } /&gt;   
+        &lt;Route path=&quot;/projects&quot; element={&lt;ProjectListPage /&gt;} /&gt;
+        
+         {/*  👇 ADD   */}
+        &lt;Route path=&quot;/projects/:projectId&quot; element={&lt;ProjectDetailsPage /&gt;} /&gt;        
+      &lt;/Routes&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<p>You may wonder, how will we access this new page with the project details?  We will do this by using the React Router’s <code>&lt;Link&gt;</code>!</p>
+<br>
+<h3 class="raw">Access the URL Parameter</h3>
+<p>In our <code>ProjectListPage</code>, each list item representing a project contains a <code>Link</code>:</p>
+<pre><code class="jsx hljs raw">// ...
+  &lt;Link to={`/projects/${project._id}`}&gt;
+    &lt;h3&gt;{project.title}&lt;/h3&gt;
+  &lt;/Link&gt;
+// ...
+</code></pre>
+<p>When clicked the <code>Link</code> will navigate to the route <code>/projects/:projectId</code> that we just created and the <code>ProjectDetailsPage</code> will be rendered.</p>
+<p>Our new <code>&lt;Route&gt;</code> has a <em>URL parameter</em> <code>:projectId</code> that represents a dynamic portion of the URL.</p>
+<p>The <code>project._id</code> value that we interpolated in the <code>&lt;Link&gt;</code> will become available as the <em>URL parameter</em>. We can access this <code>:projectId</code> URL parameter from the  <code>ProjectDetailsPage</code> component using the <a href="https://reactrouter.com/web/api/Hooks/useparams"><code>useParams()</code></a> hook. We can then use the <em>project id</em> to fetch the project data from the API and display it in the component.</p>
+<p>Let’s go back to the <code>ProjectDetailsPage.js</code> and update it to do that:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectDetailsPage.js
+// ... previous imports stay unchanged
+import { Link, useParams } from &quot;react-router-dom&quot;; // &lt;== IMPORT 
+
+const API_URL = &quot;http://localhost:5005&quot;;        // &lt;== ADD
+
+function ProjectDetailsPage (props) {
+  const [project, setProject] = useState(null);
+  // Get the URL parameter `:projectId` 
+  const { projectId } = useParams();            // &lt;== ADD
+  
+  
+  // Helper function that makes a GET request to the API
+  // and retrieves the project by id
+  const getProject = () =&gt; {          //  &lt;== ADD A NEW FUNCTION
+    axios
+      .get(`${API_URL}/api/projects/${projectId}`)
+      .then((response) =&gt; {
+        const oneProject = response.data;
+        setProject(oneProject);
+      })
+      .catch((error) =&gt; console.log(error));
+  };
+  
+  
+  useEffect(()=&gt; {                   // &lt;== ADD AN EFFECT
+    getProject();
+  }, [] );
+
+  
+  return (
+    &lt;div className=&quot;ProjectDetails&quot;&gt;
+      {project &amp;&amp; (
+        &lt;&gt;
+          &lt;h1&gt;{project.title}&lt;/h1&gt;
+          &lt;p&gt;{project.description}&lt;/p&gt;
+        &lt;/&gt;
+      )}
+
+      {project &amp;&amp;
+        project.tasks.map((task) =&gt; (
+          &lt;li className=&quot;TaskCard card&quot; key={task._id}&gt;
+            &lt;h3&gt;{task.title}&lt;/h3&gt;
+            &lt;h4&gt;Description:&lt;/h4&gt;
+            &lt;p&gt;{task.description}&lt;/p&gt;
+          &lt;/li&gt;
+        ))}
+
+      &lt;Link to=&quot;/projects&quot;&gt;
+        &lt;button&gt;Back to projects&lt;/button&gt;
+      &lt;/Link&gt;
+      
+      {/*    ADD    */}
+      &lt;Link to={`/projects/edit/${projectId}`}&gt;
+        &lt;button&gt;Edit Project&lt;/button&gt;
+      &lt;/Link&gt;      
+      
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectDetailsPage;
+</code></pre>
+<p>We updated the <code>ProjectDetailsPage</code> in the following way:</p>
+<ol>
+<li class="raw">Using the React Router’s <code>useParams()</code> hook we retrieve the <code>projectId</code> parameter from the URL:</li>
+</ol>
+<pre><code class="jsx hljs raw">const { projectId } = useParams();
+</code></pre>
+<ol start="2">
+<li class="raw">
+<p>Next, we created a helper function called <code>getProject</code> that makes a GET request to our API and retrieves a project by id. Once the request resolves successfully, we set the project data (<code>response.data</code>) as the new value of the state variable <code>projects</code>.</p>
+</li>
+<li class="raw">
+<p>We added an <em>effect</em> that will run only once, after the initial render. We specified that the effect should <em>run only once</em> by setting the empty dependency array <code>[]</code>. So as soon as the component renders for the first time, the effect will run and it will call the <code>getProject()</code> function to fetch the project and set it in the state (state variable <code>projects</code>).</p>
+</li>
+<li class="raw">
+<p>Last, we added an additional button for navigating to the Edit Project page:</p>
+</li>
+</ol>
+<pre><code class="jsx hljs raw">&lt;Link to={`/projects/edit/${projectId}`}&gt;
+  &lt;button&gt;Edit Project&lt;/button&gt;
+&lt;/Link&gt;      
+</code></pre>
+<p>We still don’t have the Edit Project page nor a  <code>&lt;Route&gt;</code> for it, but we will create them in the next step. As you can see, our <code>Link</code> is similar to the previous ones we created in the <code>ProjectListPage</code>: <em>project id</em> is interpolated in the URL location string.</p>
+<br>
+<h2 class="raw">Edit Project Page</h2>
+<h3 class="raw">Create the Component</h3>
+<p>So far our frontend is only partially integrated with our API. We are using only two CRUD actions available through the endpoints of our API:</p>
+<ul>
+<li class="raw"><em>reading</em>/retrieving existing projects (GET request) and</li>
+<li class="raw"><em>creating</em> new ones (POST request).</li>
+</ul>
+<p>Let’s create a component that will allow us to <em>update</em> an existing project. In the <code>/pages</code> folder, create a new file <code>EditProjectPage.js</code>:</p>
+<pre><code class="jsx hljs raw">// src/pages/EditProjectPage.js
+
+import { useState, useEffect } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+function EditProjectPage(props) {
+  const [title, setTitle] = useState(&quot;&quot;);
+  const [description, setDescription] = useState(&quot;&quot;);
+  
+  return (
+    &lt;div className=&quot;EditProjectPage&quot;&gt;
+      &lt;h3&gt;Edit the Project&lt;/h3&gt;
+
+      &lt;form&gt;
+        &lt;label&gt;Title:&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;title&quot;
+          value={title}
+          onChange={(e) =&gt; setTitle(e.target.value)}
+        /&gt;
+        
+        &lt;label&gt;Description:&lt;/label&gt;
+        &lt;textarea
+          name=&quot;description&quot;
+          value={description}
+          onChange={(e) =&gt; setDescription(e.target.value)}
+        /&gt;
+
+        &lt;input type=&quot;submit&quot; value=&quot;Submit&quot; /&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default EditProjectPage;
+</code></pre>
+<br>
+<h3 class="raw">Create a New Route</h3>
+<p>At this point we are very familiar with forms <img class="emoji" alt=":fire:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/fire.png" /> since we already successfully built the <code>&lt;AddProject /&gt;</code>. We still need to set up a <code>&lt;Route&gt;</code> in <code>App.js</code> that will be displaying this new page, so let’s do it:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import EditProjectPage from &quot;./pages/EditProjectPage&quot;;  //  &lt;== IMPORT
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+
+      &lt;Routes&gt;
+        &lt;Route path=&quot;/&quot; element={&lt;HomePage /&gt;} /&gt;   
+        &lt;Route path=&quot;/projects&quot; element={&lt;ProjectListPage /&gt;} /&gt;
+        &lt;Route path=&quot;/projects/:projectId&quot; element={&lt;ProjectDetailsPage /&gt;} /&gt;   
+        
+         {/*  👇  ADD  👇  */}
+        &lt;Route path=&quot;/projects/edit/:projectId&quot; element={ &lt;EditProjectPage /&gt; } /&gt;        
+      &lt;/Routes&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<h3 class="raw">Pre-populate the Edit Form Fields</h3>
+<p>Same as with the <code>ProjectDetailsPage</code> our newest <code>&lt;Route&gt;</code> has a <em>URL parameter</em> <code>:id</code> that represents a dynamic portion of the URL.  We will use it to pass the id of the project to the <code>EditProjectPage</code> component, similar to what we did before:</p>
+<pre><code class="jsx hljs raw">// src/pages/EditProjectPage.js
+// ... previous imports stay unchanged
+import { useParams } from &quot;react-router-dom&quot;;  //  &lt;== IMPORT 
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+function EditProjectPage(props) {
+  const [title, setTitle] = useState(&quot;&quot;);
+  const [description, setDescription] = useState(&quot;&quot;);
+
+  // Get the URL parameter `:projectId` 
+  const { projectId } = useParams();            // &lt;== ADD
+  
+ 
+ // This effect will run after the initial render and each time
+ // the project id coming from URL parameter `projectId` changes
+  
+  useEffect(() =&gt; {                                  // &lt;== ADD
+    axios
+      .get(`${API_URL}/api/projects/${projectId}`)
+      .then((response) =&gt; {
+        /* 
+          We update the state with the project data coming from the response.
+          This way we set inputs to show the actual title and description of the project
+        */
+        const oneProject = response.data;
+        setTitle(oneProject.title);
+        setDescription(oneProject.description);
+      })
+      .catch((error) =&gt; console.log(error));
+    
+  }, [projectId]);
+
+  
+  return (
+    &lt;div className=&quot;EditProjectPage&quot;&gt;
+      &lt;h3&gt;Edit the Project&lt;/h3&gt;
+
+      &lt;form&gt;
+        &lt;label&gt;Title:&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;title&quot;
+          value={title}
+          onChange={(e) =&gt; setTitle(e.target.value)}
+        /&gt;
+        
+        &lt;label&gt;Description:&lt;/label&gt;
+        &lt;textarea
+          name=&quot;description&quot;
+          value={description}
+          onChange={(e) =&gt; setDescription(e.target.value)}
+        /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Update Project&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default EditProjectPage;
+</code></pre>
+<p>In the above code, we are obtaing the project id coming from the URL using the hook <code>useParams</code>. To make the user experience the best possible we are populating the input fields with the actual <em>title</em> and <em>description</em> of the project. To do this we added an <em>effect</em> that makes an axios GET request to our backend to get the project information.</p>
+<p>We updated the <code>EditProjectPage</code> in the following way:</p>
+<ol>
+<li class="raw">We retrieved the <em>project id</em> coming from the URL parameter <code>projectId</code> using the <code>useParams</code> hook.</li>
+</ol>
+<pre><code class="jsx hljs raw">const { projectId } = useParams();
+</code></pre>
+<ol start="2">
+<li class="raw">Next, we added an <em>effect</em> that will run after the initial render and each time the URL parameter <code>projectId</code> updates.
+In the <em>effect</em> we make an axios GET request to our backend. Once the request is resolved successfully we update the state variables that control the inputs and sets the project <code>title</code> and <code>description</code> to the values coming from the response. This way our inputs will show the actual title and description of the project during the edit.</li>
+</ol>
+<br>
+<p>We did quite a bit but there are still few steps remaining to make the <code>EditProjectPage</code> component fully functional.</p>
+<br>
+<h3 class="raw">Update the Project - PUT request</h3>
+<p>We will proceed with setting the edit/update functionality inside <code>EditProjectComponent</code>.</p>
+<p>We are still missing the <em>onSubmit</em> event on our form and the logic to make the PUT request to the backend. Let’s add the event listener and create the handler function:</p>
+<pre><code class="jsx hljs raw">// src/pages/EditProjectPage.js
+// ... previous imports stay unchanged
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+function EditProjectPage(props) {
+  const [title, setTitle] = useState(&quot;&quot;);
+  const [description, setDescription] = useState(&quot;&quot;);
+
+  const { projectId } = useParams();
+
+  useEffect(() =&gt; {
+    axios
+      .get(`${API_URL}/api/projects/${projectId}`)
+      .then((response) =&gt; {
+        const oneProject = response.data;
+        setTitle(oneProject.title);
+        setDescription(oneProject.description);
+      })
+      .catch((error) =&gt; console.log(error));
+    
+  }, [projectId]);
+  
+  const handleFormSubmit = (e) =&gt; {                     // &lt;== ADD
+    e.preventDefault();
+    // Create an object representing the body of the PUT request
+    const requestBody = { title, description };
+
+    // Make a PUT request to update the project
+    axios
+      .put(`${API_URL}/api/projects/${projectId}`, requestBody)
+      .then((response) =&gt; {
+        // Once the request is resolved successfully and the project
+        // is updated we navigate back to the details page
+        props.history.push(`/projects/${projectId}`)
+      });
+  };
+  
+  return (
+    &lt;div className=&quot;EditProjectPage&quot;&gt;
+      &lt;h3&gt;Edit the Project&lt;/h3&gt;
+
+      &lt;form onSubmit={handleFormSubmit}&gt;      {/*  &lt;== UPDATE  */}
+        &lt;label&gt;Title:&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;title&quot;
+          value={title}
+          onChange={(e) =&gt; setTitle(e.target.value)}
+        /&gt;
+        
+        &lt;label&gt;Description:&lt;/label&gt;
+        &lt;textarea
+          name=&quot;description&quot;
+          value={description}
+          onChange={(e) =&gt; setDescription(e.target.value)}
+        /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Update Project&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default EditProjectPage;
+</code></pre>
+<br>
+<h3 class="raw">Delete the Project - DELETE request</h3>
+<p>We are almost at the end of the first part of our app. Let’s just add <strong>delete</strong> functionality so we can have full CRUD done. <img class="emoji" alt=":muscle:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/muscle.png" /></p>
+<p>Inside the <code>EditProjectPage</code> component, we will create a new function <code>deleteProject</code> that will make a DELETE request to the backend. We will trigger this function by clicking on a <em>delete button</em> that we will add to the component.</p>
+<p>In the end, after implementing this last part our fully finished <code>EditProjectPage</code> component should look like this:</p>
+<pre><code class="jsx hljs raw">// src/pages/EditProjectPage.js
+// ... previous imports stay unchanged
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+function EditProjectPage(props) {
+  const [title, setTitle] = useState(&quot;&quot;);
+  const [description, setDescription] = useState(&quot;&quot;);
+
+  const { projectId } = useParams();
+
+  useEffect(() =&gt; {
+    axios
+      .get(`${API_URL}/api/projects/${projectId}`)
+      .then((response) =&gt; {
+        const oneProject = response.data;
+        setTitle(oneProject.title);
+        setDescription(oneProject.description);
+      })
+      .catch((error) =&gt; console.log(error));
+    
+  }, [projectId]);
+  
+  
+
+  const handleFormSubmit = (e) =&gt; {
+    e.preventDefault();
+    const requestBody = { title, description };
+
+    axios
+      .put(`${API_URL}/api/projects/${projectId}`, requestBody)
+      .then((response) =&gt; {
+        props.history.push(`/projects/${projectId}`)
+      });
+  };
+  
+  
+  
+  const deleteProject = () =&gt; {                    //  &lt;== ADD
+    // Make a DELETE request to delete the project
+    axios
+      .delete(`${API_URL}/api/projects/${projectId}`)
+      .then(() =&gt; {
+        // Once the delete request is resolved successfully
+        // navigate back to the list of projects.
+        props.history.push(&quot;/projects&quot;);
+      })
+      .catch((err) =&gt; console.log(err));
+  };  
+
+  
+  
+  return (
+    &lt;div className=&quot;EditProjectPage&quot;&gt;
+      &lt;h3&gt;Edit the Project&lt;/h3&gt;
+
+      &lt;form onSubmit={handleFormSubmit}&gt;
+        &lt;label&gt;Title:&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;title&quot;
+          value={title}
+          onChange={(e) =&gt; setTitle(e.target.value)}
+        /&gt;
+        
+        &lt;label&gt;Description:&lt;/label&gt;
+        &lt;textarea
+          name=&quot;description&quot;
+          value={description}
+          onChange={(e) =&gt; setDescription(e.target.value)}
+        /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Update Project&lt;/button&gt;
+      &lt;/form&gt;
+      
+      {/*     ADD     */}
+      &lt;button onClick={deleteProject}&gt;Delete Project&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default EditProjectPage;
+</code></pre>
+<br>
+<h2 class="raw">Add Task Form</h2>
+<p>Projects functionality done!!! We integrated our app with all of the CRUD actions available for the projects, so let’s move to the <strong>tasks</strong> part.</p>
+<p>Quite often we will have a situation where we need to nest components inside each other. This next step is a perfect opportunity to practice doing it.</p>
+<p>Our <code>ProjectDetailsPage</code> component is currently rendering the project’s details and the list of tasks. We will create a new form component that will allow us to add new tasks from the same page.</p>
+<p>To start this working on this, let’s create a file <code>src/components/AddTask.js</code> and add the following code:</p>
+<pre><code class="jsx hljs raw">// src/components/AddTask.js
+
+import { useState } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+
+function AddTask(props) {
+  const [title, setTitle] = useState(&quot;&quot;);
+  const [description, setDescription] = useState(&quot;&quot;);
+
+  
+  const handleSubmit = (e) =&gt; {};
+
+  
+  return (
+    &lt;div className=&quot;AddTask&quot;&gt;
+      &lt;h3&gt;Add New Task&lt;/h3&gt;
+      
+      &lt;form onSubmit={handleSubmit}&gt;
+        &lt;label&gt;Title:&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;title&quot;
+          value={title}
+          onChange={(e) =&gt; setTitle(e.target.value)}
+        /&gt;
+
+        &lt;label&gt;Description:&lt;/label&gt;
+        &lt;textarea
+          type=&quot;text&quot;
+          name=&quot;description&quot;
+          value={description}
+          onChange={(e) =&gt; setDescription(e.target.value)}
+        /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Add Task&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AddTask;
+</code></pre>
+<p>Another controlled component with a form, same approach as before!</p>
+<p>We left the <code>handleSubmit</code> function incomplete on purpose. We will update it in the next step.</p>
+<p>We will first import the <code>AddTask</code> component in the <code>ProjectDetailsPage.js</code>. Then we will render it and pass it the <code>getProject</code> function and the <code>projectId</code> as props:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectDetailsPage.js
+// ... previous imports stay unchanged
+
+import AddTask from &quot;../components/AddTask&quot;;   //  &lt;== IMPORT
+
+
+function ProjectDetailsPage (props) {
+  const [project, setProject] = useState(null);
+  const { projectId } = useParams();
+  
+  
+  const getProject = () =&gt; {
+    axios
+      .get(`${API_URL}/api/projects/${projectId}`)
+      .then((response) =&gt; {
+        const oneProject = response.data;
+        setProject(oneProject);
+      })
+      .catch((error) =&gt; console.log(error));
+  };
+  
+  
+  useEffect(()=&gt; {
+    getProject();
+  }, [] );
+
+  
+  return (
+    &lt;div className=&quot;ProjectDetails&quot;&gt;
+      {project &amp;&amp; (
+        &lt;&gt;
+          &lt;h1&gt;{project.title}&lt;/h1&gt;
+          &lt;p&gt;{project.description}&lt;/p&gt;
+        &lt;/&gt;
+      )}
+      
+      
+      {/*  👇  ADD  👇  */}      
+      &lt;AddTask refreshProject={getProject} projectId={projectId} /&gt;    
+
+      {project &amp;&amp;
+        project.tasks.map((task) =&gt; (
+          &lt;li className=&quot;TaskCard card&quot; key={task._id}&gt;
+            &lt;h3&gt;{title}&lt;/h3&gt;
+            &lt;h4&gt;Description:&lt;/h4&gt;
+            &lt;p&gt;{description}&lt;/p&gt;
+          &lt;/li&gt;
+        ))}
+
+      &lt;Link to=&quot;/projects&quot;&gt;
+        &lt;button&gt;Back to projects&lt;/button&gt;
+      &lt;/Link&gt;
+      
+      &lt;Link to={`/projects/edit/${projectId}`}&gt;
+        &lt;button&gt;Edit Project&lt;/button&gt;
+      &lt;/Link&gt;      
+      
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectDetailsPage;
+</code></pre>
+<p>Our <code>AddTask</code> component now has access to the <code>projectId</code> which we are passing through the props. We will need it when making the POST request to the API to create a new task.</p>
+<p>We also passed the <code>getProject</code> function through the props so that we can refresh the project after the new task is created. Now that these two things are available through the props, we can implement the <code>handleSubmit</code> function in the <code>AddTask</code> component:</p>
+<pre><code class="jsx hljs raw">// src/components/AddTask.js
+
+import { useState } from &quot;react&quot;;
+import axios from &quot;axios&quot;;
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+function AddTask(props) {
+  const [title, setTitle] = useState(&quot;&quot;);
+  const [description, setDescription] = useState(&quot;&quot;);
+
+  
+  const handleSubmit = (e) =&gt; {      //  &lt;== UPDATE THE FUNCTION
+    e.preventDefault();
+
+    // We need the project id when creating the new task
+    const { projectId } = props;
+    // Create an object representing the body of the POST request
+    const requestBody = { title, description, projectId };
+
+    axios
+      .post(`${API_URL}/api/tasks`, requestBody)
+      .then((response) =&gt; {
+        // Reset the state to clear the inputs
+        setTitle(&quot;&quot;);
+        setDescription(&quot;&quot;);
+      
+        // Invoke the callback function coming through the props
+        // from the ProjectDetailsPage, to refresh the project details
+        props.refreshProject();
+      })
+      .catch((error) =&gt; console.log(error));
+  };
+
+  
+  return (
+    &lt;div className=&quot;AddTask&quot;&gt;
+      &lt;h3&gt;Add New Task&lt;/h3&gt;
+      
+      &lt;form onSubmit={handleSubmit}&gt;
+        &lt;label&gt;Title:&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;title&quot;
+          value={title}
+          onChange={(e) =&gt; setTitle(e.target.value)}
+        /&gt;
+
+        &lt;label&gt;Description:&lt;/label&gt;
+        &lt;textarea
+          type=&quot;text&quot;
+          name=&quot;description&quot;
+          value={description}
+          onChange={(e) =&gt; setDescription(e.target.value)}
+        /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Add Task&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AddTask;
+</code></pre>
+<br>
+<h2 class="raw">Extracting Components</h2>
+<p>When creating UI with React, the size of our application grows over time. Eventually, some of our components get too big or too complex. When this happens one of the best practices is splitting the UI into smaller components (<a href="https://reactjs.org/docs/components-and-props.html#extracting-components">extracting components</a>) and separating the concerns.</p>
+<h3 class="raw">Project Card</h3>
+<p>In our <code>ProjectListPage</code> we are rendering a list of projects by mapping over the state variable <code>projects</code>:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectListPage.js
+// ...
+{
+  projects.map((project) =&gt; {
+    return (
+      &lt;div className=&quot;ProjectCard card&quot; key={project._id} &gt;
+        &lt;Link to={`/projects/${project._id}`}&gt;
+          &lt;h3&gt;{project.title}&lt;/h3&gt;
+        &lt;/Link&gt;
+      &lt;/div&gt;
+    );
+  })}
+
+// ...
+</code></pre>
+<br>
+<p>To make our component code cleaner and easier to read, we can take this piece of code and create a new component out of it. Let’s extract the above code into a new component:</p>
+<pre><code class="jsx hljs raw">// src/components/ProjectCard.js
+
+import { Link } from &quot;react-router-dom&quot;;
+
+// We are deconstructing props object directly in the parentheses of the function
+function ProjectCard ( { title, description, _id } ) {
+  
+  return (
+    &lt;div className=&quot;ProjectCard card&quot;&gt;
+      &lt;Link to={`/projects/${_id}`}&gt;
+        &lt;h3&gt;{title}&lt;/h3&gt;
+      &lt;/Link&gt;
+      &lt;p style={{ maxWidth: &quot;400px&quot; }}&gt;{description} &lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectCard;
+</code></pre>
+<br>
+<p>We can now replace the previous part of the code in the component <code>ProjectListPage</code> with the <code>ProjectCard</code>. Let’s update the <code>ProjectListPage.js</code>:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectListPage.js
+// ... previous imports stay unchanged
+
+import ProjectCard from &quot;./../components/ProjectCard&quot;; //  &lt;==  IMPORT
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+
+function ProjectListPage() {
+  const [projects, setProjects] = useState([]);
+
+  const getAllProjects = () =&gt; {
+    axios
+      .get(`${API_URL}/api/projects`)
+      .then((response) =&gt; setProjects(response.data))
+      .catch((error) =&gt; console.log(error));
+  };
+
+  useEffect(() =&gt; {
+    getAllProjects();
+  }, [] );
+
+  
+  return (
+    &lt;div className=&quot;ProjectListPage&quot;&gt;
+      
+      &lt;AddProject refreshProjects={getAllProjects} /&gt;
+      
+      {/*   👇   UPDATE   👇  */}
+      { projects.map((project) =&gt; (
+        &lt;ProjectCard key={project._id} {...project} /&gt;
+      ))}     
+       
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectListPage;
+</code></pre>
+<p>That looks and reads much better doesn’t it?</p>
+<br>
+<h3 class="raw">Task Card</h3>
+<p>Let’s repeat the same process with the component <code>ProjectDetailsPage</code>. The component is rendering a list of tasks by iterating over the <code>tasks</code> array of each project. Let’s refactor this part of the code. We will start by extracting the following elements from the <code>ProjectDetailsPage</code>:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectDetailsPage.js
+
+// ...
+  &lt;li className=&quot;TaskCard card&quot; key={task._id}&gt;
+    &lt;h3&gt;{title}&lt;/h3&gt;
+    &lt;h4&gt;Description:&lt;/h4&gt;
+    &lt;p&gt;{description}&lt;/p&gt;
+  &lt;/li&gt;
+// ...
+</code></pre>
+<p>Same as before, we will use the above part of the code that we extracted to create a new component. We will call this new component <code>TaskCard</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/TaskCard.js
+
+// We are deconstructing the props object directly in the parentheses of the function
+function TaskCard({ title, description }) {
+  return (
+    &lt;div className=&quot;TaskCard card&quot;&gt;
+      &lt;h3&gt;{title}&lt;/h3&gt;
+      &lt;h4&gt;Description:&lt;/h4&gt;
+      &lt;p&gt;{description}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default TaskCard;
+</code></pre>
+<p>And last, of all we will replace the code in the component <code>ProjectDetailsPage</code> that we extracted with the new component <code>TaskCard</code>:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectDetailsPage.js
+// ... previous imports stay unchanged
+
+import TaskCard from &quot;../components/TaskCard&quot;; //  &lt;== IMPORT
+
+const API_URL = &quot;http://localhost:5005&quot;;
+
+function ProjectDetailsPage (props) {
+  const [project, setProject] = useState(null);
+  const { projectId } = useParams();
+  
+  
+  const getProject = () =&gt; {
+    axios
+      .get(`${API_URL}/api/projects/${projectId}`)
+      .then((response) =&gt; {
+        const oneProject = response.data;
+        setProject(oneProject);
+      })
+      .catch((error) =&gt; console.log(error));
+  };
+  
+  
+  useEffect(()=&gt; {
+    getProject();
+  }, [] );
+
+  
+  return (
+    &lt;div className=&quot;ProjectDetails&quot;&gt;
+      {project &amp;&amp; (
+        &lt;&gt;
+          &lt;h1&gt;{project.title}&lt;/h1&gt;
+          &lt;p&gt;{project.description}&lt;/p&gt;
+        &lt;/&gt;
+      )}
+      
+      &lt;AddTask refreshProject={getProject} projectId={projectId} /&gt;    
+
+       {/*   👇   UPDATE   👇  */}      
+      { project &amp;&amp; project.tasks.map((task) =&gt; (
+        &lt;TaskCard key={task._id} {...task} /&gt; 
+      ))} 
+      
+
+      &lt;Link to=&quot;/projects&quot;&gt;
+        &lt;button&gt;Back to projects&lt;/button&gt;
+      &lt;/Link&gt;
+      
+      &lt;Link to={`/projects/edit/${projectId}`}&gt;
+        &lt;button&gt;Edit Project&lt;/button&gt;
+      &lt;/Link&gt;      
+      
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectDetailsPage;
+</code></pre>
+<br>
+<h3 class="raw">Next Steps</h3>
+<p>We leave it now up to you to add the edit and delete functionality for the tasks. For the adventurous ones, try adding “done” property for the completed tasks.</p>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code example from this lesson: <a href="https://github.com/ironhack-labs/lesson-code-project-management-client-v2/tree/master">project-management-client</a>.</p>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this lesson, we learned how to integrate our frontend React application with our NodeJS/Express backend API. We practiced the concepts that we learned during the React module: working with state, working with props, passing functions as props, creating lists, using Hooks, setting up React routing and extracting components.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://github.com/axios/axios">Axios</a></li>
+<li class="raw"><a href="https://www.robinwieruch.de/react-hooks-fetch-data/">How to fetch data with React Hooks</a></li>
+</ul>

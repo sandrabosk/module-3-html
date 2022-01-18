@@ -1,0 +1,721 @@
+<!-- ![logo_ironhack_blue 7](https://user-images.githubusercontent.com/23629340/40541063-a07a0a8a-601a-11e8-91b5-2f13e4e6b441.png)
+
+# React | Authentication - Backend -->
+<h2 class="raw">Learning Goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Explain what JSON Web Token (JWT) is and why it is used</li>
+<li class="raw">Implement Token-based authentication using JWT on the server</li>
+<li class="raw">Protect the existing API routes using JWT middleware</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>We learned how to integrate the frontend (the client-side) and backend (the server-side) applications, where we developed a REST API with NodeJS/Express and made requests from our React App. We will continue working on these apps (<code>project-management-server</code> and <code>project-management-client</code>) and additionally implement Token-based authentication using JSON Web Tokens (JWT).</p>
+<br>
+<h3 class="raw">Getting Started</h3>
+<p>In this lesson, we will continue working on the Project Management API we created during the previous lesson <em><a href="https://github.com/ironhack-labs/lesson-code-project-management-server-v2/tree/master">Building The Rest API</a></em> and use its code as the starting point:</p>
+<ol>
+<li class="raw">Run the following commands to create the new folder, clone the code from the repository and install the dependencies:</li>
+</ol>
+<pre><code class="bash hljs raw">$ mkdir react-auth-server
+$ cd react-auth-server
+
+$ git clone https://github.com/ironhack-labs/lesson-code-project-management-server-v2.git .
+
+$ npm install
+</code></pre>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":point_up:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/point_up.png" /> In the previous step we cloned the code from the repository into an existing folder by using <code>.</code> at the end of the command, like this:</p>
+<pre><code class="bash hljs raw">$ git clone &lt;REPO_URL&gt; .
+</code></pre>
+<p>We use this command to clone the code from the repository directly into the current folder. To do this the existing folder must be empty.</p>
+</div>
+<ol start="2">
+<li class="raw">Install the dependencies that we will need for authentication:</li>
+</ol>
+<ul>
+<li class="raw"><strong>bcryptjs</strong> - a package used for hashing passwords before saving them in the database.</li>
+<li class="raw"><strong>jsonwebtoken</strong> - implementation of JSON Web Token standard in NodeJS. Provides methods for creating, signing and verifying JWTs (JSON Web Tokens).</li>
+<li class="raw"><strong>express-jwt</strong> - package providing Express middleware for validating JWTs (JSON Web Tokens). It is used in combination with the <em>jsonwebtoken</em> package.</li>
+</ul>
+<pre><code class="bash hljs raw">$ npm install bcryptjs jsonwebtoken express-jwt
+</code></pre>
+<ol start="3">
+<li class="raw">Start the server</li>
+</ol>
+<br>
+<h2 class="raw">JSON Web Token (JWT)</h2>
+<h3 class="raw">What is a JSON Web Token (JWT)?</h3>
+<p>JSON Web Token, also know as JWT, is an open standard that provides a simple and self-contained format for securely sending data between parties. The data stored in a JSON Web Token is stored as a JSON object.</p>
+<p>A JSON Web Token can be signed with a digital signature to ensure authenticity. Additionally, the data stored in a JWT (<em>payload</em>) can be encrypted to protect sensitive information. Thanks to the digital signature and optional encryption JWT allows for sensitive data to be transferred securely. As such JSON Web Tokens are commonly used for authentication.</p>
+<br>
+<h3 class="raw">JWT Structure</h3>
+<p>We said that data stored in a JSON Web Token is stored as a JSON object. However, when a JWT is initially generated it is automatically created as a <a href="https://base64.guru/learn/what-is-base64">Base64</a> encoded string.</p>
+<p>An encoded JSON Web Token string looks like this (newlines inserted for readability):</p>
+<pre><code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+eyJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20ifQ.
+WFHtzmw-TL0oTO0DoNzfeiq1J7cErwU7ednTm5UNBNY
+</code></pre>
+<!--
+<pre style="border: 1px solid black; padding: 5px">
+  <span style="color: red">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span>.
+  <span style="color: purple">eyJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20ifQ</span>.
+  <span style="color: dodgerblue">WFHtzmw-TL0oTO0DoNzfeiq1J7cErwU7ednTm5UNBNY</span>
+</pre>
+-->
+<p>You may wonder, why is a JWT initially created as a string? The reason for this is to enable ease of transfer between different systems. This allows for the JWT to be easily sent as text.</p>
+<p>All <strong>JWTs consist of three different elements</strong>: the <em><strong>header</strong></em>, the <em><strong>payload</strong></em> and the <em><strong>signature</strong></em>. As you can see in the above example, the encoded JWT has these three parts separated by dots (<code>.</code>) :</p>
+<ul>
+<li class="raw"><strong>Header</strong></li>
+</ul>
+<pre><code class="js hljs raw">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+</code></pre>
+<!--
+  <pre style="border: 1px solid black; padding: 5px">
+    <span style="color: red">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span>.
+  </pre>
+-->
+<ul>
+<li class="raw"><strong>Payload</strong></li>
+</ul>
+<pre><code class="bash hljs raw">eyJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20ifQ.
+</code></pre>
+<!--
+  <pre style="border: 1px solid black; padding: 5px">
+    <span style="color: purple">eyJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20ifQ</span>.
+  </pre>
+-->
+<ul>
+<li class="raw"><strong>Signature</strong></li>
+</ul>
+<pre><code class="js hljs raw">WFHtzmw-TL0oTO0DoNzfeiq1J7cErwU7ednTm5UNBNY
+</code></pre>
+<!--
+  <pre style="border: 1px solid black; padding: 5px">
+    <span style="color: dodgerblue">WFHtzmw-TL0oTO0DoNzfeiq1J7cErwU7ednTm5UNBNY</span>
+  </pre>
+-->
+<h3 class="raw">JWT Debugger</h3>
+<p>To inspect the structure of a JSON Web Token we can use the JWT Debugger tool, available at <a href="https://jwt.io/">jwt.io</a>. The JWT Debugger allows you to paste the encoded JWT (string) and view the decoded header, payload and signature as the result.</p>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/token-auth/jwt-debugger.png" alt="JWT.io Website Debugger" class="raw md-image"></p>
+<p>When a JWT is decoded, the first two parts (the <em>header</em> and the <em>payload</em>) are converted to JSON objects and become accessible. For example, when we decode the previous JWT string, we get the following <em>header</em> and <em>payload</em>:</p>
+<ul>
+<li class="raw">
+<p>Header (decoded)</p>
+<pre style="border: 1px solid black; padding: 5px">
+  <span style="color: red">{
+    "alg": "HS256",
+    "typ": "JWT"
+  }</span>
+</pre>
+</li>
+<li class="raw">
+<p>Payload (decoded)</p>
+<pre style="border: 1px solid black; padding: 5px">
+  <span style="color: purple">{
+    "email": "user@example.com"
+  }</span>
+</pre>
+</li>
+</ul>
+<br>
+<h4 class="raw">Header</h4>
+<p>Every JWT has a <em>header</em> that contains information about the main algorithm used for signing and encrypting the JWT, and in general, how to parse the rest of the JWT.</p>
+<br>
+<h4 class="raw">Payload</h4>
+<p>The payload is the part of the JWT used to store the data that is being transferred between two parties. Just like the <em>header</em>, the <em>payload</em> is a JSON object.</p>
+<p>The payload may contain multiple properties, called <em>claims</em> in JWT jargon. The properties (<em>claims</em>) in the payload object are defined by the user, but there are also several default properties (<em>claims</em>). Some of the default properties that you will encounter on the payload object are:</p>
+<ul>
+<li class="raw"><strong>iat</strong>: <em>issued at (time)</em>. A number representing a specific date and time in seconds (<a href="https://en.wikipedia.org/wiki/Unix_time">Unix time</a>) at which JWT was issued.</li>
+<li class="raw"><strong>exp</strong>: <em>expires at (time)</em>. A number representing a specific date in seconds (Unix time) when JWT will expire.</li>
+</ul>
+<br>
+<h4 class="raw">Signature</h4>
+<p>When a token is created we can optionally sign it. Signature is created by combining the encoded <em>JWT header</em>, JWT <em>payload</em> and a <em>secret key</em> and encrypting it with the encryption algorithm specified in the <em>header</em> (e.g. <code>&quot;alg&quot;: &quot;HS256&quot;</code>).  The <em>secret key</em> is kept on the server and used to sign new tokens and verify the existing ones.</p>
+<p>The purpose of the signature is to allow one or more parties to verify the authenticity of the JWT.</p>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/token-auth/jwt-signature.png" alt="JWT Signature structure" class="raw md-image"></p>
+<br>
+<h2 class="raw">Token-Based Authentication</h2>
+<p>In the past, we worked with Session-based authentication where information of each session was kept on the server. On the contrary, Token-based authentication is stateless which means that no information is stored on the server. With JWT, the token sent to the client contains all the information needed to verify the user. With this said, the backend authentication logic is simpler and easier to implement.</p>
+<br> 
+<h3 class="raw">Authentication Flow</h3>
+<p>To implement Token-based authentication on our server we will create the following routes:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>URL</th>
+<th>Request Headers</th>
+<th>Request Body</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/auth/signup</code></td>
+<td>–</td>
+<td>{ email, password, name }</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/auth/login</code></td>
+<td>–</td>
+<td>{ email, password }</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/auth/verify</code></td>
+<td>Authorization: Bearer &lt; JWT &gt;</td>
+<td>–</td>
+</tr>
+</tbody>
+</table>
+<p>As we will be implementing the above routes in the next steps, let’s briefly explain the functionality of each:</p>
+<ul>
+<li class="raw"><code>POST</code> <code>/auth/signup</code> route receives a request containing <code>email</code> , <code>password</code> and <code>name</code> and creates a new <em>user</em> in the database. The created <em>user</em> document is returned in the response.</li>
+<li class="raw"><code>POST</code> <code>/auth/login</code> route receives a request containing the <code>email</code> and <code>password</code>. The provided user information is checked against the database to verify that <code>email</code> exists and that the <code>password</code> is correct.
+If authentication is successful a new JWT is created. When signing the new JWT, we will set the <em>user</em> data as the <em>payload</em> of the token. The token is then sent back in the response.</li>
+<li class="raw"><code>GET</code> <code>/auth/verify</code> protected route. This route receives a request that must have the <code>Authorization</code> headers containing the JWT. Upon request, the provided JWT is extracted from the request headers and verified if valid. If JWT is valid, the request is allowed.
+As the response, the route will send the user data stored in the payload of the JWT. This route is necessary for integration with the React app.</li>
+</ul>
+<p>Below is the diagram of the authentication flow that we will be implementing:</p>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/token-auth/jwt-authentication-flow-1.png" alt="Token Based Authentication Flow" class="raw md-image"></p>
+<br>
+<h3 class="raw">User Model</h3>
+<p>We will start by creating a model for the new collection of users. Create a new file <code>models/User.model.js</code> and add the following content:</p>
+<pre><code class="js hljs raw">// models/User.model.js
+
+const mongoose = require(&quot;mongoose&quot;);
+const { Schema, model } = mongoose;
+
+
+const userSchema = new Schema({
+  email: { type: String, unique: true, required: true },
+  password: { type: String, required: true },
+  name: { type: String, required: true },
+});
+
+module.exports = model(&quot;User&quot;, userSchema);
+</code></pre>
+<p>Our user document will contain three fields. The <code>email</code> and <code>password</code> will be used to identify and authenticate the user. The <code>name</code> field is not required for implementing the authentication and could be safely omitted. We created it as an additional field.</p>
+<br>
+<h3 class="raw">Sign Up Route</h3>
+<p>After we are done creating the model, we can move on to implementing the routes. Let’s create a new file <code>routes/auth.routes.js</code> for our authentication routes:</p>
+<pre><code class="js hljs raw">// routes/auth.routes.js
+
+const express = require(&quot;express&quot;);
+const bcrypt = require(&#39;bcryptjs&#39;);
+const jwt = require(&quot;jsonwebtoken&quot;);
+const User = require(&quot;../models/User.model&quot;);
+
+const router = express.Router();
+const saltRounds = 10;
+
+
+// POST  /auth/signup
+// ...
+
+
+// POST  /auth/login
+// ...
+
+
+// GET  /auth/verify
+// ...
+
+module.exports = router;
+</code></pre>
+<p>On the top of the file we imported the following packages:</p>
+<ul>
+<li class="raw"><code>express</code> is used to create the router file,</li>
+<li class="raw"><code>bcrypt</code> is used for encrypting the passwords before saving them in the database,</li>
+<li class="raw"><code>jsonwebtoken</code>  which we will use to create and sign new JSON Web Tokens,</li>
+<li class="raw"><code>&quot;../models/User.model&quot;</code> which we will use to create new <em>user</em> documents in the database and retrieve the existing ones.</li>
+</ul>
+<p>Before we move onto creating the authentication routes, we need to import the new file and set it up in the <code>app.js</code> as a routing middleware. We will update <code>app.js</code> and add the new router file before the <em>error handling</em> middleware:</p>
+<pre><code class="js hljs raw">// app.js
+// ... previous imports stay unchanged
+// ...
+
+// 👇 Start handling routes here
+const allRoutes = require(&quot;./routes&quot;);
+app.use(&quot;/api&quot;, allRoutes);
+
+const projectRouter = require(&quot;./routes/project.routes&quot;);
+app.use(&quot;/api&quot;, projectRouter);
+
+const taskRouter = require(&quot;./routes/task.routes&quot;);
+app.use(&quot;/api&quot;, taskRouter);
+
+
+const authRouter = require(&quot;./routes/auth.routes&quot;);          //  &lt;== IMPORT
+app.use(&quot;/auth&quot;, authRouter);                             //  &lt;== ADD
+
+
+require(&quot;./error-handling&quot;)(app);
+
+module.exports = app;
+</code></pre>
+<p>We can now start creating the routes in <code>routes/auth.routes.js</code>. We will start by first adding the <em>sign up</em> route:</p>
+<pre><code class="js hljs raw">// routes/auth.routes.js
+
+// ... all imports stay unchanged
+
+// POST /auth/signup  - Creates a new user in the database
+router.post(&#39;/signup&#39;, (req, res, next) =&gt; {
+  const { email, password, name } = req.body;
+
+  // Check if email or password or name are provided as empty string 
+  if (email === &#39;&#39; || password === &#39;&#39; || name === &#39;&#39;) {
+    res.status(400).json({ message: &quot;Provide email, password and name&quot; });
+    return;
+  }
+
+  // Use regex to validate the email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  if (!emailRegex.test(email)) {
+    res.status(400).json({ message: &#39;Provide a valid email address.&#39; });
+    return;
+  }
+  
+  // Use regex to validate the password format
+  const passwordRegex = /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}/;
+  if (!passwordRegex.test(password)) {
+    res.status(400).json({ message: &#39;Password must have at least 6 characters and contain at least one number, one lowercase and one uppercase letter.&#39; });
+    return;
+  }
+
+
+  // Check the users collection if a user with the same email already exists
+  User.findOne({ email })
+    .then((foundUser) =&gt; {
+      // If the user with the same email already exists, send an error response
+      if (foundUser) {
+        res.status(400).json({ message: &quot;User already exists.&quot; });
+        return;
+      }
+
+      // If email is unique, proceed to hash the password
+      const salt = bcrypt.genSaltSync(saltRounds);
+      const hashedPassword = bcrypt.hashSync(password, salt);
+
+      // Create the new user in the database
+      // We return a pending promise, which allows us to chain another `then` 
+      return User.create({ email, password: hashedPassword, name });
+    })
+    .then((createdUser) =&gt; {
+      // Deconstruct the newly created user object to omit the password
+      // We should never expose passwords publicly
+      const { email, name, _id } = createdUser;
+    
+      // Create a new object that doesn&#39;t expose the password
+      const user = { email, name, _id };
+
+      // Send a json response containing the user object
+      res.status(201).json({ user: user });
+    })
+    .catch(err =&gt; {
+      console.log(err);
+      res.status(500).json({ message: &quot;Internal Server Error&quot; })
+    });
+});
+
+
+
+// POST  /auth/login
+// ...
+
+
+// GET  /auth/verify
+// ...
+
+module.exports = router;
+</code></pre>
+<p>Let’s break down the implementation of the <code>/auth/signup</code> route into steps to help us understand it better:</p>
+<ol>
+<li class="raw">We start by destructuring the <code>email</code>, <code>password</code> and <code>name</code> from the body of the incoming request <code>req.body</code>.</li>
+<li class="raw">Next, we check that <code>email</code>, <code>password</code> and <code>name</code> are provided. If any of the values is an empty string, we send a response with the error status code <code>400</code>, and break the execution of the code by using <code>return</code>.</li>
+<li class="raw">Using regex, we validate the format of the <code>email</code> and the <code>password</code>. If one of the values is not matching the required pattern, we send a response with the error status code <code>400</code>, and break the execution of the code by using <code>return</code>.</li>
+<li class="raw">If <code>email</code> and <code>password</code> pass our regex check, we then query the database to check if a user with the same <code>email</code> already exists.</li>
+<li class="raw">If the <code>email</code> is unique, we proceed to hash the password using <code>bcrypt</code>.</li>
+<li class="raw">In the following step, we create a new user in the database.</li>
+<li class="raw">Once the new user document is created, we deconstruct the user object to omit the password. We should never expose passwords publicly, even if they are hashed.</li>
+<li class="raw">At last, we send the JSON response that includes the newly created user object, of course without the password.</li>
+</ol>
+<br>
+<h3 class="raw">Login Route</h3>
+<p>Moving on to the next one, we will implement the <em>login</em> route. In our <em>login</em> route we will verify the credentials of the user, the <code>email</code> and the <code>password</code> and if they are correct we will create a JSON Web Token, that contains a payload with user data, and sign it with a secret key.</p>
+<p>Before we create the route, let’s update our <code>.env</code> file and add a secret key variable that we will use to sign new JWTs and verify the existing ones. We’ll add the following variable to the <code>.env</code> file:</p>
+<pre><code class="bash hljs raw">TOKEN_SECRET=1r0Nh4cK
+</code></pre>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":key:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/key.png" /> When working with JWTs and especially in the production environment, we should pay attention to not expose the <em>secret key</em> publicly. By exposing the secret key we make a way for a malicious party to create valid tokens and use them to access our server.</p>
+</div>
+<p>We can now proceed to create the route <code>/auth/login</code>. Let’s update the <code>routes/auth.routes.js</code> and add the following code:</p>
+<pre><code class="js hljs raw">// routes/auth.routes.js
+// ...
+
+// POST  /auth/login - Verifies email and password and returns a JWT
+router.post(&#39;/login&#39;, (req, res, next) =&gt; {
+  const { email, password } = req.body;
+
+  // Check if email or password are provided as empty string 
+  if (email === &#39;&#39; || password === &#39;&#39;) {
+    res.status(400).json({ message: &quot;Provide email and password.&quot; });
+    return;
+  }
+
+  // Check the users collection if a user with the same email exists
+  User.findOne({ email })
+    .then((foundUser) =&gt; {
+    
+      if (!foundUser) {
+        // If the user is not found, send an error response
+        res.status(401).json({ message: &quot;User not found.&quot; })
+        return;
+      }
+
+      // Compare the provided password with the one saved in the database
+      const passwordCorrect = bcrypt.compareSync(password, foundUser.password);
+
+      if (passwordCorrect) {
+        // Deconstruct the user object to omit the password
+        const { _id, email, name } = foundUser;
+        
+        // Create an object that will be set as the token payload
+        const payload = { _id, email, name };
+
+        // Create and sign the token
+        const authToken = jwt.sign( 
+          payload,
+          process.env.TOKEN_SECRET,
+          { algorithm: &#39;HS256&#39;, expiresIn: &quot;6h&quot; }
+        );
+
+        // Send the token as the response
+        res.status(200).json({ authToken: authToken });
+      }
+      else {
+        res.status(401).json({ message: &quot;Unable to authenticate the user&quot; });
+      }
+
+    })
+    .catch(err =&gt; res.status(500).json({ message: &quot;Internal Server Error&quot; }));
+});
+
+
+// ...
+</code></pre>
+<p>Let’s go over the above code and check our understanding:</p>
+<ol>
+<li class="raw">
+<p>We start by destructuring the <code>email</code> and <code>password</code> from the body of the incoming request <code>req.body</code>.</p>
+</li>
+<li class="raw">
+<p>Next, we check that <code>email</code> and <code>password</code> are provided. If any of the values is an empty string we send a response with the error status code <code>400</code>, and break the execution of the code with <code>return</code>.</p>
+</li>
+<li class="raw">
+<p>If <code>email</code> and <code>password</code> pass the check, we then query the database to check if a user document with the same <code>email</code> exists. If the user document is not found, we send an error response and break the execution of code with <code>return</code></p>
+</li>
+<li class="raw">
+<p>If the user exists, we proceed to check the password using <code>bcrypt</code>.</p>
+</li>
+<li class="raw">
+<p>If the password is correct, we create a new object with user data that we will use as the payload of the token. We first destructure the <code>foundUser</code> object to omit the password. Then we create a new object <code>payload</code> that we will set as the payload of the JWT.</p>
+</li>
+<li class="raw">
+<p>Next we proceed to create the JSON Web Token. To create the token we use <code>jwt.sign()</code> method which returns a new JWT token generated as a <a href="https://base64.guru/learn/what-is-base64">Base64</a> encoded string.</p>
+<p>The syntax of the <code>jwt.sign()</code> method is the following:</p>
+<pre><code class="js hljs raw">jwt.sign(payload, secretKey, options)
+</code></pre>
+<ul>
+<li class="raw">
+<p><code>payload</code> - as the payload part of the token we set the object with user data (without the password)</p>
+</li>
+<li class="raw">
+<p><code>secretKey</code> - as the secret key we pass the <code>process.env.TOKEN_SECRET</code> value stored in the <code>.env</code> file</p>
+</li>
+<li class="raw">
+<p><code>options</code>:</p>
+<ul>
+<li class="raw"><code>algorithm</code> - Encryption algorithm (default <code>HS256</code>)</li>
+<li class="raw"><code>expiresIn</code> - A string describing expiration time span using <a href="https://github.com/vercel/ms">ms</a> package syntax.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="raw">
+<p>At the end, we send the json response that contains the created token:</p>
+<pre><code class="js hljs raw">res.status(200).json({ authToken: authToken });
+</code></pre>
+<br>
+</li>
+</ol>
+<p>The JWT that we send as the response will serve as an <strong>authentication token</strong>. The client will need to save this token on the client-side (browser), either by saving it in the local storage or the memory. From that point on, the client will need to include the token with the request, each time it makes a request to a protected route.</p>
+<br>
+<h3 class="raw">JWT Validation Middleware</h3>
+<p>We are halfway through! By now we have implemented the <em>sign up</em> which enables us to create new users in the database and <em>login</em> which allows us to authenticate the user and send back a JWT token to the client which the client can use for subsequent requests to the protected routes.</p>
+<p>Before we can start protecting backend routes we will need to create a middleware that checks for and validates the JWT token on the incoming request. We will then use this middleware to protect the routes, and allow access only to requests that contain a valid JWT.</p>
+<p>We will create a new folder named <code>/middleware</code> in the root of the project and inside of it a new file with the name <code>jwt.middleware.js</code>. We will add the following content to the file:</p>
+<pre><code class="js hljs raw">// middleware/jwt.middleware.js
+
+const jwt = require(&quot;express-jwt&quot;);
+
+// Instantiate the JWT token validation middleware
+const isAuthenticated = jwt({
+  secret: process.env.TOKEN_SECRET,
+  algorithms: [&quot;HS256&quot;],
+  requestProperty: &#39;payload&#39;, 
+  getToken: getTokenFromHeaders
+});
+
+
+// Function used to extracts the JWT token from the request&#39;s &#39;Authorization&#39; Headers
+function getTokenFromHeaders (req) {
+  
+  // Check if the token is available on the request Headers
+  if (req.headers.authorization &amp;&amp; req.headers.authorization.split(&quot; &quot;)[0] === &quot;Bearer&quot;) {
+
+    // Get the encoded token string and return it
+    const token = req.headers.authorization.split(&quot; &quot;)[1];
+    return token;
+  } 
+  
+  return null;
+}
+
+
+// Export the middleware so that we can use it to create a protected routes
+module.exports = {
+  isAuthenticated
+}
+</code></pre>
+<p>To create a JWT validation middleware we use the <code>express-jwt</code> package. This module provides Express middleware for validating JWTs (<a href="https://jwt.io/">JSON Web Tokens</a>) and is used in combination with the core package <code>jsonwebtoken</code>. The middleware is used to verify the JWT and to decode the token’s payload.</p>
+<p>To instantiate the middleware we import the module and directly invoke it as a function: <code>jwt()</code>.</p>
+<p>The function ( <code>jwt()</code> ) takes an <em>options</em> object as the argument. The <em>options</em> object is used to configure the middleware.</p>
+<p>In our file <code>jwt.middleware.js</code> we created the authentication middleware and named it <code>isAuthenticated</code>. We instantiated it using the following <em>options</em>:</p>
+<pre><code class="js hljs raw">const isAuthenticated = jwt({
+  secret: process.env.TOKEN_SECRET,
+  algorithms: [&quot;HS256&quot;],
+  requestProperty: &#39;payload&#39;, 
+  getToken: getTokenFromHeaders
+});
+</code></pre>
+<ul>
+<li class="raw">
+<p><code>secret</code>: The <em>token secret</em> used to verify the token. It must be the same as the one used when creating and signing the JWT token. If the incoming JWT token was signed with a different secret, it will be refused as invalid.</p>
+</li>
+<li class="raw">
+<p><code>algorithms</code>: the encryption algorithm used to encrypt and sign JWT.</p>
+</li>
+<li class="raw">
+<p><code>requestProperty</code>: By default, the decoded token is attached to <code>req.user</code> but can be configured with the <code>requestProperty</code> option. By setting it to <code>requestProperty: 'payload'</code> we make the decoded JWT payload available on property <code>req.payload</code>. We will see how to access it in next the steps.</p>
+</li>
+<li class="raw">
+<p><code>getToken</code>: A custom function for extracting the token from a request.</p>
+<p>We created a function <code>getTokenFromHeaders</code> which extracts the token from the request’s <code>Authorization</code> Headers. The same function can be provided inline, inside of the <em>options</em> object.</p>
+</li>
+</ul>
+<p>We exported the  JWT validation middleware <code>isAuthenticated</code> so that we can use it to protect routes and allow access only to the users who are authenticated (with a valid JWT).</p>
+<br>
+<h3 class="raw">Establish Protected Routes</h3>
+<p>We can now use the JWT validation middleware <code>isAuthenticated</code> to protect routes. Let’s protect all of our <code>/api/project</code> routes and make them available only for the authenticated users (with a valid JWT).</p>
+<p>We will import the <code>isAuthenticated</code> middleware to the <code>app.js</code> file and use it to protect all of the <code>/api/projects</code> and <code>/api/tasks</code> routes:</p>
+<pre><code class="jsx hljs raw">// app.js 
+// ... previous imports stay unchanged
+
+const { isAuthenticated } = require(&quot;./middleware/jwt.middleware&quot;); // &lt;== IMPORT
+
+
+const app = express();
+require(&quot;./config&quot;)(app);
+
+
+// 👇 Start handling routes here
+const allRoutes = require(&quot;./routes&quot;);
+app.use(&quot;/api&quot;, allRoutes);
+
+const projectRouter = require(&quot;./routes/project.routes&quot;);
+app.use(&quot;/api&quot;, isAuthenticated, projectRouter);            // &lt;== UPDATE
+
+const taskRouter = require(&quot;./routes/task.routes&quot;);
+app.use(&quot;/api&quot;, isAuthenticated, taskRouter);            // &lt;== UPDATE
+
+const authRouter = require(&quot;./routes/auth.routes&quot;);
+app.use(&quot;/auth&quot;, authRouter);
+
+require(&quot;./error-handling&quot;)(app);
+
+module.exports = app;
+</code></pre>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":point_up:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/point_up.png" />  We can also use our JWT validation middleware <code>isAuthenticated</code> to protect individual routes. We will see how to do this in the next section.</p>
+</div>
+<br>
+<h3 class="raw">Token Verification Route</h3>
+<p>We are almost done! Before we start working on our frontend we need to establish a route for integration with the React app.</p>
+<p>This route will allow the client (React app) to send the stored JWT to the server for validation. Upon receiving the request to verify the JWT, the server will respond either by returning a <em>success</em> response when JWT is valid or an error response if JWT is not valid (or not provided). See the below diagram for more details:</p>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/token-auth/jwt-authentication-flow-2.png" alt="Diagram - Token Verification Route" class="raw md-image"></p>
+<p>We will update the file with the authentication routes using the below code. This is the final version of the <code>route/auth.route.js</code> file:</p>
+<pre><code class="jsx hljs raw">// routes/auth.routes.js
+
+// ... all imports stay unchanged
+
+const { isAuthenticated } = require(&#39;./../middleware/jwt.middleware.js&#39;); // &lt;== IMPORT
+
+const saltRounds = 10;
+
+
+// POST /auth/signup  - Creates a new user in the database
+// ... no updates in this route
+
+
+// POST  /auth/login - Verifies email and password and returns a JWT
+// ... no updates in this route
+
+
+// GET  /auth/verify  -  Used to verify JWT stored on the client
+router.get(&#39;/verify&#39;, isAuthenticated, (req, res, next) =&gt; {       // &lt;== CREATE NEW ROUTE
+
+  // If JWT token is valid the payload gets decoded by the
+  // isAuthenticated middleware and made available on `req.payload`
+  console.log(`req.payload`, req.payload);
+
+  // Send back the object with user data
+  // previously set as the token payload
+  res.status(200).json(req.payload);
+});
+
+
+module.exports = router;
+</code></pre>
+<br>
+<h3 class="raw">Test Routes with Postman</h3>
+<p>The last step will be to test our newly created API routes with <a href="https://www.postman.com/downloads/">Postman</a>.</p>
+<br>
+<h4 class="raw">1. Test the route <code>POST</code> - <code>/auth/signup</code></h4>
+<h5 class="raw">Method</h5>
+<pre><code>POST
+</code></pre>
+<h5 class="raw">URL</h5>
+<pre><code class="http hljs raw">http://localhost:5005/auth/signup
+</code></pre>
+<h5 class="raw">Request Body (<code>JSON</code>):</h5>
+<pre><code class="json hljs raw">{
+    &quot;email&quot;: &quot;user@example.com&quot;,
+    &quot;password&quot;: &quot;1234Abcde&quot;,
+    &quot;name&quot;: &quot;Anna&quot;
+}
+</code></pre>
+<hr>
+<h5 class="raw">Expected Response:</h5>
+<p><strong>Response Status:</strong>  201 Created</p>
+<p><strong>Response Body:</strong></p>
+<pre><code class="json hljs raw">{
+    &quot;user&quot;: {
+        &quot;email&quot;: &quot;user@example.com&quot;,
+        &quot;name&quot;: &quot;Anna&quot;,
+        &quot;_id&quot;: &quot;&lt;MONGODB_DOCUMENT_ID&gt;&quot;
+    }
+}
+</code></pre>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Screenshot - Test route (POST /auth/signup) with Postman </summary>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/token-auth/jwt-auth-postman-post-auth-signup.png" alt="Testing auth signup route with Postman" class="raw md-image"></p>
+</details>
+<p>If we check the database now, we should see the <code>users</code> collection and a new user document created. Let’s move forward and create the <em>login</em> route.</p>
+<br>
+<h4 class="raw">2. Test the route <code>POST</code> - <code>/auth/login</code></h4>
+<h5 class="raw">Method</h5>
+<pre><code>POST
+</code></pre>
+<h5 class="raw">URL</h5>
+<pre><code class="http hljs raw">http://localhost:5005/auth/login
+</code></pre>
+<h5 class="raw">Request Body (<code>JSON</code>):</h5>
+<pre><code class="json hljs raw">{
+    &quot;email&quot;: &quot;user@example.com&quot;,
+    &quot;password&quot;: &quot;1234Abcde&quot;
+}
+</code></pre>
+<hr>
+<h5 class="raw">Expected Response:</h5>
+<p><strong>Response Status:</strong>  200 OK</p>
+<p><strong>Response Body:</strong></p>
+<pre><code class="json hljs raw">{
+    &quot;authToken&quot;: &quot;eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MTEyODE4NWMxMzQyZDUzOTdkMWE4ZGQiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJuYW1lIjoiQW5uYSIsImlhdCI6MTYyODYwMzI5NSwiZXhwIjoxNjI4NjI0ODk1fQ.gKiJPFn3pPK_Giz6JRs5iHNHGR_EIrkysr7fGdiXlZQ&quot;
+}
+</code></pre>
+<div class="alert alert-warning">
+<p><img class="emoji" alt=":warning:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/warning.png" /> The <code>authToken</code> in the example above is used only as an example. The JWT token that you will receive when testing your route will have different content.</p>
+</div>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Screenshot - Test route (POST /auth/login) with Postman </summary>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/token-auth/jwt-auth-postman-post-auth-login.png" alt="Testing auth login route with Postman" class="raw md-image"></p>
+</details>
+<br>
+<h4 class="raw">3. Test the route <code>GET</code> - <code>/auth/verify</code></h4>
+<h5 class="raw">Method</h5>
+<pre><code class="http hljs raw">GET
+</code></pre>
+<h5 class="raw">URL</h5>
+<pre><code class="http hljs raw">http://localhost:5005/auth/verify
+</code></pre>
+<h5 class="raw">Request Body:</h5>
+<p><img class="emoji" alt=":exclamation:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/exclamation.png" /> No request body. HTTP <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages#Body"><code>GET</code> messages use only Headers</a>.</p>
+<h5 class="raw"><strong>Request Headers:</strong></h5>
+<pre><code class="js hljs raw">Authorization: Bearer &lt;JWT_Token_String&gt;
+</code></pre>
+<div class="alert alert-warning">
+<p><img class="emoji" alt=":point_up:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/point_up.png" /> The request <code>Authorization</code> Header must be set to the <code>Bearer Token</code> and must include the JWT token string. <strong>See the below screenshot on how to set it up in Postman.</strong></p>
+</div>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Screenshot - Setting Authorization Headers in Postman </summary>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/token-auth/jwt-auth-postman-post-auth-verify.png" alt="Example - Setting Authorization Headers in Postman" class="raw md-image"></p>
+</details>
+<hr>
+<h5 class="raw">Expected Response:</h5>
+<p><strong>Response Status:</strong>  200 OK</p>
+<p><strong>Response Body:</strong></p>
+<pre><code class="json hljs raw">{
+    &quot;_id&quot;: &quot;&lt;MONGODB_DOCUMENT_ID&gt;&quot;,
+    &quot;email&quot;: &quot;user@example.com&quot;,
+    &quot;name&quot;: &quot;Anna&quot;,
+    &quot;iat&quot;: 1628603295,
+    &quot;exp&quot;: 1628624895
+}
+</code></pre>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Screenshot - Test route (GET /auth/verify) with Postman </summary>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/token-auth/jwt-auth-postman-post-auth-verify-response.png" alt="Testing auth verify route with Postman" class="raw md-image"></p>
+</details>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-authentication-backend/tree/master">react-authentication-backend</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-authentication-backend.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-authentication-backend
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this lesson, we have learned how to implement Token-based authentication on the backend using JSON Web Tokens. We used the <code>jsonwebtoken</code> package to create and sign a JWT and send it to the client so that it can be used for authentication. Also, we used the <code>express-jwt</code> package to instantiate a JWT validation middleware which we used to protect the routes and allow access only for the requests that contain a valid JWT. In the end, we showed how to test the routes and how to set up <code>Authorization</code> Headers for a request in Postman.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://jwt.io/">JWT.io - Official Page</a></li>
+<li class="raw"><a href="https://blog.ag-grid.com/a-plain-english-introduction-to-json-web-tokens-jwt-what-it-is-and-what-it-isnt">Introduction to JSON web tokens</a></li>
+<li class="raw"><a href="https://www.youtube.com/watch?v=K6pwjJ5h0Gg">How does JWT work?</a></li>
+<li class="raw"><a href="https://www.youtube.com/watch?v=UBUNrFtufWo">Session vs Token Authentication in 100 Seconds</a></li>
+<li class="raw"><a href="https://www.youtube.com/watch?v=soGRyl9ztjI">What is JWT authorization really about - Java Brains</a></li>
+</ul>

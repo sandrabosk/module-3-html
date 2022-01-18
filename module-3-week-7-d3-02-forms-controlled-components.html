@@ -1,0 +1,857 @@
+<!-- # Forms (Controlled Components) -->
+<!--
+
+### Instructional Design Goals
+
+**A.** *Explain* the default behavior of HTML forms
+
+**B.** *Explain* the concept and flow of Controlled Components
+
+**C.** *Demonstrate* how to create a Controlled component using form inputs
+
+**D.** *Demonstrate* how to set an `onSubmit` event listener and `preventDefault` to stop the page from reloading on submit.
+
+**E.** *Demonstrate* how to create a Controlled component using select
+
+**F.** *Explain* the Data flow in React and *demonstrate* how to pass methods to form components and how to invoke them.
+
+-->
+<h2 class="raw">Learning goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Display forms in your React apps</li>
+<li class="raw">Create a controlled component to manage the form inputs</li>
+<li class="raw">Get the value from different types of inputs</li>
+<li class="raw">Set and handle events for forms and inputs</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<div style="display:flex; justify-content:center">
+<img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/form-example.png" />
+</div>
+<br>
+<p>In this learning unit, we will see how to implement <strong>forms</strong> in our React apps. As we already know, <code>HTML form</code> elements work a little bit differently from other <strong>DOM</strong> elements. Form elements naturally keep some <em>internal state</em>.</p>
+<div class="alert alert-info">
+<p>In React, we implement forms by using a slightly different approach. We use the HTML <code>form</code> tag to create forms, but without relying on the form’s internal state. Instead, form values are controlled by using the component state. For now, this might not make too much sense, but it will by the end of this lesson. <img class="emoji" alt=":wink:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/wink.png" /></p>
+</div>
+<br>
+<h3 class="raw">Getting Started</h3>
+<p>Let’s create a new React app that we’ll use for the following examples:</p>
+<pre><code class="shell hljs raw">$ npx create-react-app react-forms
+$ cd react-forms
+$ npm start
+</code></pre>
+<p>Clean the <code>App.js</code> a bit, so that it has the following structure:</p>
+<pre><code class="jsx hljs raw">// App.js
+import &#39;./App.css&#39;;
+
+function App() {
+  return &lt;div className=&quot;App&quot;&gt;&lt;/div&gt;;
+}
+
+export default App;
+</code></pre>
+<p>As a starting point, we will use part of the code from the previous lesson <em><a href="https://github.com/ironhack-labs/lesson-code-h-react-list-and-keys/tree/master">React - Lists and Keys</a></em>.</p>
+<p>Go ahead and create the files shown below by using the provided snippets:</p>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Click here for the code</summary>
+<br>
+<pre><code class="jsx hljs raw">// src/components/MovieList.js
+
+import { useState } from &#39;react&#39;;
+import moviesDataJSON from &#39;../movies-data.json&#39;;
+import MovieCard from &#39;./MovieCard&#39;;
+
+
+function MovieList() {
+  const [movies, setMovies] = useState(moviesDataJSON);
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Movie List&lt;/h2&gt;
+      {movies.map(movie =&gt; {
+        return &lt;MovieCard key={movie._id} movie={movie} /&gt;;
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default MovieList;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/components/MovieCard.js
+
+import React from &#39;react&#39;;
+
+function MovieCard(props) {
+  const { movie } = props;
+
+  return (
+    &lt;div className=&quot;MovieCard&quot;&gt;
+      &lt;h3&gt;{movie.title}&lt;/h3&gt;
+      &lt;p&gt;Director: {movie.director}&lt;/p&gt;
+      &lt;p&gt;Rating: {movie.IMDBRating}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default MovieCard;
+</code></pre>
+<br>
+<pre><code class="jsx hljs raw">// src/App.js
+
+import &#39;./App.css&#39;;
+import MovieList from &#39;./components/MovieList&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;MovieList /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<h5 class="raw"><code>src/movies-data.json</code></h5>
+<pre><code class="jsx hljs raw">[
+  {
+     &quot;_id&quot;:&quot;1ae22ff0&quot;,
+     &quot;title&quot;:&quot;A Beautiful Mind&quot;,
+     &quot;director&quot;:&quot;Ron Howard&quot;,
+     &quot;hasOscars&quot;:true,
+     &quot;IMDBRating&quot;:8.2
+  },
+  {
+     &quot;_id&quot;:&quot;1ae22ff1&quot;,
+     &quot;title&quot;:&quot;American Gangster&quot;,
+     &quot;director&quot;:&quot;Ridley Scott&quot;,
+     &quot;hasOscars&quot;:false,
+     &quot;IMDBRating&quot;:7.9
+  },
+  {
+     &quot;_id&quot;:&quot;1ae22ff2&quot;,
+     &quot;title&quot;:&quot;American Hustle&quot;,
+     &quot;director&quot;:&quot;David O. Russel&quot;,
+     &quot;hasOscars&quot;:false,
+     &quot;IMDBRating&quot;:7.2
+  },
+  {
+     &quot;_id&quot;:&quot;1ae22ff3&quot;,
+     &quot;title&quot;:&quot;Beauty and the Beast&quot;,
+     &quot;director&quot;:&quot;Gary Trousdale&quot;,
+     &quot;hasOscars&quot;:true,
+     &quot;IMDBRating&quot;:8.1
+  },
+  {
+     &quot;_id&quot;:&quot;1ae22ff4&quot;,
+     &quot;title&quot;:&quot;Brave heart&quot;,
+     &quot;director&quot;:&quot;Mel Gibson&quot;,
+     &quot;hasOscars&quot;:true,
+     &quot;IMDBRating&quot;:8.3
+  },
+  {
+     &quot;_id&quot;:&quot;1ae22ff5&quot;,
+     &quot;title&quot;:&quot;Captain Phillips&quot;,
+     &quot;director&quot;:&quot;Paul Greengrass&quot;,
+     &quot;hasOscars&quot;:false,
+     &quot;IMDBRating&quot;:7.8
+  },
+  {
+     &quot;_id&quot;:&quot;1ae22ff6&quot;,
+     &quot;title&quot;:&quot;Dallas Buyers Club&quot;,
+     &quot;director&quot;:&quot;Jean-Marc Vallée&quot;,
+     &quot;hasOscars&quot;:true,
+     &quot;IMDBRating&quot;:8.1
+  },
+  {
+     &quot;_id&quot;:&quot;1ae22ff7&quot;,
+     &quot;title&quot;:&quot;Django Unchained&quot;,
+     &quot;director&quot;:&quot;Quentin Tarantino&quot;,
+     &quot;hasOscars&quot;:true,
+     &quot;IMDBRating&quot;:8.4
+  },
+  {
+     &quot;_id&quot;:&quot;1ae22ff8&quot;,
+     &quot;title&quot;:&quot;Die Hard&quot;,
+     &quot;director&quot;:&quot;John McTiernan&quot;,
+     &quot;hasOscars&quot;:false,
+     &quot;IMDBRating&quot;:8.2
+  }
+]
+</code></pre>
+<br>
+<pre><code class="css hljs raw">/* index.css */
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, &#39;Roboto&#39;, &#39;Oxygen&#39;, &#39;Ubuntu&#39;, &#39;Cantarell&#39;, &#39;Fira Sans&#39;, &#39;Droid Sans&#39;, &#39;Helvetica Neue&#39;, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, &#39;Courier New&#39;, monospace;
+}
+
+div,
+section,
+main {
+  box-sizing: border-box;
+}
+
+h2 {
+  padding: 15px 30px;
+  border: 1px solid #6d6d6d;
+  background: #ad89fb;
+  width: 300px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+}
+
+h3 {
+  padding: 5px 50px;
+  display: inline-block;
+}
+
+button,
+select {
+  padding: 3px 10px;
+  min-width: 50px;
+  height: 40px;
+  margin: 5px;
+  font-size: 1rem;
+}
+
+.App {
+  text-align: center;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.list {
+  width: 400px;
+  padding: 10px;
+  box-shadow: 0px 2px 3px grey;
+  margin-bottom: 20px;
+  background: white;
+}
+
+.list &gt; li,
+.list &gt; p,
+.list &gt; div {
+  margin: 10px;
+  border: 1px solid #f98a8a;
+}
+
+.MovieCard,
+.AddMovie {
+  border: 1px solid grey;
+  box-shadow: 0px 2px 3px grey;
+  width: 400px;
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.AddMovie {
+  background: #fffee7;
+}
+
+.AddMovie label {
+  width: 100px;
+  display: block;
+  margin: 0 auto;
+}
+
+.AddMovie input {
+  padding: 10px;
+  display: inline-block;
+  margin: 2px 0 10px;
+}
+
+.AddMovie input[type=&#39;checkbox&#39;] {
+  height: 30px;
+  display: block;
+  margin: 0 auto;
+}
+
+.Spinner {
+  width: 100%;
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Spinner img {
+  width: 100px;
+  height: 100px;
+}
+
+span.green,
+span.red,
+span.black {
+  display: inline-block;
+  padding: 3px 10px;
+  width: 25px;
+  border-radius: 3px;
+  color: white;
+  font-weight: 600;
+}
+
+.green {
+  background: green;
+}
+
+.red {
+  background: red;
+}
+
+.black {
+  background: black;
+}
+</code></pre>
+</details>
+<br>
+<h2 class="raw">Forms</h2>
+<!--
+
+&gt; - A. *Explain* the default behavior of HTML forms
+&gt;
+&gt;
+
+-->
+<p>HTML <code>&lt;form&gt;</code> elements work a bit differently from other DOM elements. Before we start, let’s go over the most important features of <code>&lt;form&gt;</code> elements:</p>
+<ul>
+<li class="raw">
+<p>Form elements by default keep some internal state. This internal state is how form elements store the input values.</p>
+</li>
+<li class="raw">
+<p>Another important behavior of HTML forms is form submission. Whenever a user submits the form, the form will send the data and refresh the page. This is an undesired behavior in Single Page Applications (React apps). When a page reloads the entire app reloads and any existing app state is lost.</p>
+</li>
+</ul>
+<p>To override this default behavior, we should store the form data in the state and have a JavaScript function that handles the form submission. This approach is called the “controlled component”.</p>
+<br>
+<h2 class="raw">Controlled Components</h2>
+<h3 class="raw">What is a Controlled Component?</h3>
+<p>In HTML, form elements such as <code>&lt;input&gt;</code>, <code>&lt;textarea&gt;</code>, and <code>&lt;select&gt;</code> typically maintain their own state and update it based on user input. This is a default form behavior dictated by the browser.</p>
+<p>In a controlled component, the default form behavior is overridden. Form data is handled by a React component and kept <em>in the component’s state</em>. The component’s state acts as the <em>“single source of truth”</em> holding the values of the form elements.</p>
+<div class="alert alert-success">
+<p><img class="emoji" alt=":point_up:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/point_up.png" /> A controlled component is a component that renders form elements and controls them by keeping the form data in the component’s state.</p>
+</div>
+<h3 class="raw">Creating a Controlled Component</h3>
+<!--
+
+&gt; - B. *Explain* the concept and flow of Controlled Components
+&gt; - C. *Demonstrate* how to create a Controlled component using form inputs
+&gt; - D. *Demonstrate* how to set an onSubmit event listener and preventDefault to stop the page from reloading on submit.
+&gt; - E. *Demonstrate* how to create a Controlled component using select
+
+-->
+<p>Let’s create a controlled component. Create a new file <code>AddMovie.js</code> inside the <code>./src/components</code> folder and add the following content to it:</p>
+<pre><code class="jsx hljs raw">// src/components/AddMovie.js
+
+import { useState } from &#39;react&#39;;
+
+function AddMovie(props) {
+  const [title, setTitle] = useState(&#39;&#39;);
+  const [director, setDirector] = useState(&#39;&#39;);
+  const [IMDBRating, setIMDBRating] = useState(5);
+  const [hasOscars, setHasOscars] = useState(true);
+
+  return (
+    &lt;div className=&quot;AddMovie&quot;&gt;
+      &lt;h4&gt;Add a Movie&lt;/h4&gt;
+
+      {/* form will be added here */}
+    &lt;/div&gt;
+  );
+}
+
+export default AddMovie;
+</code></pre>
+<p>Good, so far we have the state set so let’s move to create our first React form:</p>
+<pre><code class="jsx hljs raw">// ./src/components/AddMovie.js
+
+// ...
+
+  return (
+    &lt;div className=&quot;AddMovie&quot;&gt;
+      &lt;h4&gt;Add a Movie&lt;/h4&gt;
+  
+      &lt;form&gt;
+        &lt;label&gt;Title: &lt;/label&gt;
+        &lt;input 
+            type=&quot;text&quot; 
+            name=&quot;title&quot; 
+            value={title} 
+        /&gt;
+        
+  
+        &lt;label&gt;Director: &lt;/label&gt;
+        &lt;input 
+            type=&quot;text&quot; 
+            name=&quot;director&quot; 
+            value={director} 
+        /&gt;
+  
+        &lt;label&gt;IMDB Rating: &lt;/label&gt;
+        &lt;input 
+            type=&quot;number&quot; 
+            name=&quot;IMDBRating&quot; 
+            value={IMDBRating} 
+        /&gt;
+  
+        &lt;label&gt;Won Oscars: &lt;/label&gt;
+        &lt;input 
+            type=&quot;checkbox&quot; 
+            name=&quot;hasOscars&quot; 
+            checked={hasOscars} 
+        /&gt;
+        
+        &lt;button type=&quot;submit&quot;&gt;Add a Movie&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+
+// ...
+</code></pre>
+<p>We still can’t see the form because we didn’t use this component yet. So let’s go to import it and render it into our <code>MoviesList.js</code> component:</p>
+<pre><code class="jsx hljs raw">// ./src/components/MoviesList.js
+// ... previous imports stay unchanged
+
+import AddMovie from &#39;./AddMovie&#39;;
+
+function MovieList() {
+  const [movies, setMovies] = useState(moviesDataJSON);
+
+  return (
+    &lt;div&gt;
+      &lt;AddMovie /&gt; {/* &lt;==  ADD HERE ! */}
+      { movies.map(movie =&gt; {
+        return &lt;MovieCard key={movie._id} movie={movie} /&gt;;
+      }) }
+    &lt;/div&gt;
+  );
+}
+
+export default MovieList;
+</code></pre>
+<p>Okay, now we can see the form BUT the browser’s console is on fire <img class="emoji" alt=":fire:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/fire.png" /> <img class="emoji" alt=":rotating_light:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/rotating_light.png" /> . We have to do something with this error:</p>
+<blockquote class="raw">
+<p><em>You provided a <code>value</code> prop to a form field without an <code>onChange</code> handler… set either <code>onChange</code> or <code>readOnly</code>.</em></p>
+</blockquote>
+<p>If you try typing some input into the form, you will notice that inputs are not working.</p>
+<p>Each of our inputs is now connected to the state via the <code>value</code> attribute. Inputs are now displaying the values coming from their corresponding state variables to which they are connected (e.g. <code>value={director}</code>.</p>
+<p>To show the content entered in the input, we must update its state variable on each keystroke. To do this, we must add an <code>onChange</code> event and a <em>handler function</em> to each input, which will run on every <em>keystroke</em> or <em>change</em> in the input.</p>
+<p>We will add an <code>onChange</code> event to each input element and create a <em>handler function</em> for each input:</p>
+<pre><code class="jsx hljs raw">// ./src/components/AddMovie.js
+
+// ... previous imports stay unchanged
+
+function AddMovie(props) {
+  // ...
+
+  const handleTitleInput = e =&gt; setTitle(e.target.value);
+
+  const handleDirectorInput = e =&gt; setDirector(e.target.value);
+
+  const handleRatingInput = e =&gt; setIMDBRating(e.target.value);
+
+  const handleOscarsInput = e =&gt; setHasOscars(e.target.checked);
+  // e.target.checked is a boolean value from the `checkbox` input
+
+  return (
+    &lt;div className=&quot;AddMovie&quot;&gt;
+      &lt;h4&gt;Add a Movie&lt;/h4&gt;
+      &lt;form&gt;
+        &lt;label&gt;Title:&lt;/label&gt;
+        &lt;input 
+          type=&quot;text&quot; 
+          name=&quot;title&quot; 
+          value={title} 
+          onChange={handleTitleInput} 
+        /&gt;
+
+        &lt;label&gt;Director:&lt;/label&gt;
+        &lt;input 
+          type=&quot;text&quot; 
+          name=&quot;director&quot; 
+          value={director} 
+          onChange={handleDirectorInput} 
+        /&gt;
+
+        &lt;label&gt;IMDB Rating:&lt;/label&gt;
+        &lt;input 
+          type=&quot;number&quot; 
+          name=&quot;IMDBRating&quot; 
+          value={IMDBRating} 
+          onChange={handleRatingInput} 
+        /&gt;
+
+        &lt;label&gt;Won Oscars:&lt;/label&gt;
+        &lt;input 
+          type=&quot;checkbox&quot; 
+          name=&quot;hasOscars&quot; 
+          checked={hasOscars} 
+          onChange={handleOscarsInput} 
+        /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Add a Movie&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AddMovie;
+</code></pre>
+<p>Okay, great, the error is gone and our inputs are now updating on each keystroke or change.</p>
+<p>Our component <code>AddMovie</code> is now a <em>controlled component</em>. All of the inputs are controlled by the component itself (not the browser) and are displaying the values coming from the component’s state.</p>
+<br>
+<h3 class="raw">Prevent Page Reload</h3>
+<p>There is still one default behavior of forms that we didn’t address. We are talking about the <em>“on submit”</em> event. Our form still has the default HTML form behavior of reloading the page when the submit button is clicked.</p>
+<p>If you click on the submit button, you’ll notice the entire app reloading and starting from scratch. This means that all of the state kept in components is lost, wiped out!</p>
+<p>To prevent this we have to add an <code>onSubmit</code> event and a handler function to handles the form submission. This way we’ll be able to prevent the default behavior and also access the data that the user entered.</p>
+<p>We’ll update the <code>AddMovie.js</code> and add an <code>onSubmit</code> event to the <code>&lt;form&gt;</code>. We will also create a handler function <code>handleSubmit</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/AddMovie.js
+// ... previous imports stay unchanged
+
+function AddMovie(props) {
+  // ...
+
+  const handleSubmit = (e) =&gt; {        // &lt;==  ADD
+    e.preventDefault();
+    const newMovie = { title, director, IMDBRating, hasOscars };
+
+    console.log(&quot;Submitted: &quot;, newMovie);
+  }
+
+  
+  return (
+    &lt;div className=&quot;AddMovie&quot;&gt;
+      &lt;h4&gt;Add a Movie&lt;/h4&gt;
+      &lt;form onSubmit={handleSubmit} &gt;        {/*   &lt;== ADD EVENT */}
+        &lt;label&gt;Title:&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;title&quot;
+          value={title}
+          onChange={handleTitleInput}
+        /&gt;
+
+        &lt;label&gt;Director:&lt;/label&gt;
+        &lt;input
+          type=&quot;text&quot;
+          name=&quot;director&quot;
+          value={director}
+          onChange={handleDirectorInput}
+        /&gt;
+
+        &lt;label&gt;IMDB Rating:&lt;/label&gt;
+        &lt;input
+          type=&quot;number&quot;
+          name=&quot;IMDBRating&quot;
+          value={IMDBRating}
+          onChange={handleRatingInput}
+        /&gt;
+
+        &lt;label&gt;Won Oscars:&lt;/label&gt;
+        &lt;input
+          type=&quot;checkbox&quot;
+          name=&quot;hasOscars&quot;
+          checked={hasOscars}
+          onChange={handleOscarsInput}
+        /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Add a Movie&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+</code></pre>
+<p>Function <code>handleSubmit</code> will be called every time the form is submitted. This happens when the user clicks on the <code>Add a Movie</code> submit button or by pressing <kbd>Enter</kbd> while the button is in focus.</p>
+<p>In the first part of the function we use <code>e.preventDefault()</code> to cancel the default behavior of the form, the page reloads. After preventing the page from reloading, we access the input data stored in the state (state variables <code>title</code>, <code>director</code>, etc.).</p>
+<p>At the moment, we are accessing this data to create a new object called <code>newMovie</code> and we then simply log it to the console. In the next steps, we will see how to add pass the <code>newMovie</code> to the <code>MovieList</code> component.</p>
+<br>
+<h3 class="raw">The <code>select</code> tag</h3>
+<p>In HTML, <code>&lt;select&gt;</code> creates a drop-down list. To demonstrate its functionality, we’ll create a new component called <code>FilterMovies</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/FilterMovies.js
+
+import { useState } from &#39;react&#39;;
+
+function FilterMovies(props) {
+  const [firstLetter, setFirstLetter] = useState(&#39;All&#39;);
+
+  const handleSelect = e =&gt; {
+    setFirstLetter(e.target.value);
+
+    console.log(&#39;selected&#39;, e.target.value);
+  };
+
+  return (
+    &lt;div className=&quot;FilterMovies&quot;&gt;
+      &lt;label&gt;Show movies by first letter:&lt;/label&gt;
+      &lt;select value={firstLetter} onChange={handleSelect}&gt;
+        &lt;option value=&quot;All&quot;&gt;All&lt;/option&gt;
+        &lt;option value=&quot;A&quot;&gt;A&lt;/option&gt;
+        &lt;option value=&quot;B&quot;&gt;B&lt;/option&gt;
+        &lt;option value=&quot;C&quot;&gt;C&lt;/option&gt;
+        &lt;option value=&quot;D&quot;&gt;D&lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default FilterMovies;
+</code></pre>
+<p>The component is rendering a <code>&lt;select&gt;</code> dropdown. Dropdown is displaying a list of starting letters for all the movies in our list. You noticed that we created only five options. This is because we have a small number of movies on our list and they all start with the letters A - D.</p>
+<p>The <code>&lt;select&gt;</code> tag works on the same principle as the <code>&lt;input&gt;</code> . We convert it to a <em>controlled component element</em> in the same way, by adding the attribute <code>value</code> and the <code>onChange</code> event.</p>
+<p>Let’s break down the above example into steps for better understanding:</p>
+<ol>
+<li class="raw">We created a stateful component, with one state variable <code>firstLetter</code>. The initial value of the state variable <code>firstLetter</code> is a string <code>&quot;All&quot;</code>.</li>
+<li class="raw">We connected the <code>&lt;select&gt;</code> element to the state via the <code>value</code> attribute: <code>value={firstLetter}</code>.</li>
+<li class="raw">To change the state and display the selected option once the user clicks on the dropdown, we added the <code>onChange</code> event and a handler function <code>handleSelect</code>.</li>
+<li class="raw">When a user selects an option from the dropdown <code>handleSelect</code> function will run.</li>
+<li class="raw">In the <code>handleSelect</code> function we have access to the selected <em>option</em> value <code>e.target.value</code>. We set the selected value as the new state for <code>firstLetter</code> state variable: <code> setFirstLetter(e.target.value);</code></li>
+</ol>
+<p>We’ll render the new <code>FilterMovies</code> component within the <code>MovieList</code>. Update the <code>MovieList.js</code> with the following code:</p>
+<pre><code class="jsx hljs raw">// src/components/MovieList.js
+// ... previous imports stay unchanged
+
+import FilterMovies from &#39;./FilterMovies&#39;;     //  &lt;== IMPORT
+
+function MovieList() {
+  const [movies, setMovies] = useState(moviesDataJSON);
+
+  return (
+    &lt;div&gt;
+      &lt;FilterMovies /&gt;       {/*  &lt;== ADD   */}
+      &lt;AddMovie /&gt;
+      {movies.map(movie =&gt; {
+        return &lt;MovieCard key={movie._id} movie={movie} /&gt;;
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default MovieList;
+</code></pre>
+<p>In the next step, we will see how to connect the <code>FilterMovies</code> component with the <code>MovieList</code> and how to use it to filter the list of movies.</p>
+<br>
+<h2 class="raw">Data Flow - “Data down, actions up”</h2>
+<!--
+
+&gt; F. *Explain* the Data flow in React and *demonstrate* how to pass methods to form components and how to invoke them.
+
+-->
+<p>The phrase <em>“Data down, Actions up”</em> summarizes the flow of information in React apps. In the previous lessons and exercises, we already had a chance to pass data down and send actions up, but we’ll take a moment to explain this concept a bit further and illustrate it through an example.</p>
+<div class="alert alert-success">
+<p><strong>Data down</strong></p>
+<br>
+<p>In React, data is sent down from the parent component to the child component through the <em>props</em>.</p>
+</div>
+<p>Now, the second part “actions up” refers to sending the data from the child component back up to the parent.</p>
+<div class="alert alert-success">
+<p><strong>Actions up</strong></p>
+<br>
+<p>The child component can send data back to the parent component with the help of callback functions.</p>
+</div>
+<br>
+<p>We will connect our two new controlled components <code>AddMovie</code> and <code>FilterMovies</code> with the <code>MovieList</code>. This is a perfect example to demonstrate how actions go up. We’ll use <code>AddMovie</code> to add new movies to the movie list. The <code>FilterMovies</code> will serve to alphabetically filter the movies shown on the screen.</p>
+<p>In the <code>MovieList</code> component, we will create two new functions that we will then pass down to the <code>AddMovie</code> and <code>FilterMovies</code> components. <code>AddMovie</code> and <code>FilterMovies</code> components will use these functions to send data back up to the parent <code>MovieList</code> (<strong>actions up</strong>).</p>
+<p>As there are several new things that we need to add or update in <code>MovieList.js</code>, let’s outline them in steps:</p>
+<ol>
+<li class="raw">
+<p>Add a new state variable <code>moviesData</code>:</p>
+<p>We will create a new state variable and use it to store the list of all the movies. We will use <code>moviesData</code> as our master array containing all the movies. We will use it as a master array, that always contains all the movies when filtering the movies shown.</p>
+<pre><code class="jsx hljs raw">const [moviesData, setMoviesData] = useState(moviesDataJSON);
+</code></pre>
+</li>
+</ol>
+<br>
+<ol start="2">
+<li class="raw">
+<p>Add new function <code>addNewMovie</code>:</p>
+<p>The <code>addNewMovie</code> function receives one argument <code>newMovie</code> object to be added. We are adding the <code>newMovie</code> to both arrays <code>moviesData</code> and <code>movies</code>.</p>
+<pre><code class="jsx hljs raw">const addNewMovie = newMovie =&gt; {
+  const updatedMoviesData = [...moviesData, newMovie];
+  const updatedMovies = [...movies, newMovie];
+
+  setMoviesData(updatedMoviesData);
+  setMovies(updatedMovies);
+};
+</code></pre>
+<br>
+</li>
+<li class="raw">
+<p>Add new function <code>filterMovieList</code>:</p>
+</li>
+</ol>
+<p>The <code>filterMovieList</code> function receives one argument <code>str</code>, which is a string. We will use <code>str</code> as a filter criteria.</p>
+<p>If the <code>str === &quot;All&quot;</code> we will show all the movies.</p>
+<p>If <code>str</code> has other value ( <code>&quot;A&quot;</code>, <code>&quot;B&quot;</code>, <code>&quot;C&quot;</code> or <code>&quot;D&quot;</code>) we will filter the movies to show only the movies that start with that letter.</p>
+<p>When filtering, we always use <code>moviesData</code> as our master array that always contains all of the movies.</p>
+<pre><code class="jsx hljs raw">const filterMovieList = str =&gt; {
+  let filteredMovies;
+  
+  if (str === &#39;All&#39;) {
+    filteredMovies = moviesData;
+  } else {
+    filteredMovies = moviesData.filter(movie =&gt; {
+      return movie.title[0].toLowerCase() === str.toLowerCase();
+    });
+  }
+
+  setMovies(filteredMovies);
+};
+</code></pre>
+<br>
+<ol start="4">
+<li class="raw">Pass the functions <code>addNewMovie</code> and <code>filterMovieList</code> as props to the components <code>&lt;FilterMovies /&gt;</code> and <code>&lt;AddMovie /&gt;</code>:</li>
+</ol>
+<pre><code class="jsx hljs raw">&lt;FilterMovies filterMovies={filterMovieList} /&gt;
+&lt;AddMovie addMovie={addNewMovie} /&gt;
+</code></pre>
+<br>
+<p>After adding the above code to the <code>MovieList</code> component your <code>MovieList.js</code> file should look like this:</p>
+<pre><code class="jsx hljs raw">// src/components/MovieList.js
+// ... imports stay unchanged
+
+function MovieList() {
+  const [movies, setMovies] = useState(moviesDataJSON);
+
+  const [moviesData, setMoviesData] = useState(moviesDataJSON);   // &lt;== ADD
+
+  
+  // ADD
+  const addNewMovie = movie =&gt; {
+    const updatedMoviesData = [...moviesData, movie];
+    const updatedMovies = [...movies, movie];
+
+    setMoviesData(updatedMoviesData);
+    setMovies(updatedMovies);
+  };
+
+  
+  // ADD
+  const filterMovieList = str =&gt; {
+    let filteredMovies;
+    if (str === &#39;All&#39;) {
+      filteredMovies = moviesData;
+    } else {
+      filteredMovies = moviesData.filter(movie =&gt; {
+        return movie.title[0].toLowerCase() === str.toLowerCase();
+      });
+    }
+
+    setMovies(filteredMovies);
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;FilterMovies filterMovies={filterMovieList} /&gt;       {/* &lt;== UPDATE */}
+      &lt;AddMovie addMovie={addNewMovie} /&gt;      {/* &lt;== UPDATE */}
+      {movies.map(movie =&gt; {
+        return &lt;MovieCard key={movie._id} movie={movie} /&gt;;
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default MovieList;
+</code></pre>
+<br>
+<p>We passed the function <code>filterMovieList</code> as a prop to the child component <code>FilterMovies</code>. We can now invoke <code>filterMovieList</code> from within the <code>FilterMovies</code> component. This way we can run the <code>filterMovieList</code> function whenever the user <em>selects</em> an option.</p>
+<p>Let’s update the <code>handleSelect</code> function in the <code>FilterMovies.js</code>:</p>
+<pre><code class="jsx hljs raw">// src/components/FilterMovies.js
+// ... imports stay unchanged
+
+function FilterMovies(props) {
+  // ...
+
+  const handleSelect = (e) =&gt; {
+    setFirstLetter(e.target.value);
+
+    console.log(&quot;selected&quot;, e.target.value);
+    props.filterMovies(e.target.value);      // &lt;== ADD
+  };
+
+// ...
+</code></pre>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Result:</b></summary>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/react-forms-lu-result-1.gif" alt="gif - react-forms-lu-result-1" class="raw md-image"></p>
+</details>
+<br>
+<br>
+<p>In parallel, we passed the function <code>addNewMovie</code> as a prop to the child component <code>AddMovie</code>.</p>
+<p>We can now invoke <code>addNewMovie</code>  from the <code>AddMovie</code> component. Whenever the form is submitted we can call <code>addNewMovie</code> and pass it to the <code>newMovie</code> object.</p>
+<p>We’ll update the <code>handleSubmit</code> function in the <code>AddMovie.js</code> to do this:</p>
+<pre><code class="jsx hljs raw">// src/components/AddMovie.js
+// ... imports stay unchanged
+
+function AddMovie(props) {
+  // ...
+
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+    const newMovie = { title, director, IMDBRating, hasOscars };
+
+    console.log(&quot;Submitted&quot;, newMovie);
+    props.addMovie(newMovie);                        // &lt;== ADD
+
+    // Reset the state
+    setTitle(&quot;&quot;);
+    setDirector(&quot;&quot;);
+    setIMDBRating(5);
+    setHasOscars(true);
+}
+
+// ...
+
+}
+</code></pre>
+<br>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Result:</b></summary>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-lists/react-forms-lu-result-2.gif" alt="gif - react-forms-lu-result-2" class="raw md-image"></p>
+</details>
+<br>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-forms/tree/master">react-forms</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-forms.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-forms
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this lesson, we learned that <em>HTML form elements</em> are handled by the browser and have a default behavior. One of these defaults is the page reload on form submit, which causes the React app to reload from scratch.</p>
+<p>The standard approach to override the form elements default behavior is called “controlled component”. In a <em>controlled component</em>, the form element’s data is handled by the React component (not the browser) and kept <em>in the component’s state</em>.</p>
+<p>The phrase “Data down, Actions up” is used to summarize the flow of information in React apps. In React, data is sent down from the parent component to the child component through the <em>props</em>. The child component can send data back to the parent component with the help of callback functions.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://reactjs.org/docs/forms.html">Forms</a></li>
+</ul>

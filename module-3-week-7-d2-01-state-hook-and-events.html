@@ -1,0 +1,989 @@
+<!-- # React | State hook and events -->
+<!--
+
+### Instructional Design Goals
+
+**A.** introduce and explain the concept of state
+
+**B.** explain and demonstrate how to create, modify and consume state in a component
+
+**C.** *explain* and *demonstrate* how to add events and update state using event handlers
+
+**D.** *list* the most common application scenarios for using state
+
+**D.** explain and demonstrate prop drilling
+
+**E.** explain how the components re-render
+
+-->
+<h2 class="raw">Learning goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Describe what state is in a React component</li>
+<li class="raw">Add state to a component using the <code>useState</code> hook</li>
+<li class="raw">Create event listeners and use them to modify the component state</li>
+<li class="raw">Describe when React components re-render</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>In the previous lesson, we saw how props are essential if we want to display some data that comes from outside of the component. Using props, we can <strong>pass the data down to a component</strong> and then use that data in the component itself. Now let’s see what the <strong>state</strong> is and why it is so crucial for us.</p>
+<br>
+<h3 class="raw">Getting Started</h3>
+<p>Let’s create a new React app that we’ll use for the following examples:</p>
+<pre><code class="shell hljs raw">$ npx create-react-app react-state-and-events
+$ cd react-state-and-events
+$ npm start
+</code></pre>
+<p>Clean the <code>App.js</code> a bit, so it has the following structure:</p>
+<pre><code class="jsx hljs raw">// App.js
+
+import &#39;./App.css&#39;;
+
+function App() {
+  return &lt;div className=&quot;App&quot;&gt;&lt;/div&gt;;
+}
+export default App;
+</code></pre>
+<br>
+<p>In addition, you should add the following CSS styles to your <code>index.css</code> file. This will allow you to focus on React without having to worry about the styles:</p>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary>Click here for the code</summary>
+<br>
+<pre><code class="css hljs raw">/* index.css */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, &#39;Roboto&#39;, &#39;Oxygen&#39;, &#39;Ubuntu&#39;, &#39;Cantarell&#39;, &#39;Fira Sans&#39;, &#39;Droid Sans&#39;, &#39;Helvetica Neue&#39;, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.App {
+  margin: 0;
+  padding: 20px;
+  font-family: sans-serif;
+  text-align: center;
+  min-height: 100vh;
+}
+
+.dark {
+  background: #282c34;
+  color: white;
+}
+
+.Counter {
+  width: 300px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 2px solid black;
+  background: cornflowerblue;
+  border-radius: 5px;
+}
+
+button,
+select {
+  padding: 3px 10px;
+  min-width: 50px;
+  margin: 5px;
+}
+
+.WeatherWidget {
+  width: 200px;
+  height: 200px;
+  padding: 20px;
+  margin: 10px;
+  border: 2px solid grey;
+  border-radius: 120px;
+  background: lightgoldenrodyellow;
+  color: black;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.WeatherWidget span {
+  font-size: 36px;
+}
+
+.WeatherWidget.dark {
+  background: #2a3c60;
+  color: white;
+}
+</code></pre>
+</details>
+<br>
+<h2 class="raw">State</h2>
+<!--
+
+A. introduce and explain the concept of state
+
+-->
+<p>The state is the component’s internal storage. We use the state to store values that determine the component’s appearance and content. Furthermore, the state is used to control how the component behaves. In summary, this means that the component’s state directly determines how the component will look and behave.</p>
+<p>Both class and function components can have an internal state but use a different syntax. In this lesson, we will focus on functional components, and explain how we can define and use the state.</p>
+<div class="alert alert-success">
+<ul>
+<li class="raw">The state “lives” in the component and belongs to the component itself. Props come from the outside (from some other component).</li>
+<li class="raw">The state is used to store the data in the component that defines its appearance and its content.</li>
+<li class="raw">The state represents information that a component is in charge of. This means that the component manages the state.</li>
+<li class="raw">Changes in the state will affect component re-rendering and what the component displays.</li>
+</ul>
+</div>
+<br>
+<h2 class="raw">Using the state hook - <code>useState()</code></h2>
+<!--
+
+&gt;
+&gt;
+&gt;**B.** explain and demonstrate how to create, modify and consume state in a component
+&gt;
+&gt;
+
+-->
+<p>In the past lessons, we worked with simple <em>function components</em> that didn’t have a state. As such we can refer to the components without the state as “stateless components”. We’re now introducing the ability to use React state in the function components. To add <em>state</em> to a functional component we use the React <code>useState()</code> hook.</p>
+<br>
+<h3 class="raw">What is a hook?</h3>
+<p>A hook is a special function that lets you “hook into” React features. For example, <code>useState</code> is a hook that lets you add React state to function components. Later on in this module, we’ll look into some more hooks.</p>
+<div class="alert alert-warning">
+<p><strong>Note:</strong></p>
+<p>There are some special rules about where you can and can’t use hooks within a component. You can learn more about them in <a href="https://reactjs.org/docs/hooks-rules.html">Rules of hooks</a>.</p>
+</div>
+<p>Our example starts by creating a new component <code>Counter</code> and importing the <code>useState</code> hook from React:</p>
+<pre><code class="jsx hljs raw">// ./src/components/Counter.js
+
+import React, { useState } from &#39;react&#39;;
+
+function Counter() {
+  return (
+    &lt;div className=&quot;Counter&quot;&gt;
+      &lt;h2&gt;Counter&lt;/h2&gt;
+
+      &lt;p&gt;You clicked 0 times&lt;/p&gt;
+
+      &lt;button&gt; - &lt;/button&gt;
+      &lt;button&gt; + &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Counter;
+</code></pre>
+<p>Once created, we will import the <code>Counter</code> and display it in the <code>App.js</code>:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous import stays unchanged
+
+import Counter from &#39;./components/Counter&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App &quot;&gt;
+      &lt;h1&gt;React - state and events&lt;/h1&gt;
+
+      &lt;Counter /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<h3 class="raw">Declaring State</h3>
+<p>Next, using the <code>useState()</code> hook we will create a “state variable” within the <code>Counter</code> component named <code>count</code>. We will use it to keep a track of the count.</p>
+<pre><code class="jsx hljs raw">// ./src/components/Counter.js
+
+import React, { useState } from &#39;react&#39;;
+
+function Counter() {
+  // Declare a new state variable, which we&#39;ll call &quot;count&quot;
+  const [count, setCount] = useState(0);
+
+  return (
+    &lt;div className=&quot;Counter&quot;&gt;
+      &lt;h2&gt;Counter&lt;/h2&gt;
+
+      &lt;p&gt; You clicked { count } times! &lt;/p&gt; {/* &lt;-- use the &quot;count&quot; variable here */}
+
+      &lt;button&gt; - &lt;/button&gt;
+      &lt;button&gt; + &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Counter;
+</code></pre>
+<br>
+<p><strong>What does calling <code>useState</code> do?</strong> It declares a “state variable”. Our variable is called <code>count</code> but we could call it anything else, like <code>banana</code>. This is a way to “preserve” some values between the function calls. Variables “disappear” (scope is destroyed) when the function exits but <em>state</em> variables are preserved by React.</p>
+<br>
+<p><strong>What do we pass to <code>useState</code> as an argument?</strong> The only argument we pass to the <code>useState()</code> hook is the <em>initial state</em>. We can keep a number or a string (or even an object and array) if that’s what we need. In our example, we just want a number for how many times the user clicked, so we pass <code>0</code> as the initial state. (If we wanted to store two different values in the state, we would call <code>useState()</code> twice.)</p>
+<br>
+<p><strong>What does <code>useState</code> return?</strong> It returns a pair of values:</p>
+<ul>
+<li class="raw">the current state and</li>
+<li class="raw">a function for updating it.</li>
+</ul>
+<p>This is why we write <code>const [count, setCount] = useState()</code>:</p>
+<pre><code class="jsx hljs raw">// ./src/components/Counter.js
+import React, { useState } from &quot;react&quot;;
+
+function Counter() {
+  // Declare a new state variable, which we&#39;ll call &quot;count&quot;
+  const [count, setCount] = useState(0);
+</code></pre>
+<p>We declared a state variable called <code>count</code>, and set it to <code>0</code>. React will remember its value between re-renders, and provide the most recent one to our function component. If we want to update the current <code>count</code>, we can call <code>setCount</code>.</p>
+<div class="alert alert-info">
+<p>You might be wondering: why is <code>useState</code> not named <code>createState</code> instead?</p>
+<p>“Create” wouldn’t be quite accurate because the state is only created the first time the component renders. During the next renders (when the component updates), the <em>state</em> persists and <code>useState</code> returns the latest state. Otherwise, it wouldn’t be “state” at all! This is also a reason why hook names <em>always</em> start with <code>use</code>.</p>
+</div>
+<br>
+<h3 class="raw">Initial State</h3>
+<p>In addition to passing the initial state value directly to the <code>useState()</code> hook, we can pass a function:</p>
+<pre><code class="jsx hljs raw">// ./src/components/Counter.js
+ 
+import React, { useState } from &#39;react&#39;;
+ 
+function Counter() {
+// Initialize the state using the function - &quot;lazy initializer&quot;
+const [count, setCount] = useState(() =&gt; 0);
+</code></pre>
+<p>The function passed to the <code>useState()</code> is called a <strong>lazy initializer</strong>. If a function is passed to <code>useState</code>  React calls it only once when the initial state is being set. The value returned from the function is set as the initial state.</p>
+<br>
+<h3 class="raw">Reading State</h3>
+<p>To display the current count in our function component, we use <code>count</code> directly:</p>
+<pre><code class="jsx hljs raw">// ./src/components/Counter.js
+// ...
+
+&lt;p&gt;You clicked {count} times&lt;/p&gt;
+</code></pre>
+<p>We’re calling our variable <code>count</code> because it holds the number of button clicks. We initialize it to zero by passing the <code>0</code> as the only <code>useState</code> argument.</p>
+<br>
+<h3 class="raw">Updating State</h3>
+<p>In our current example, <code>setCount</code> function is in charge of updating the <code>count</code> state variable. To update the current <code>count</code>, we call <code>setCount</code> with a new value. To do so, we will add an <code>onClick</code> event listener to each button and specify a callback function to run when the user clicks:</p>
+<p>In our current example, we have access to the <code>setCount</code> function. Funtion<code>setCount</code> is used to update the state variable <code>count</code>. To update the current <code>count</code>, we call <code>setCount</code> with a new value.</p>
+<p>To do so, we will add an onClick event listener to each button with a callback function to run when the user clicks:</p>
+<pre><code class="jsx hljs raw">// ./src/components/Counter.js
+import React, { useState } from &#39;react&#39;;
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    &lt;div className=&quot;Counter&quot;&gt;
+      &lt;h2&gt;Counter&lt;/h2&gt;
+
+      &lt;p&gt;You clicked {count} times&lt;/p&gt;
+
+      &lt;button onClick={() =&gt; setCount(count - 1)}&gt; - &lt;/button&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)}&gt; + &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Counter;
+</code></pre>
+<p>React will then re-render the <code>Counter</code> component, passing the new <code>count</code> value to it.</p>
+<br>
+<div class="alert alert-success">
+<p>Let’s summarize the previous steps and check our understanding.</p>
+<ol>
+<li class="raw">
+<p>To start using state we imported the <code>useState</code> hook. We use it to create a local state in the component.</p>
+</li>
+<li class="raw">
+<p>Inside of the component, we declared a new state variable by calling the <code>useState</code> hook. We called it and passed it the initial value (e.g. <code>useState(0)</code>).</p>
+</li>
+<li class="raw">
+<p><code>useState()</code> returns a pair of values wrapped in an array, to which we give names.
+We could represent the syntax of <code>useState()</code> using the following pseudo-code:</p>
+<pre><code class="jsx hljs raw">const [stateValue, updaterFunction] = useState(initialValue);
+</code></pre>
+<ul>
+<li class="raw">The first value (<code>stateValue</code>) is a “state variable”.</li>
+<li class="raw">The second value (<code>updaterFunction</code>) is a function used for updating that particular state variable.</li>
+</ul>
+</li>
+<li class="raw">
+<p>To update the state we call the <em>state updater function</em> and pass it the <em>new value</em>. In our previous example we did this in the following way:</p>
+<pre><code class="jsx hljs raw">setCount(count + 1);
+</code></pre>
+</li>
+<li class="raw">
+<p>Every time the <em>state updater function</em> is called React will re-render the component (update what we see).</p>
+</li>
+</ol>
+</div>
+<br>
+<h3 class="raw">Functional update</h3>
+<p>If the new state is computed using the previous state, you should pass a function to the <em>state updater function</em>. The function will receive the previous state value as the argument. The returned value is set as the next state.</p>
+<pre><code class="jsx hljs raw">// ./src/components/Counter.js
+import React, { useState } from &#39;react&#39;;
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    &lt;div className=&quot;Counter&quot;&gt;
+      &lt;h2&gt;Counter&lt;/h2&gt;
+
+      &lt;p&gt;You clicked {count} times&lt;/p&gt;
+
+      &lt;button onClick={() =&gt; setCount((prevCount) =&gt; prevCount - 1)}&gt; - &lt;/button&gt;
+      &lt;button onClick={() =&gt; setCount((prevCount) =&gt; prevCount + 1)}&gt; + &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Counter;
+</code></pre>
+<p>React documentation calls this way of updating a state a <a href="https://reactjs.org/docs/hooks-reference.html#functional-updates">functional update</a>. You should use this pattern to update the state whenever a new state is computed using the old state.</p>
+<br>
+ <!-- CFU -->
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Create a <em>stateful component</em></h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a new React app using CodeSandbox</strong></p>
+<p>Open the following link and create a new React application: <a href="https://codesandbox.io/s/">CodeSandbox.io</a>. To create a new React app select the <strong>React</strong> template. This will instantiate a new React app sandbox, which you will use for the exercise. Furthermore, you can choose to do the exercise locally on your machine, in which case you should create your React application using <code>create-react-app</code>.</p>
+<br>
+<p><strong>2. Create and display a <code>Counter</code> component</strong></p>
+<p>Create and display a <code>Counter</code> component by replicating the previous lesson example. The <code>Counter</code> component should have a state variable <code>count</code> that updates each time when a user clicks on the <code>+</code> or <code>-</code> button.</p>
+</details>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<pre><code class="jsx hljs raw">// ./src/App.js
+
+import Counter from &#39;./components/Counter&#39;;
+
+function App() {
+  return (
+    &lt;div className=&quot;App &quot;&gt;
+      &lt;h1&gt;React - state and events&lt;/h1&gt;
+      &lt;Counter /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<pre><code class="jsx hljs raw">// ./src/components/Counter.js
+
+import React, { useState } from &#39;react&#39;;
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    &lt;div className=&quot;Counter&quot;&gt;
+      &lt;h2&gt;Counter&lt;/h2&gt;
+
+      &lt;p&gt;You clicked {count} times&lt;/p&gt;
+
+      &lt;button onClick={() =&gt; setCount(count - 1)}&gt; - &lt;/button&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)}&gt; + &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Counter;
+</code></pre>
+<p><strong>Or</strong> if using a functional update syntax:</p>
+<pre><code class="jsx hljs raw">// ./src/components/Counter.js
+
+import React, { useState } from &#39;react&#39;;
+
+function Counter() {
+  const [count, setCount] = useState(0);
+
+  return (
+    &lt;div className=&quot;Counter&quot;&gt;
+      &lt;h2&gt;Counter&lt;/h2&gt;
+
+      &lt;p&gt;You clicked {count} times&lt;/p&gt;
+
+      &lt;button onClick={() =&gt; setCount((prevCount) =&gt; prevCount - 1)}&gt; - &lt;/button&gt;
+      &lt;button onClick={() =&gt; setCount((prevCount) =&gt; prevCount + 1)}&gt; + &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Counter;
+</code></pre>
+</details>
+<br>
+<h2 class="raw">Handling Events</h2>
+<!--
+
+&gt; **C.** *explain* and *demonstrate* how to add events and update state using event handlers
+
+-->
+<p>Handling events with React elements is very similar to handling events on DOM elements. There are some syntax differences:</p>
+<ul>
+<li class="raw">React events are named using camelCase, rather than lowercase.</li>
+<li class="raw">With JSX you pass a function as the event handler, directly in the event attribute</li>
+</ul>
+<h3 class="raw">Events in HTML and DOM</h3>
+<p>In the HTML, we create events in the following way:</p>
+<pre><code class="html hljs raw">&lt;button id=&quot;btn&quot; onclick=&quot;handleClick()&quot;&gt;Click Here&lt;/button&gt;
+</code></pre>
+<p>We can create the same event as well by using JavaScript and DOM manipulation:</p>
+<pre><code class="js hljs raw">const btn = document.getElementById(&#39;btn&#39;);
+btn.addEventListener(() =&gt; handleClick() );
+</code></pre>
+<br>
+<h3 class="raw">Events in React</h3>
+<p>It is slightly different in React:</p>
+<pre><code class="jsx hljs raw">&lt;button onClick={() =&gt; handleClick()}&gt; Click Here &lt;/button&gt;
+</code></pre>
+<p>As you can see, the syntax for creating event listeners and adding the event handler functions in React is slightly different, but still pretty straightforward.
+In React, events are always named using <strong>camelCase</strong>. React documentation provides a list of all <em><a href="https://reactjs.org/docs/events.html#supported-events">event attribute names</a></em>.</p>
+<div class="alert alert-success">
+<p>To register an event listener on an element or a component in React we pass the event handler function directly to the <em>event attribute</em>, such as <code>onClick={ handleClick }</code>.</p>
+</div>
+<br>
+<h3 class="raw">Adding an Event</h3>
+<p>Let’s practice adding event listeners. We will create another state variable in the <code>App.js</code> and use it to handle the color theme of the app, allowing us to change the app appearance between light and dark themes.</p>
+<p>Import the <code>useState</code> in <code>App.js</code> and create a new state variable <code>theme</code> :</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous import stays unchanged
+
+// import useState
+import { useState } from &#39;react&#39;;
+
+function App() {
+  // Declare a new state variable named &quot;theme&quot;
+  const [theme, setTheme] = useState(&#39;light&#39;);
+
+  return (
+    &lt;div className={&#39;App &#39; + theme}&gt;
+      &lt;h1&gt;React - state and events&lt;/h1&gt;
+      &lt;Counter /&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<p>We created the state variable <code>theme</code> and gave it the initial value <code>&quot;light&quot;</code>. We will use it to toggle the theme between <code>&quot;light&quot;</code> and <code>&quot;dark&quot;</code>.</p>
+<p>Next, let’s add a select dropdown with an <code>onChange</code> event:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous import stays unchanged
+
+import { useState } from &#39;react&#39;;
+
+function App() {
+  const [theme, setTheme] = useState(&#39;light&#39;);
+
+  return (
+    &lt;div className={&#39;App &#39; + theme}&gt;
+      &lt;h1&gt;React - state and events&lt;/h1&gt;
+      &lt;Counter /&gt;
+
+      {/* Add the following &quot;select&quot; dropdown */}
+      &lt;select onChange={ event =&gt; setTheme(event.target.value) }&gt;
+        &lt;option value=&quot;light&quot;&gt; Light &lt;/option&gt;
+        &lt;option value=&quot;dark&quot;&gt; Dark &lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<p>To the <code>onChange</code> event we assigned a callback function <code>(event) =&gt; {}</code> . This callback function calls the <code>setTheme()</code> to update the <code>theme</code> and set the value (<code>event.target.value</code>) coming from the selected option (either <code>&quot;light&quot;</code> or <code>&quot;dark&quot;</code>).</p>
+<p>As the last step, we updated the <code>className</code> of the div to: <code>className={&quot;App &quot; + theme}</code>.</p>
+<p>This will result in the <em>className</em> changing every time the <code>theme</code> updates to either <code>&quot;App light&quot; </code>or <code>&quot;App dark&quot;</code>. To change the app appearance once the <em>className</em> updates, we added the following CSS that will flip the colors to our <code>index.css</code>:</p>
+<pre><code class="css hljs raw">/* index.css */
+
+.dark {
+  background: #282c34;
+  color: white;
+}
+</code></pre>
+<p>The result will be the following:</p>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-state/react-state-and-events-themes.gif" alt="Example - change theme using state and events" class="raw md-image"></p>
+<br>
+<h3 class="raw">Creating a handler function</h3>
+<p>When working with events and state, a common pattern for keeping the code concise is to create event handler functions as standalone functions.
+This means that we shouldn’t use inline callbacks like:</p>
+<pre><code class="jsx hljs raw">&lt;select onChange={ event =&gt; setTheme(event.target.value) } /&gt;
+</code></pre>
+<p>Instead, we should create a function outside and then reference it by the name. Let’s refactor the code in <code>App.js</code> to do so:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... imports stay unchanged
+
+function App() {
+  const [theme, setTheme] = useState(&#39;light&#39;);
+
+  const toggleTheme = event =&gt; {
+    setTheme(event.target.value);
+  };
+
+  return (
+    &lt;div className={&#39;App &#39; + theme}&gt;
+      &lt;h1&gt;React - state and events&lt;/h1&gt;
+      &lt;Counter /&gt;
+
+      &lt;select onChange={ toggleTheme }&gt;
+        &lt;option value=&quot;light&quot;&gt; Light &lt;/option&gt;
+        &lt;option value=&quot;dark&quot;&gt; Dark &lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>This way we keep our code clean and concise and it also allows us to reuse the function if needed.</p>
+<br>
+<br>
+<h4 class="raw"><img class="emoji" alt=":pencil2:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/pencil2.png" /> Test Your Knowledge: Add an event listener</h4>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+<br>
+<p>Complete the following activity:</p>
+<p><strong>1. Create a copy of the CodeSandbox app</strong></p>
+<p>Open the following React app: <a href="https://codesandbox.io/s/m3-d2-react-state-and-events-cfu1-nq6o2?file=/src/App.js">CodeSandbox - Exercise 1</a>. To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>) CodeSandbox will automatically create a copy of the app for you with a new URL.</p>
+<br>
+<p><strong>2. Add the theme change feature</strong></p>
+<p>Add theme change feature by replicating the previous lesson example. The <code>App</code> component should have a state variable <code>theme</code> that updates each time that the user selects one of the options from the dropdown (<code>&quot;dark&quot;</code> or <code>&quot;light&quot;</code>).</p>
+</details>
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for solution</b></summary>
+<br>
+<pre><code class="jsx hljs raw">// ./src/App.js
+import Counter from &#39;./components/Counter&#39;;
+import { useState } from &#39;react&#39;;
+
+function App() {
+  const [theme, setTheme] = useState(&#39;light&#39;);
+
+  const toggleTheme = event =&gt; {
+    setTheme(event.target.value);
+  };
+
+  return (
+    &lt;div className={&#39;App &#39; + theme}&gt;
+      &lt;h1&gt;React - state and events&lt;/h1&gt;
+      &lt;Counter /&gt;
+
+      &lt;select onChange={toggleTheme}&gt;
+        &lt;option value=&quot;light&quot;&gt; Light &lt;/option&gt;
+        &lt;option value=&quot;dark&quot;&gt; Dark &lt;/option&gt;
+      &lt;/select&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+</details>
+<br>
+<h2 class="raw">Component Re-rendering</h2>
+<!--
+
+&gt; **F.** explain how the components re-render
+&gt;
+&gt; **E.** explain and demonstrate props drilling
+&gt;
+&gt; 
+
+-->
+<p>React component re-renders (updates the content it shows) whenever its state or props change.</p>
+<p>A Component will update when it receives the new props from the outside or when its state updates. Great isn’t it! There’s no need for us to explicitly tell the component to re-render. It’s all taken care of by React!</p>
+<div class="alert alert-info">
+<p><img class="emoji" alt=":point_up:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/point_up.png" /> Remember! The two actions that cause a component to re-render and update the content that it shows are:</p>
+<ul>
+<li class="raw">when the component’s state updates,</li>
+<li class="raw">when any props, coming from the outside, get updated.</li>
+</ul>
+</div>
+<br>
+<h3 class="raw">Re-rendering on state update</h3>
+<p>React keeps track of every component in the app. Every time that the state of a component updates, React will re-render that particular component to update what we see.</p>
+<p>However, the <em>state</em> and <em>state variables</em> should never be updated directly! We should only update the state by using the updater function returned by the <code>useState</code> hook. Updating the state directly would cause the component not to re-render.</p>
+<p>We will use our existing component <code>App</code> as an example. Let’s see what will happen if we try to update the state by directly assigning (<code>=</code>) the value to the <code>theme</code>:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ...
+
+const toggleTheme = event =&gt; {
+  // setTheme(event.target.value);    &lt;-- COMMENT THE PREVIOUS CODE
+
+  theme = event.target.value; //  WRONG!!
+};
+
+// ...
+</code></pre>
+<p>If you try to change the color theme after updating the code, you will notice that it doesn’t work.</p>
+<p>When you update the state directly React doesn’t know that the state got updated. In return, the component will not re-render!</p>
+<p>This is why we should only update the state by using the designated updater function. Let’s go back and revert the code to the previous, working version:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ...
+
+const toggleTheme = event =&gt; {
+  setTheme(event.target.value); // CORRECT!
+};
+
+// ...
+</code></pre>
+<div class="alert alert-warning">
+<p><img class="emoji" alt=":warning:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/warning.png" /> We should never update the <em>state</em> directly! To update the state we must use the update function returned by the <code>useState</code> hook.</p>
+</div>
+<br>
+<h3 class="raw">Re-rendering on props update</h3>
+<p>Whenever the value of the props, coming from the outside, changes the component will update. We can think of it as a side effect.</p>
+<p>To put it another way, the parent component must pass a new prop value to trigger the child component to re-render.</p>
+<br>
+<!--
+
+#### Example | WeatherWidget
+
+We will create a new component called WeatherWidget that can display the temperature in both Celsius and Fahrenheit. We'll use it to show how components re-render on props change.
+
+Before creating the `WeatherWidget` component, we will add a new state variable `unit` to the `App.js`.
+
+```jsx
+const [unit, setUnit] = useState('C');
+```
+
+and a pair of buttons used for toggling between Celsius `"C"` and Fahrenheit `"F"`:
+
+```jsx
+&lt;button onClick={() =&gt; setUnit("C")}&gt; °C &lt;/button&gt;
+&lt;button onClick={() =&gt; setUnit("F")}&gt; °F &lt;/button&gt;
+```
+
+After adding the two things, your `App.js` should look like this:
+
+```jsx
+// ./src/App.js
+// ... imports stay unchanged
+
+function App() {
+  const [theme, setTheme] = useState('light');
+
+  // Declare a new state variable named "unit"
+  // Set the initial value to "C" for Celsius
+  const [unit, setUnit] = useState('C');
+
+  const toggleTheme = event =&gt; {
+    setTheme(event.target.value);
+  };
+
+  return (
+    <div>
+      <h1>React - state and events</h1>
+      &lt;Counter /&gt;
+
+      &lt;select onChange={toggleTheme}&gt;
+        &lt;option value="light"&gt; Light &lt;/option&gt;
+        &lt;option value="dark"&gt; Dark &lt;/option&gt;
+      &lt;/select&gt;
+
+      {/* ADD THE BUTTONS FOR CHANGING THE TEMP. UNIT */}
+
+      &lt;button onClick={() =&gt; setUnit('C')}&gt; °C &lt;/button&gt;
+      &lt;button onClick={() =&gt; setUnit('F')}&gt; °F &lt;/button&gt;
+    </div>
+  );
+}
+
+export default App;
+```
+
+Next, let's create the `WeatherWidget` component:
+
+```jsx
+// ./src/components/WeatherWidget.js
+
+function WeatherWidget(props) {
+  let temperature = props.celsius;
+  const unitIsFahrenheit = props.unit === 'F';
+
+  if (unitIsFahrenheit) {
+    temperature = props.celsius * 1.8 + 32;
+  }
+
+  return (
+    <div>
+      <span>{props.icon}</span>
+      <h3>{props.city}</h3>
+      <h2>
+        {temperature} °{props.unit}
+      </h2>
+    </div>
+  );
+}
+
+export default WeatherWidget;
+```
+
+Component `WeatherWidget` is expecting four props: `city`, `icon` , `celsius` and `unit`. This means that we must pass these values from the parent component.
+
+To do so, let's import the `WeatherWidget` component to `App.js`:
+
+```jsx
+// ./src/App.js
+
+import WeatherWidget from './components/WeatherWidget';
+```
+
+and display it within the `App` component, with the following props:
+
+```jsx
+// ./src/App.js
+// ...
+
+<div>
+  &lt;WeatherWidget city="Miami" icon="🟡" celsius={29} unit={unit} /&gt;
+</div>
+```
+
+After adding the two things, your `App.js` should look like this:
+
+```jsx
+// App.js
+// ... previous imports stay unchanged
+
+import WeatherWidget from './components/WeatherWidget'; // &lt;== Import the component
+
+function App() {
+  const [theme, setTheme] = useState('light');
+  const [unit, setUnit] = useState('C');
+
+  const toggleTheme = event =&gt; {
+    setTheme(event.target.value);
+  };
+
+  return (
+    <div>
+      <h1>React - state and events</h1>
+      &lt;Counter /&gt;
+
+      &lt;select onChange={toggleTheme}&gt;
+        &lt;option value="light"&gt; Light &lt;/option&gt;
+        &lt;option value="dark"&gt; Dark &lt;/option&gt;
+      &lt;/select&gt;
+
+      {/* ADD THE WEATHER WIDGET COMPONENT */}
+      <div>
+        &lt;WeatherWidget city="Miami" icon="🟡" celsius={29} unit={unit} /&gt;
+      </div>
+
+      &lt;button onClick={() =&gt; setUnit('C')}&gt; °C &lt;/button&gt;
+      &lt;button onClick={() =&gt; setUnit('F')}&gt; °F &lt;/button&gt;
+    </div>
+  );
+}
+
+export default App;
+```
+
+After adding the above content you should notice the following behavior. When the `unit` value in the `App` updates the _`unit` prop_ that `WeatherWidget` receives updates as well. This props update causes the `WeatherWidget` component to re-render.
+
+<br>
+
+Here is a simple representation of how props and state change in our app change when the buttons <kbd> °F </kbd> or <kbd> °C </kbd> are clicked:
+
+<br>
+
+![](https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-state/react-state-and-events-props-rerender2.gif)
+
+<br>
+
+:::success
+Every time the props change, the component will re-render.
+:::
+
+To spice up our app, we could add few more widgets in the `App.js`
+
+```jsx
+// ./src/App.js
+// ... imports stay unchanged
+
+function App() {
+  const [theme, setTheme] = useState('light');
+  const [unit, setUnit] = useState('C');
+
+  const toggleTheme = event =&gt; {
+    setTheme(event.target.value);
+  };
+
+  return (
+    <div>
+      <h1>React - state and events</h1>
+      &lt;Counter /&gt;
+
+      &lt;select onChange={toggleTheme}&gt;
+        &lt;option value="light"&gt; Light &lt;/option&gt;
+        &lt;option value="dark"&gt; Dark &lt;/option&gt;
+      &lt;/select&gt;
+
+      &lt;button onClick={() =&gt; setUnit('C')}&gt; °C &lt;/button&gt;
+      &lt;button onClick={() =&gt; setUnit('F')}&gt; °F &lt;/button&gt;
+
+      {/* ADD THE WEATHER WIDGET COMPONENT */}
+      <div>
+        &lt;WeatherWidget city="Miami" icon="🟡" celsius={29} unit={unit} /&gt;
+        &lt;WeatherWidget city="Mexico City" icon="⛈️" celsius={17} unit={unit} /&gt;
+        &lt;WeatherWidget city="Berlin" icon="🌥️" celsius={20} unit={unit} /&gt;
+        &lt;WeatherWidget city="Barcelona" icon="🌤️" celsius={28} unit={unit} /&gt;
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+
+
+
+<br>
+
+<br>
+
+#### :pencil2: Check for Understanding - Using the state hook - `useState()`
+
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+  <summary><b>Click for Instructions</b></summary>
+
+
+
+<br>
+
+Working in a team complete the following activity:
+
+**1. Create a copy of the CodeSandbox app**
+
+Open the following React app: [CodeSandbox - Exercise 2](https://codesandbox.io/s/m3-d2-react-state-cfu2-yrq49?file=/src/App.js). To begin working, you just need to start writing code. Upon first save (<kbd>CMD</kbd>+<kbd>S</kbd> / <kbd>CTRL</kbd>+<kbd>S</kbd>) CodeSandbox will automatically create a copy of the app for you with a new URL.
+
+<br>
+
+**2. Add state to the component `App`**
+
+Component `App.js` contains all of the markups that you will need for this exercise.
+
+Your task is to update `App.js` and using the [`useState()` hook](https://reactjs.org/docs/hooks-state.html) create a state variable named *amount*. You will use this state variable for keeping track of the total amount of dollars at hand. The initial value of the _amount_ should be `1`.
+Once created, the _amount_ state should be shown in the `App` where indicated by the placeholder text `DISPLAY_AMOUNT_HERE`.
+
+<br>
+
+**3. Add event handlers to update the amount**
+
+The next task is to add the event handlers to each button in the `App.js`.
+
+Every time the user clicks on one of the buttons <kbd>RESET</kbd> <kbd>+1</kbd> <kbd>+10</kbd> <kbd>+100</kbd> on the top of the screen, the _amount_ should update for the value specified on the button.
+
+The <kbd>RESET</kbd> button should reset the _amount_ back to `1` every time the user clicks on it.
+
+<br>
+
+**4. Update the `CurrencyWidget` component**
+
+Update the `CurrencyWidget` component to display the _currency image_, _currency name_, _currency symbol_, and _currency code_, where indicated by the placeholder text `C_IMG`, `C_NAME`, `C_SYMBOL` and `C_CODE`.
+
+These values are passed through the props from the parent component `CurrencyPanel`, your task is to access them and display them.
+
+<br>
+
+![Example - currency prop](https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-state/react-state-cfu2-example1.png)
+
+<br>
+
+**5. Display the _selected amount_ in the `CurrencyWidget`**
+
+Pass the _amount_ value from the `App` down to the `CurrencyWidget` components. Once you pass the _amount_ value to the `CurrencyWidget`, display it where indicated by placeholder text `SELECTED_AMOUNT`.
+
+<br>
+
+![Example - passing amount](https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-state/react-state-cfu2-example2.png)
+
+<br>
+
+**6. Display the _converted amount_ in the `CurrencyWidget`**
+
+In the `CurrencyWidget` calculate the _converted amount_ and display it where indicated by the placeholder text `CONVERTED_AMOUNT`.
+
+To get the _converted amount_ multiply the _amount_ coming from the `App` and `exchangeRate` coming from the currency object. You can check the `currencies.json` to see the structure of each currency object.
+
+
+
+<br>
+
+#### Expected result
+
+<br>
+
+![Exercise 2 - Expected Result](https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-state/cfu2-expected-result.gif)
+
+</details>
+
+<br>
+
+<details style="font-size: 14px; cursor: pointer; outline: none; color: #575d70;">
+<summary><b>Click for solution</b></summary>
+
+
+
+<br>
+
+**Exercise 2 - Solution: [Link](https://codesandbox.io/s/solution-m3-d2-react-state-cfu2-dyt8j?file=/src/App.js)**
+
+</details>
+
+<br>
+
+-->
+<h2 class="raw">When should we use the state?</h2>
+<!--
+
+&gt; **D.** *list* the most common application scenarios for using state
+
+-->
+<p><strong>What kind of information should be saved in the state?</strong> Anything that will affect what users see and experience in our application.</p>
+<ul>
+<li class="raw">
+<p><strong>Logged in?</strong> - Whether the user is logged in or not has a big effect on what the user sees in an app.</p>
+</li>
+<li class="raw">
+<p><strong>Lists of data</strong> - Lists of data such as videos on YouTube, products on Amazon, or notifications on Facebook are retrieved from the database and commonly stored as a state in a React component. This kind of data is commonly stored as an array, which allows us to iterate over the data easily.</p>
+</li>
+<li class="raw">
+<p><strong>Open or closed?</strong> - The open/closed status of a menu and/or popup in the app could also be stored as a state. As the user interacts with the app, the different statuses are going to appear and UI will change accordingly.</p>
+</li>
+<li class="raw">
+<p><strong>Forms</strong> - Users will be filling some information in the forms and, in a React app, that data will be temporarily stored in the state, before being sent to the server or somehow manipulated.</p>
+<p>Storing data in the state will also allow us to pre-fill the form’s inputs in edit/update kinds of forms.
+In particular, forms in React must be handled using state.</p>
+</li>
+</ul>
+<br>
+<h3 class="raw">State vs. Props</h3>
+<ul>
+<li class="raw"><strong>Components can use both</strong>: The data stored in the state and data coming from the props can both be used and displayed in the component.</li>
+<li class="raw"><strong>State belongs to the component, props come from the outside</strong>: Opposite of props, that are coming from the outside of the component, the state “lives” and belongs to the component itself.</li>
+<li class="raw"><strong>State can be manipulated (updated/changed)</strong> inside the component where it is created. Props can’t be changed by the component that receives them since <strong>props are <code>read-only</code></strong>.</li>
+</ul>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-state-and-events/tree/master">react-state-and-events</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-state-and-events.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-state-and-events
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this learning unit, you have learned about one of the core concepts in React - the state. We can define the <em>state variables</em> in a function component thanks to the <code>useState()</code> hook. We access and manipulate the state by using the state variable. The state can be updated by using the <em>updater function</em> returned from the <code>useState()</code>.  We should never update the state directly - we should always use the <em>updater function</em>. The state is defined in the component itself, while props are sent to the component from the outside. The component can update its state while props are <em>read-only</em>. Every time the component’s state updates or the props it receives change, the component will re-render.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw"><a href="https://reactjs.org/docs/hooks-state.html">ReactJS - Using the State hook</a></li>
+<li class="raw"><a href="https://egghead.io/lessons/react-use-the-usestate-react-hook">Use the useState React hook - video</a></li>
+<li class="raw"><a href="https://kentcdodds.com/blog/use-state-lazy-initialization-and-function-updates">useState lazy initialization and function updates</a> - Kent C. Dodds</li>
+</ul>

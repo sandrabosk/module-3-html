@@ -1,0 +1,411 @@
+<!-- ![logo_ironhack_blue 7](https://user-images.githubusercontent.com/23629340/40541063-a07a0a8a-601a-11e8-91b5-2f13e4e6b441.png)
+
+# React | Routing Advanced -->
+<h2 class="raw">Learning Goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Create a dynamic React Router route using the URL parameters</li>
+<li class="raw">Access the URL parameters using the <code>useParams()</code> Hook</li>
+<li class="raw">Render different page content depending on the value of the URL parameter</li>
+<li class="raw">Retrieve URL query strings from the page URL</li>
+</ul>
+<br>
+<h2 class="raw">Introduction</h2>
+<p>After learning the basics of routing in React, you are now ready to tackle the advanced React Router concepts. In this lesson, you’ll learn how to set and access the URL parameters and work with URL query strings.</p>
+<br>
+<h2 class="raw">Getting Started</h2>
+<p>As a starting point, we will use the code from the <em>app</em> we created in the previous React Router lesson. You can find the full example code here: <a href="https://github.com/ironhack-labs/lesson-code-h-react-routing-intro">react-routing-intro</a>.</p>
+<p>Go ahead, clone this repo and set it up:</p>
+<pre><code class="shell hljs raw">$ git clone https://github.com/ironhack-labs/lesson-code-h-react-routing-intro
+$ cd lesson-code-h-react-routing-intro
+$ npm i
+$ npm start
+</code></pre>
+<p>As we left it off at the end of the last lesson, we have <em>Home</em>, <em>About</em> and <em>Project</em> pages displaying. We will now dig deeper and learn how to set up dynamic pages with the help of the React Router. So let’s see how to do that!</p>
+<h2 class="raw">URL Parameters</h2>
+<p>A <strong><em>URL parameter</em> is the part of the URL that changes dynamically.</strong> For example, if we wanted to view information about project <em>1a</em>, we would visit the path <code>/projects/1a</code>. To see the information about project <em>2b</em>, we would visit <code>/projects/2b</code>.</p>
+<p>That last part of the URL (<code>1a</code>, <code>2b</code>, etc.) that keeps changing is the <em>URL parameter</em>. In the next steps, we will explain how to set up <em>URL parameters</em> with <code>&lt;Route&gt;</code> and how to access them from a component.</p>
+<br>
+<h3 class="raw">Projects Page</h3>
+<p>We will work on the existing <code>&lt;ProjectsPage /&gt;</code> component. Here is how the component looks:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectsPage.js
+
+import { useState, useEffect } from &quot;react&quot;;
+
+function ProjectsPage (props) {
+  const [projects, setProjects] = useState([]);
+
+  useEffect(() =&gt; {
+    setProjects(props.projects);
+  }, [props.projects]);
+
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Projects&lt;/h1&gt;
+      {projects.map((project) =&gt; {
+        return (
+          &lt;div key={project._id} className=&quot;project&quot;&gt;
+            &lt;h3&gt;{project.name}&lt;/h3&gt;
+            &lt;p&gt;{project.technologies}&lt;/p&gt;
+          &lt;/div&gt;
+        );
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectsPage;
+</code></pre>
+<p>Let’s go over the above code and explain how the <code>ProjectsPage</code> component works.</p>
+<p>The <code>ProjectsPage</code> component receives an array of projects through props (<code>props.projects</code>). The array of projects is being passed as a prop from <code>App.js</code>.</p>
+<p>We use the <code>useEffect</code> hook to run code after the component has rendered. In our case, we use it to save the <code>props.projects</code> array in the state variable <code>projects</code>.</p>
+<p>We can see the <code>ProjectsPage</code> by clicking on the link available in the <code>Navbar</code> (we already have a <em>NavLink</em> in the <code>Navbar</code> that takes us to <code>/projects</code>). Go ahead and open the page. As you can see, the page displays a list of projects.</p>
+<p>The fun starts now. <img class="emoji" alt=":wink:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/wink.png" /> We will turn each project’s name into a clickable link that will take us to a separate <em><strong>Details page</strong></em> for each project.</p>
+<br>
+<h3 class="raw">Setting URL Parameters</h3>
+<p>Remember how in the past with Express we used <em><code>req.params</code></em> to get the ids from URLs? Well, a similar feature is available in the React Router on the frontend.</p>
+<p>With <em>React Router</em> we can designate a dynamic portion of the URL to be matched by putting a colon <code>:</code> before it. This is similar to what we did in Express. The only difference being that we are doing this <strong>with React Router on the frontend</strong>.</p>
+<p>We will start by turning the project name into a <em>Link</em> and seeing how that changes the URL.</p>
+<p>We’ll import the React Router’s <code>Link</code> to the <code>ProjectsPage.js</code> and update the line of code that is displaying the project name:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectsPage.js
+// ... previous imports stay unchanged
+
+import { Link } from &quot;react-router-dom&quot;;     // &lt;== IMPORT
+
+function ProjectsPage() {
+  const [projects, setProjects] = useState([]);
+
+  // This effect will run only once on initial render.
+  // To do it we set the dependency array empty [].
+  useEffect(() =&gt; {
+    setProjects(props.projects);
+  }, [props.projects]);
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Projects&lt;/h2&gt;
+      {projects.map((project) =&gt; {
+        return (
+          &lt;div key={project._id} className=&quot;project&quot;&gt;
+            &lt;h3&gt;
+              
+              {/*   ADD   */}
+              &lt;Link to={`/projects/${project._id}`}&gt; 
+                {project.name} 
+              &lt;/Link&gt;
+              
+            &lt;/h3&gt;
+            &lt;p&gt;{project.technologies}&lt;/p&gt;
+          &lt;/div&gt;
+        );
+      })}
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectsPage;
+</code></pre>
+<p>If we now click on a project name we should see the URL changing. If we click a few of them, you’ll notice that one part of the URL keeps changing <em>dynamically</em>: the project’s id.</p>
+<p>Each of these URLs should navigate to the page that will display data about the specific project. As this page doesn’t exist yet, we see the <em>404</em> page rendered. So we will need a new page component to display that information.</p>
+<p>Inside the <code>/pages</code> folder, create a new file called <code>ProjectDetailsPage.js</code>.</p>
+<p>Within the file, we will import the <code>project-data.json</code> array (this component will also need access to it) and a React Router hook - <code>useParams()</code>:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectDetailsPage.js
+
+import projectsData from &#39;./../projects-data.json&#39;;
+import { useParams, Link } from &#39;react-router-dom&#39;
+
+function ProjectDetailsPage(props) {
+  
+  const { projectId } = useParams();
+  console.log(&#39;projectId --&gt;&#39;, projectId);
+  
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Project Details&lt;/h1&gt;
+      
+      &lt;Link to=&quot;/projects&quot;&gt;Back&lt;/Link&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default ProjectDetailsPage;
+</code></pre>
+<p>The React Router hook <code>useParams()</code> returns an object with URL parameters. We use it to obtain the value of the URL parameter <code>projectId</code>.</p>
+<p>There’s still one step that we have to take - we have to render this component, so let’s import it to our <code>App.js</code>:</p>
+<pre><code class="jsx hljs raw">import &quot;./App.css&quot;;
+import Navbar from &quot;./components/Navbar&quot;;
+import HomePage from &quot;./pages/HomePage&quot;;
+import AboutPage from &quot;./pages/AboutPage&quot;;
+import ProjectsPage from &quot;./pages/ProjectsPage&quot;;
+import ErrorPage from &quot;./pages/ErrorPage&quot;;
+import HomePageWithNavigate from &quot;./pages/HomePageWithNavigate&quot;;
+import { Routes, Route } from &quot;react-router-dom&quot;;
+
+import projectsData from &#39;./projects-data.json&#39;;
+
+import ProjectDetailsPage from &quot;./pages/ProjectDetailsPage&quot;;  // &lt;== IMPORT
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      
+      &lt;Routes&gt;
+        {/* &lt;Route  path=&quot;/&quot; element={ &lt;HomePage /&gt; } /&gt; */}
+
+        &lt;Route path=&quot;/&quot; element={ &lt;HomePageWithNavigate /&gt; } /&gt;
+        &lt;Route path=&quot;/about&quot; element={ &lt;AboutPage /&gt; } /&gt;
+        
+        &lt;Route
+          path=&quot;/projects&quot;
+          element={ &lt;ProjectsPage projects={projectsData} /&gt; }
+        /&gt;
+        
+        {/*  ADD 👇 */}
+        &lt;Route 
+          path=&quot;/projects/:projectId&quot; 
+          element={ &lt;ProjectDetailsPage /&gt; } 
+        /&gt;        
+
+        &lt;Route path=&quot;*&quot; element={ &lt;ErrorPage /&gt; } /&gt;
+      &lt;/Routes&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>Now, open the <strong>Projects Page</strong> in the browser and click on any of the links.</p>
+<p>You will see that as the URL changes the <code>ProjectDetailsPage</code> gets displayed. If you check the <em>browser console</em>, you will see the project id coming from the URL parameters.</p>
+<pre><code class="js hljs raw">// projectId --&gt; 1a
+</code></pre>
+<br>
+<h3 class="raw">Accessing URL Parameters</h3>
+<p>Our next step is to take the <code>projectId</code> parameter which we got from the URL and display the project that has the same id. Let’s do it:</p>
+<pre><code class="jsx hljs raw">// src/pages/ProjectDetailsPage.js
+
+import projectsData from &#39;./../projects-data.json&#39;;
+import { useParams, Link } from &#39;react-router-dom&#39;
+
+function ProjectDetailsPage(props) {
+
+  const { projectId } = useParams();
+  console.log(&#39;projectId&#39;, projectId);
+  
+  // Method .find() returns the first found matching element,
+  // or `null` if no matching element is found.
+  const foundProject = projectsData.find((oneProject) =&gt; {   //  &lt;== ADD
+    return oneProject._id === projectId;
+  });
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Project Details&lt;/h1&gt;
+      {!foundProject &amp;&amp; &lt;h3&gt;Project not found!&lt;/h3&gt;}  {/* &lt;== ADD  */}
+
+      {/*  ADD 👇 */}
+      {foundProject &amp;&amp; (
+        &lt;&gt;
+          &lt;h2&gt;{foundProject.name}&lt;/h2&gt;
+          &lt;h3&gt;Tech Stack: {foundProject.technologies}&lt;/h3&gt;
+          &lt;p&gt;{foundProject.description}&lt;/p&gt;
+          &lt;Link to=&quot;/projects&quot;&gt;Back&lt;/Link&gt;
+        &lt;/&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+
+export default ProjectDetailsPage;
+
+</code></pre>
+<p>Works like a charm! We can see the details page being rendered and displaying each project’s details just by catching the <code>projectId</code> from the URL!
+Not hard at all, right? Extracting an <em>id</em> from the URL is the most common use case and it will help you a lot. To see a different example, visit the page: <a href="https://reacttraining.com/react-router/web/example/url-params">React Training - URL Parameters</a>.</p>
+<br>
+<h3 class="raw">Accessing URL Parameters with <code>useEffect</code></h3>
+<p>Another way of using the <em>URL parameter</em> values would be with the <code>useEffect</code> hook. You will probably need to use the same approach as the one shown in the below example in your future apps, so let’s show how this is done.</p>
+<p>We will update the <code>ProjectDetailsPage</code> to import the <code>useState</code> and <code>useEffect</code> hook. We’ll move our <em>project finding logic</em> to the <code>useEffect</code> Hook.</p>
+<pre><code class="jsx hljs raw">// ./src/pages/ProjectDetailsPage.js
+
+import projectsData from &#39;./../projects-data.json&#39;;
+import { useParams, Link } from &#39;react-router-dom&#39;
+import { useState, useEffect } from &#39;react&#39;;         // &lt;== IMPORT
+
+
+function ProjectDetailsPage (props) {
+  const [foundProject, setFoundProject] = useState(null); // &lt;== ADD
+  
+  const { projectId } = useParams();
+  console.log(&#39;projectId&#39;, projectId);  
+
+  // This effect depends on the `projectId` value.
+  // It will run on initial render, and every time
+  // the `projectId` value updates.
+  useEffect(() =&gt; {                                      // &lt;== ADD
+    const project = projectsData.find((projectObj) =&gt; {
+      return projectObj._id === projectId;
+    })
+
+    if (project) {
+      setFoundProject(project);
+    }
+    
+  }, [projectId]);
+
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Project Details&lt;/h1&gt;
+      
+      {!foundProject &amp;&amp; &lt;h3&gt;Project not found!&lt;/h3&gt;}
+      
+      {foundProject &amp;&amp; (
+        &lt;&gt;
+          &lt;h2&gt;{foundProject.name}&lt;/h2&gt;
+          &lt;h3&gt;Tech Stack: {foundProject.technologies}&lt;/h3&gt;
+          &lt;p&gt;{foundProject.description}&lt;/p&gt;
+          &lt;Link to=&quot;/projects&quot;&gt;Back&lt;/Link&gt;
+        &lt;/&gt;
+      )}
+    &lt;/div&gt;
+  )
+}
+
+export default ProjectDetailsPage;
+</code></pre>
+<p>Having the project finding logic within the <code>useEffect</code> allows you to easily substitute the above logic to get the data from the server instead of getting it from a static array. Example:</p>
+<pre><code class="jsx hljs raw">// ...
+  const { projectId } = useParams();
+  console.log(&#39;projectId&#39;, projectId);  
+
+  useEffect(() =&gt; {
+    // Get the project by id from the server
+    axios.get(&#39;http://example.com/api/projects/&#39; + projectId)
+      .then((response) =&gt; {
+        setFoundProject(response.data);
+      })
+    
+  }, [projectId]);
+
+// ...
+</code></pre>
+<br>
+<h2 class="raw">Query Strings</h2>
+<p>Query strings are used for embedding data into the URL. When you want to pass information through the URL, but you don’t want to use <code>URL</code> parameters, you’d use a <strong>query string.</strong> Let’s take a look at the following URL:</p>
+<p><strong><a href="https://www.booking.com/search?place=Barcelona&amp;destType=hotel">https://www.booking.com/search?place=Barcelona&amp;destType=hotel</a></strong></p>
+<p>The above URL has two query strings: <code>place</code> and <code>destType</code>. This way, <em><a href="http://booking.com">booking.com</a></em> is using the query strings to filter the <em>place</em> and the <em>type</em> of room you are looking for.</p>
+<img width="600" src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/react-routing/query-strings-example.png">
+<p>Now, how do we access the query strings information? We do this using the React Router’s hook <code>useSearchParams()</code>. Let’s create a new component <code>QueryStringExample</code> to show this:</p>
+<pre><code class="jsx hljs raw">// src/pages/QueryStringExample.js
+
+import { useEffect } from &#39;react&#39;;
+import { useSearchParams } from &#39;react-router-dom&#39;
+
+function QueryStringExample(props) {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Get the values from the URL query strings 
+  // Example: http://localhost:3000/example?place=Miami&amp;destType=Hotel
+  const place = searchParams.get(&quot;place&quot;);
+  const destType = searchParams.get(&quot;destType&quot;);
+  
+  useEffect(() =&gt; {
+    console.log(&#39;place&#39;, place)
+    console.log(&#39;destType&#39;, destType);
+  }, []);
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Query String Example&lt;/h2&gt;
+      &lt;p&gt;
+        Open the console to see the logged query string values
+      &lt;/p&gt;
+    &lt;/div&gt;
+  )
+}
+
+export default QueryStringExample;
+</code></pre>
+<p>And as the last step we will import it to <code>App.js</code> and add a new <code>&lt;Route&gt;</code> to render it:</p>
+<pre><code class="jsx hljs raw">// App.js
+// ... previous imports stay unchanged
+
+import QueryStringExample from &quot;./pages/QueryStringExample&quot;; // &lt;== IMPORT
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Navbar /&gt;
+      
+      &lt;Routes&gt;
+        {/* &lt;Route  path=&quot;/&quot; element={ &lt;HomePage /&gt; } /&gt; */}
+
+        &lt;Route path=&quot;/&quot; element={ &lt;HomePageWithNavigate /&gt; } /&gt;
+        &lt;Route path=&quot;/about&quot; element={ &lt;AboutPage /&gt; } /&gt;
+        
+        &lt;Route
+          path=&quot;/projects&quot;
+          element={ &lt;ProjectsPage projects={projectsData} /&gt; }
+        /&gt;
+
+        &lt;Route 
+          path=&quot;/projects/:projectId&quot; 
+          element={ &lt;ProjectDetailsPage /&gt; } 
+        /&gt;            
+        
+        {/* ADD 👇 */}
+        &lt;Route path=&quot;/example&quot; element={ &lt;QueryStringExample /&gt; } /&gt;
+
+        &lt;Route path=&quot;*&quot; element={ &lt;ErrorPage /&gt; } /&gt;
+      &lt;/Routes&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<p>Now, to see it in action visit the <code>/example</code> route and include a query string with the keys <code>place</code> and <code>destType</code>. For example:</p>
+<ul>
+<li class="raw">
+<p><a href="http://localhost:3000/example?place=Miami&amp;destType=Apartment">http://localhost:3000/example?place=Miami&amp;destType=Apartment</a></p>
+</li>
+<li class="raw">
+<p><a href="http://localhost:3000/example?place=Paris&amp;destType=House">http://localhost:3000/example?place=Paris&amp;destType=House</a></p>
+</li>
+<li class="raw">
+<p><a href="http://localhost:3000/example?place=Amsterdam&amp;destType=Hotel">http://localhost:3000/example?place=Amsterdam&amp;destType=Hotel</a></p>
+</li>
+</ul>
+<p>Check the console to see the logged query string values.</p>
+<br>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code: <a href="https://github.com/ironhack-labs/lesson-code-h-react-routing-advanced/tree/master">react-routing-advanced</a>.</p>
+<p>To clone this repository, copy this:</p>
+<pre><code class="bash hljs raw"># clone the repo
+$ git clone https://github.com/ironhack-labs/lesson-code-h-react-routing-advanced.git
+
+# navigate to the cloned repo
+$ cd lesson-code-h-react-routing-advanced
+
+# run npm install
+$ npm i
+
+# run the app in development mode
+$ npm start
+</code></pre>
+</div>
+<br>
+<h2 class="raw">Summary</h2>
+<p>In this learning unit, we dived deeper into React Routing. <em>URL Parameters</em> and <em>Query Strings</em> are important concepts that you will be using a lot as React developers, therefore it is necessary that you know how to use them.</p>
+<br>
+<h2 class="raw">Extra Resources</h2>
+<br>
+<ul>
+<li class="raw">
+<p><a href="https://reactrouter.com/">React Router</a></p>
+</li>
+<li class="raw">
+<p><a href="https://reactrouter.com/docs/en/v6/getting-started/concepts">React Router - Main Concepts</a></p>
+</li>
+</ul>

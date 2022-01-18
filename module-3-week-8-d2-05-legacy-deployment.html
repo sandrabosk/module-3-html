@@ -1,0 +1,176 @@
+<!-- ![logo_ironhack_blue 7](https://user-images.githubusercontent.com/23629340/40541063-a07a0a8a-601a-11e8-91b5-2f13e4e6b441.png)
+
+# React | Deployment -->
+<h2 class="raw">Learning Goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Understand the difference between the development, staging and production environments.</li>
+<li class="raw">Bundle an application with the command <code>npm run build</code>.</li>
+<li class="raw">Deploy a React application online.</li>
+</ul>
+<h2 class="raw">Workflow</h2>
+<p>Deployment should be treated as part of the development workflow, not as an afterthought.</p>
+<p>When developing a web site or an application, the deployment workflow should be split into 3 different environments: Development, Staging and Production.</p>
+<ul>
+<li class="raw"><strong>Development</strong> is where developers test their work locally. Sometimes for large applications, this will be on a remote server such as Heroku. This is a sandbox, something for developers to play around with without doing any serious damage.</li>
+<li class="raw"><strong>Staging</strong> - Staging is a test environment that mocks the real production environment. This is on a remote server such as Heroku or AWS. It is meant to mimic the production environment so you can catch any production related bugs before the app is deployed.</li>
+<li class="raw"><strong>Production</strong> - This is the real deal, the website that your users will actually see.</li>
+</ul>
+<p><img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_1f71ba7160030f430656f0ad3ced22e7.png" alt class="raw md-image"></p>
+<p>In this case the workflow might look like this:</p>
+<ul>
+<li class="raw">Developers work on bugs and features on their own separate git branches. Tiny updates can be added directly to the stable development branch.</li>
+<li class="raw">Once features are implemented, they are merged into the staging branch and deployed to the Staging environment for quality assurance and testing.</li>
+<li class="raw">After testing is complete, feature branches are merged into the development branch.</li>
+<li class="raw">On the release date, the development branch is merged into production and then deployed to the Production environment.</li>
+</ul>
+<h2 class="raw">Introduction</h2>
+<p>Depending on the type of application you have and what it does, you can choose different services to host it. For example, a client application such as a portfolio doesn’t really need a custom backend. It just needs a server to host the static files.</p>
+<div style="margin: 50px auto; min-height: 100px;">
+<img style="float: left;" src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_f861c1f3073e13eafd52ad1704427e25.png">
+</div>
+<p>For this scenario <a href="https://pages.github.com/">Github pages</a> is perfect, because it lets us push our code directly to a server using git repositories.</p>
+<div style="margin: 50px auto; min-height: 100px;">
+<img style="float: left" width="350" src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_788898ea19304c521e348bc2755db363.png">
+</div>
+<p>On the other hand, our app is more complex: we have our Node/Express backend and frontend side (client) built in React. Github pages won’t let us change the backend (not the purpose of the platform) so we need a different service. We’ll use <a href="https://www.heroku.com/">Heroku</a>.</p>
+<h3 class="raw">Heroku</h3>
+<p>In this learning unit we are going to deploy our <em>Project management</em> full-stack application. We have the express server, connected to a mongo database, and a React client.</p>
+<h4 class="raw">Prerequisites</h4>
+<p>We should have:</p>
+<ul>
+<li class="raw">A Heroku account created</li>
+<li class="raw">The <a href="https://devcenter.heroku.com/articles/heroku-cli">Heroku CLI</a> installed</li>
+</ul>
+<h2 class="raw">Heroku App and Environment setup</h2>
+<p>Let’s take a look into our <code>axios</code> calls. We see that every and each of them is actually calling <code>http://localhost:5000</code>. When we deploy our app, we won’t be able to access our <em>localhost</em> obviously so what can we do to avoid/solve this potential problem?
+Well, we can save these settings for our local that is development environment and we can have <em>some other</em> settings for our deployed app. Sounds cool, but how do we pull this out? <img class="emoji" alt=":flushed:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/flushed.png" />
+Actually, very easy <img class="emoji" alt=":relieved:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/relieved.png" /></p>
+<p>Let’s first quickly <strong>create new app on Heroku</strong>. At this point, all of you have created <em>Heroku</em> accounts and if you’re not logged in, let’s do it in our terminal:</p>
+<pre><code class="bash hljs raw">$ heroku login
+</code></pre>
+<p>If your server side repository is not yet initialized as <em>git repository</em>, go in it and run</p>
+<pre><code class="bash hljs raw">$ git init
+</code></pre>
+<p>Next step is to add heroku as origin. If you already have this repository initialized, if you run <strong>git remote -v</strong>, you will see <code>origin</code> there and it will be pointing at your GitHub. Now we need to connect this repository to Heroku:</p>
+<pre><code class="bash hljs raw">$ heroku git:remote -a name-of-your-heroku-app
+</code></pre>
+<p>Now, if you run <em>git remote -v</em>, you should see something like this:</p>
+<pre><code class="bash hljs raw">heroku	https://git.heroku.com/name-of-your-heroku-app.git (fetch)
+heroku	https://git.heroku.com/name-of-your-heroku-app.git (push)
+origin	https://github.com/yourusername/project-management-server.git (fetch)
+origin	https://github.com/yourusername/project-management-server.git (push)
+</code></pre>
+<p>If you do, you’re ready for next step, and that is <em><code>setting environment variables on the client side</code></em> for now.</p>
+<p>Go inside client side folder and create two new file <strong>in the root</strong>:</p>
+<pre><code class="bash hljs raw">$ cd project-management-client
+$ touch .env.development .env.production
+</code></pre>
+<p>So in <code>.env.development</code> and <code>.env.production</code> we will store important data for these two stages so they can become interchangeable depending if we are in development or production mode. We have to update <code>package.json</code> on the client side as well:</p>
+<pre><code class="bash hljs raw">// package.json
+...
+
+&quot;scripts&quot;: {
+    &quot;start&quot;: &quot;react-scripts start&quot;,
+    &quot;build-dev&quot;: &quot;dotenv -e .env.development react-scripts build&quot;, &lt;==!!!
+    &quot;build-prod&quot;: &quot;dotenv -e .env.production react-scripts build&quot;, &lt;==!!!
+    &quot;build&quot;: &quot;react-scripts build&quot;,
+    &quot;test&quot;: &quot;react-scripts test --env=jsdom&quot;,
+    &quot;eject&quot;: &quot;react-scripts eject&quot;
+}
+
+</code></pre>
+<p>As we already mention, we are pointing to <code>http://localhost:5000</code> and actually this is correct only if we are in the <em>development</em> mode but if we are in the production mode, we have to be pointing to <em>Heroku</em> address of our app (probably something like this: <code>https://name-of-your-app.herokuapp.com</code>). We can achieve this by updating the two <code>.env</code> files that we created:</p>
+<pre><code class="bash hljs raw">// .env.development
+REACT_APP_API_URL=http://localhost:5000/api
+
+// .env.production
+REACT_APP_API_URL = https://name-of-your-app.herokuapp.com
+</code></pre>
+<p><img class="emoji" alt=":bangbang:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/bangbang.png" /> <strong>REACT_APP</strong> prefix <strong>is not optional</strong>. React is actually looking for it through <code>process.env</code>, which we will see just now.</p>
+<p>Let’s go in our components and find all the axios calls and update them following this example:</p>
+<pre><code class="js hljs raw">axios.get(`${process.env.REACT_APP_API_URL}/some-route`, { withCredentials: true });
+</code></pre>
+<p>Now if we run the app using just <code>npm start</code>, we won’t notice any difference. Now it’s time to move to <code>bundling</code> our client side app.</p>
+<h2 class="raw">Bundle the React App</h2>
+<p><code>create-react-app</code> let us run the <code>npm run build</code> command, and it bundles the entire app, creating an <code>index.html</code> file that will be the entrance point of the entire app.</p>
+<p>Go inside folder <code>project-management-client</code> and run:</p>
+<pre><code class="bash hljs raw">$ npm run build
+</code></pre>
+<p>This step will produce a new directory (called <code>build</code>) containing the optimized code. Copy everything from the <em>build</em> folder and paste it into <code>/public</code> folder on the server side (in <code>project-management-server</code>).
+We already mentioned that bundling process created <code>index.html</code> so let’s make it accessible to our server side by adding this code at the very end of our <code>app.js</code>, right after <em>routes middleware</em> and just before <em>module.exports = app;</em>:</p>
+<pre><code class="js hljs raw">// app.js
+
+...
+
+app.use((req, res, next) =&gt; {
+  // If no routes match, send them the React HTML.
+  res.sendFile(__dirname + &quot;/public/index.html&quot;);
+});
+...
+
+</code></pre>
+<h3 class="raw">MLab configuration</h3>
+<p>We are going to use the <a href="https://mlab.com/">MLab</a> DaaS (Database-as-a-Service) to persist our data in the cloud.</p>
+<p>The first thing to do is install the <a href="https://elements.heroku.com/addons/mongolab">MLab add-on</a> for Heroku.</p>
+<p>From the terminal, inside the expressjs folder:</p>
+<pre><code class="bash hljs raw">$ heroku addons:create mongolab:sandbox
+</code></pre>
+<p>In our Heroku dashboard, under the <em>Resources</em> tab we should see the addon successfully installed:</p>
+<p><img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_1c5e92183137f22a714b6599e305bcbd.png" alt class="raw md-image"></p>
+<div class="alert alert-warning">
+<p><img class="emoji" alt=":exclamation:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/exclamation.png" /> If your heroku account doesn’t have a valid credit card associated with it you will be prompted to add one. No worries though, they won’t actually charge you for anything.</p>
+</div>
+<p>Next, run:</p>
+<pre><code>$ heroku config:get MONGODB_URI
+</code></pre>
+<p>We should be able to see our brand new database’s connection string.</p>
+<p>This string and its name is also visible in our Heroku app, under the <em>Settings</em> tab and inside <code>Reveal Config Vars</code>. We should have something like this:</p>
+<p><img src="https://s3-eu-west-1.amazonaws.com/ih-materials/uploads/upload_1cb30f9dffdce535dfd81a094c36f58a.png" alt="heroku config vars example" class="raw md-image"></p>
+<p>We know we <strong>must never publish any sensitive data</strong> (such as database connection, passwords, or other personal information) within our applications. To enable the database connection we should use <em>Environment variables</em> instead, and these ones are actually on the server side, but the logic stays the same.</p>
+<h3 class="raw">Backend Environment Variables</h3>
+<p>The server is almost ready for deploy. We just need to configure the database connection and have it pointing to the <a href="https://mlab.com/">MLab</a> service we will use with Heroku.</p>
+<h4 class="raw">Local setup</h4>
+<p>First let’s define an <code>environment</code> configuration file containing our database URI.</p>
+<p>Inside <code>.env</code> file, paste the db connection string:</p>
+<pre><code class="text hljs raw">MONGODB_URI=mongodb://localhost/project-management-api
+</code></pre>
+<p>If your database is named differently, change the name.</p>
+<p>Now inside the <code>app.js</code>, we need to point to <strong><code>MONGODB_URI</code></strong>, using <code>process.env</code>, which is possible on the server side thanks to <code>dotenv</code> npm package that we have already installed in our project, but if you don’t have it for some reason, this is good moment to run:</p>
+<pre><code class="bash hljs raw">$ npm install dotenv
+</code></pre>
+<p>and require it on the top of <code>app.js</code> using:</p>
+<pre><code class="js hljs raw">require(&#39;dotenv&#39;).config();
+</code></pre>
+<p>Now change the current connection to:</p>
+<pre><code class="js hljs raw">// app.js
+...
+
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(x =&gt; console.log(`Connected to Mongo! Database name: &quot;${x.connections[0].name}&quot;`))
+  .catch(err =&gt; console.error(&#39;Error connecting to mongo&#39;, err));
+
+// ...
+</code></pre>
+<p>If we start the server with <code>npm start</code>, our application should work normally, pointing to the local database.</p>
+<p>So, we have defined the variable in our local project… what happens with Heroku now? Let’s configure it to manage our environment variables.</p>
+<h3 class="raw">Deploy</h3>
+<p>We are finally ready to deploy our full-stack application. Note this: <strong>we are deploying server side of the full-stack app</strong> because we bundled our client app and pasted the bundle (plenty of <em>minified</em> files) into the <em>/public</em> folder .</p>
+<p>In the terminal, inside the server app run:</p>
+<pre><code class="bash hljs raw">$ git add .
+$ git commit -m&quot;initial commit to heroku&quot;
+$ git push heroku master
+</code></pre>
+<p>If everything was built and bundled successfully, you can now run</p>
+<pre><code class="bash hljs raw">$ heroku open
+</code></pre>
+<p>and your browser will open your app. <img class="emoji" alt=":tada:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/tada.png" /> <img class="emoji" alt=":tada:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/tada.png" /> <img class="emoji" alt=":tada:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/tada.png" /></p>
+<p>Congrats developers and good luck in your future conquers. <img class="emoji" alt=":rocket:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/rocket.png" /> <img class="emoji" alt=":heart:" src="https://cdn.jsdelivr.net/npm/@hackmd/emojify.js@2.1.0/dist/images/basic/heart.png" /></p>
+<h2 class="raw">Summary</h2>
+<p>In this learning unit, we covered the process of deployment of full-stack app. In this process, key takeaways are:</p>
+<ul>
+<li class="raw">make sure your (server side) app is connected to Heroku by running <code>heroku git:remote -a name-of-your-heroku-app</code>;</li>
+<li class="raw">protect your confidential information and use <code>environment</code> as much as possible;</li>
+<li class="raw">understand that deployment of full-stack app is actually deployment of one app (server side) and we use <code>npm run build</code> command to bundle whole client side into multiple minified files which we copy into <em>public</em> folder of server side app.</li>
+</ul>

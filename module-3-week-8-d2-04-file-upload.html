@@ -1,0 +1,410 @@
+<!-- ![logo_ironhack_blue 7](https://user-images.githubusercontent.com/23629340/40541063-a07a0a8a-601a-11e8-91b5-2f13e4e6b441.png)
+
+# React & Express | File Upload -->
+<h2 class="raw">Learning Goals</h2>
+<p>After this lesson, you will be able to:</p>
+<ul>
+<li class="raw">Upload files from your React app</li>
+<li class="raw">Use Cloudinary to store the files you uploaded from your app</li>
+</ul>
+<h2 class="raw">Introduction</h2>
+<p>In this lesson, we will learn how to upload a file with the MERN stack and Cloudinary.</p>
+<p>We’ll take a similar approach as we did in the <strong><a href="https://github.com/ironhack-labs/lesson-code-file-upload-m2-movie-project">movie-project</a></strong> application we created in the previous module while learning about file upload CDN.</p>
+<h2 class="raw">Set up a new project</h2>
+<p>At this point, we will not spend too much time on how to set up your server from scratch since we already covered this in module 2. We will start by creating a full-stack application with <strong>IronLauncher</strong>  and then add the code that will be needed.</p>
+<div class="alert alert-info">
+<p>As you know, there are a couple <strong><a href="https://www.npmjs.com/package/ironlauncher#results--flags">flags</a></strong> you can use with IronLauncher. You can use the <strong><code>--fs</code></strong> flag to create a full-stack application with 2 folders already set up:</p>
+<ul>
+<li class="raw">the Express API without any view layer, with the <code>CORS</code> middleware already setup and</li>
+<li class="raw">the React client which is exactly what we need.</li>
+</ul>
+<br>
+</div>
+<p>Let’s start by navigating to a folder in which to start our project and run the following commands:</p>
+<pre><code class="shell hljs raw">$ ironlauncher file-upload --fs
+
+# wait until ironlauncher finishes installing...
+
+$ cd file-upload
+$ cd ls
+
+# client server
+</code></pre>
+<p>Now open 2 panes in the terminal and navigate in each of them to one of the subfolders: in the first one navigate to the <code>server</code> and in the second one navigate to the <code>client</code>:</p>
+<pre><code class="shell hljs raw"># when already inside file-upload folder
+$ code . # to open our repository in VScode
+
+$ cd server
+$ npm run dev
+
+$ cd client
+$ npm start
+</code></pre>
+<br>
+<div class="alert alert-info">
+<ul>
+<li class="raw">The server is running at <strong><code>http://localhost:5005/api</code></strong>.</li>
+<li class="raw">The client is running at <strong><code>http://localhost:3000</code></strong>.</li>
+</ul>
+</div>
+<br>
+<h2 class="raw">Server-side setup</h2>
+<br />
+<h3 class="raw">Cloudinary setup</h3>
+<br />
+<p>Let’s first set up the server. After you open the repository, go inside the <code>config/</code> folder and create a <code>cloudinary.config.js</code> file. Then add the following code inside:</p>
+<pre><code class="js hljs raw">// config/cloudinary.config.js
+
+const cloudinary = require(&quot;cloudinary&quot;).v2;
+const { CloudinaryStorage } = require(&quot;multer-storage-cloudinary&quot;);
+const multer = require(&quot;multer&quot;);
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    allowed_formats: [&quot;jpg&quot;, &quot;png&quot;],
+    folder: &quot;movie-gallery&quot; // The name of the folder in cloudinary
+    // resource_type: &quot;raw&quot;, // =&gt; this is in case you want to upload other type of files, not just images
+  }
+});
+
+module.exports = multer({ storage });
+</code></pre>
+<p>The above code and the configuration are the same as the one we already saw in module 2. Since it’s been a while, we will remind you that you have to install a couple of packages to make cloudinary work properly, so when in the <strong>server</strong> subfolder:</p>
+<pre><code class="shell hljs raw">$ npm install cloudinary multer multer-storage-cloudinary
+</code></pre>
+<p>You can see all these packages already required at the top of the <code>cloudinary.config.js</code> file.</p>
+<p>Now let’s move to the next important thing: getting your <strong>credentials</strong> from the Cloudinary website. These are available on <a href="https://cloudinary.com/console">https://cloudinary.com/console</a>.</p>
+<p>In the <code>.env</code> file, add the following values:</p>
+<pre><code class="shell hljs raw">CLOUDINARY_NAME = add-your-cloudinary-name
+CLOUDINARY_KEY = add-your-cloudinary-key
+CLOUDINARY_SECRET = add-your-cloudinary-secret
+</code></pre>
+<div class="alert alert-info">
+<p>You can find this info on your Cloudinary profile page.</p>
+<p><img src="https://user-images.githubusercontent.com/23629340/36161577-541d060e-10e4-11e8-9fbb-f15012a896bf.png" alt="image" class="raw md-image"></p>
+</div>
+<br />
+<h3 class="raw">Model setup</h3>
+<br />
+<p>You can see that in the <code>models/</code> folder, we already have <code>User.model.js</code>. You can remove it or just ignore it as we won’t be using it in this example.</p>
+<p>Let’s create a new model: <code>models/Movie.model.js</code>. Go ahead and add the following code into this file:</p>
+<pre><code class="js hljs raw">// models/Movie.model.js
+
+const mongoose = require(&quot;mongoose&quot;);
+const { Schema, model } = mongoose;
+
+const movieSchema = new Schema(
+  {
+    title: String,
+    description: String,
+    imageUrl: String
+  },
+  {
+    timestamps: true
+  }
+);
+
+module.exports = model(&quot;Movie&quot;, movieSchema);
+</code></pre>
+<br />
+<p>We can see that <em>Movie</em> documents will have a title, description, and one image.</p>
+<br />
+<h3 class="raw">Routes setup</h3>
+<br />
+<p>Next up, we’ll create our three main server routes. One for listing <em>movies</em>, one that will upload images to Cloudinary and give us the URL back, and one that will create a new <em>movie</em> in our database along with the uploaded image URL.</p>
+<p>So let’s create a new <code>movies.routes.js</code> file in the <code>routes/</code> folder and add the following code:</p>
+<pre><code class="js hljs raw">// routes/movies.routes.js
+
+const express = require(&quot;express&quot;);
+const router = express.Router();
+
+// **** require Movie model in order to use it ****
+const Movie = require(&quot;../models/Movie.model&quot;);
+
+// ********* require fileUploader in order to use it *********
+const fileUploader = require(&quot;../config/cloudinary.config&quot;);
+
+// GET &quot;/api/movies&quot; =&gt; Route to list all available movies
+router.get(&quot;/movies&quot;, (req, res, next) =&gt; {
+  Movie.find()
+    .then(moviesFromDB =&gt; res.status(200).json(moviesFromDB))
+    .catch(err =&gt; next(err));
+});
+
+// POST &quot;/api/upload&quot; =&gt; Route that will receive an image, send it to Cloudinary via the fileUploader and return the image URL
+router.post(&quot;/upload&quot;, fileUploader.single(&quot;imageUrl&quot;), (req, res, next) =&gt; {
+  // console.log(&quot;file is: &quot;, req.file)
+
+  if (!req.file) {
+    next(new Error(&quot;No file uploaded!&quot;));
+    return;
+  }
+  
+  // Get the URL of the uploaded file and send it as a response.
+  // &#39;secure_url&#39; can be any name, just make sure you remember to use the same when accessing it on the frontend
+  
+  res.json({ secure_url: req.file.path });
+});
+
+// POST &#39;/api/movies&#39; =&gt; for saving a new movie in the database
+router.post(&#39;/movies&#39;, (req, res, next) =&gt; {
+  // console.log(&#39;body: &#39;, req.body); ==&gt; here we can see that all
+  // the fields have the same names as the ones in the model so we can simply pass
+  // req.body to the .create() method
+
+  Movie.create(req.body)
+    .then(createdMovie =&gt; {
+      // console.log(&#39;Created new movie: &#39;, createdMovie);
+      res.status(200).json(createdMovie);
+    })
+    .catch(err =&gt; next(err));
+});
+
+module.exports = router;
+</code></pre>
+<p>And let’s not forget to link our <code>movies.routes.js</code> to <code>app.js</code>, so let’s add the following lines as instructed below.</p>
+<pre><code class="js hljs raw">// app.js
+
+// ...
+// 👇 Start handling routes here
+const index = require(&#39;./routes/index&#39;); // &lt;== already included
+app.use(&#39;/&#39;, index); // &lt;== already included
+
+const moviesRouter = require(&#39;./routes/movies.routes&#39;); // &lt;== has to be added
+app.use(&#39;/api&#39;, moviesRouter); // &lt;== has to be added
+</code></pre>
+<br>
+<h3 class="raw">CORS setup</h3>
+<br>
+<div class="alert alert-info">
+<p>Thanks to the <em>IronLauncher</em> boilerplate we are using, the <code>CORS</code> setup is already included. As a reminder: we configure <code>CORS</code> on the server side to enable cross-origin communication, meaning the requests coming from the front-end app.</p>
+</div>
+<br>
+<p>To refresh your mind, check the <code>CORS</code> setup in the <code>config/index.js</code> file:</p>
+<pre><code class="js hljs raw">// config/index.js
+
+// Nothing gets changed in this file!
+
+// ...
+// Middleware configuration
+module.exports = app =&gt; {
+  // When deployed, our backend will not receive requests directly, but from a proxy
+  // server which receives all the requests and then forwards them to our server. 
+  // Hosting services like Heroku use a proxy.
+  // We set the following option to allow requests coming from a proxy server.
+  app.set(&#39;trust proxy&#39;, 1);
+
+  // controls a very specific header to pass headers from the frontend
+  app.use(
+    cors({
+      credentials: true,
+      origin: process.env.ORIGIN || &#39;http://localhost:3000&#39;
+    })
+  );
+
+  // ...
+};
+</code></pre>
+<p>In the <code>server/.env</code> file you can find the <code>ORIGIN</code> variable already preset to <code>ORIGIN=http://localhost:3000</code>.</p>
+<br>
+<h3 class="raw">Test the Routes with Postman</h3>
+<br>
+<p>Great, our server is set up. You can use <strong>Postman</strong> to test your routes, and you should be able to create <em>the first instance of movies collection</em> in the <em>file-upload</em> database.</p>
+<p>To test the file upload route <code>/api/upload</code> create a Postman request in the following way:</p>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/file-upload/file-upload-postman-post-image.png" alt="file-upload-postman-post-image" class="raw md-image"></p>
+<br>
+<p>On Postman, if you click on the <em>Code</em> icon and select <em>JavaScript - Fetch</em> from the dropdown, you will see a JavaScript example to simulate the same request. Click below to see an expected screenshot:</p>
+<details>
+    <summary> Click here </summary>
+<br>
+<p><img src="https://education-team-2020.s3.eu-west-1.amazonaws.com/web-dev/m3/file-upload/file-upload-postman-code-snippet.png" alt="file-upload-postman-code-snippet" class="raw md-image"></p>
+</details>
+<br />
+<br />
+<h3 class="raw">Client-side setup</h3>
+<br />
+<p>From the root, navigate to the <strong>client</strong> folder:</p>
+<pre><code class="bash hljs raw"># when inside file-upload
+
+$ cd client
+$ npm start
+</code></pre>
+<p>We know for sure we will need <code>axios</code>, so let’s install it on the <strong>client</strong> side:</p>
+<pre><code class="bash hljs raw">$ npm install axios
+</code></pre>
+<p>Create a new folder and file in the <code>src/</code> folder: <code>src/api/service.js</code>.</p>
+<div class="alert alert-success">
+<p>The <code>service.js</code> will handle all the requests from our React app to the server.</p>
+</div>
+<p>Let’s add the following code inside:</p>
+<pre><code class="jsx hljs raw">// src/api/service.js
+
+import axios from &quot;axios&quot;;
+
+const service = axios.create({
+  // make sure you use PORT = 5005 (the port where our server is running)
+  baseURL: &quot;http://localhost:5005/api&quot;
+  // withCredentials: true // =&gt; you might need this option if using cookies and sessions
+});
+
+const errorHandler = err =&gt; {
+  throw err;
+};
+
+const getMovies = () =&gt; {
+  return service
+    .get(&quot;/movies&quot;)
+    .then((res) =&gt; res.data)
+    .catch(errorHandler);
+};
+
+const uploadImage = (file) =&gt; {
+  return service
+    .post(&quot;/upload&quot;, file)
+    .then(res =&gt; res.data)
+    .catch(errorHandler);
+};
+
+const createMovie = (newMovie) =&gt; {
+  return service
+    .post(&quot;/movies&quot;, newMovie)
+    .then(res =&gt; res.data)
+    .catch(errorHandler);
+};
+
+export default {
+  service,
+  getMovies,
+  uploadImage,
+  createMovie
+};
+</code></pre>
+<p>Now, let’s create a new component inside the <code>components/</code> folder, called <code>AddMovie</code>:</p>
+<pre><code class="jsx hljs raw">// components/AddMovie/AddMovie.js
+
+import React, { useState } from &quot;react&quot;;
+
+// import the service file since we need it to send (and get) the data to(from) the server
+import service from &quot;../../api/service&quot;;
+
+function AddMovie (){
+  const [title, setTitle] = useState(&quot;&quot;);
+  const [description, setDescription] = useState(&quot;&quot;);
+  const [imageUrl, setImageUrl] = useState(&quot;&quot;);
+
+  
+  // ******** this method handles just the file upload ********
+  const handleFileUpload = e =&gt; {
+    // console.log(&quot;The file to be uploaded is: &quot;, e.target.files[0]);
+
+    const uploadData = new FormData();
+
+    // imageUrl =&gt; this name has to be the same as in the model since we pass
+    // req.body to .create() method when creating a new movie in &#39;/api/movies&#39; POST route
+    uploadData.append(&quot;imageUrl&quot;, e.target.files[0]);
+
+    service
+      .uploadImage(uploadData)
+      .then(response =&gt; {
+        // console.log(&quot;response is: &quot;, response);
+        // response carries &quot;secure_url&quot; which we can use to update the state
+        setImageUrl(response.secure_url);
+      })
+      .catch(err =&gt; console.log(&quot;Error while uploading the file: &quot;, err));
+  };
+
+  // this method submits the form
+  const handleSubmit = e =&gt; {
+    e.preventDefault();
+
+    service
+      .createMovie({ title, description, imageUrl })
+      .then(res =&gt; {
+        // console.log(&quot;added new movie: &quot;, res);
+
+        // Reset the form
+        setTitle(&quot;&quot;);
+        setDescription(&quot;&quot;);
+        setImageUrl(&quot;&quot;);
+      
+        // here you would redirect to some other page      
+      })
+      .catch(err =&gt; console.log(&quot;Error while adding the new movie: &quot;, err));
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;New Movie&lt;/h2&gt;
+      &lt;form onSubmit={handleSubmit}&gt;
+        &lt;label&gt;Name&lt;/label&gt;
+        &lt;input 
+          type=&quot;text&quot; 
+          name=&quot;title&quot; 
+          value={title} 
+          onChange={(e) =&gt; setTitle(e.target.value)}
+        /&gt;
+
+        &lt;label&gt;Description&lt;/label&gt;
+        &lt;textarea 
+          type=&quot;text&quot;
+          name=&quot;description&quot;
+          value={description}
+          onChange={(e) =&gt; setDescription(e.target.value)} 
+        /&gt;
+
+        &lt;input type=&quot;file&quot; onChange={(e) =&gt; handleFileUpload(e)} /&gt;
+
+        &lt;button type=&quot;submit&quot;&gt;Save new movie&lt;/button&gt;
+      &lt;/form&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default AddMovie;
+</code></pre>
+<p>The last thing before we test file upload from React/client-side is to include the <code>&lt;AddMovie /&gt;</code> component into <code>App.js</code>:</p>
+<pre><code class="jsx hljs raw">// src/App.js
+
+import React from &quot;react&quot;;
+import { Switch, Route } from &quot;react-router-dom&quot;;
+import HomePage from &quot;./pages/HomePage/HomePage&quot;;
+
+// Import the AddMovie component
+import AddMovie from &quot;./components/AddMovie/AddMovie&quot;; // !!!
+
+function App() {
+  return (
+    &lt;div className=&quot;App&quot;&gt;
+      &lt;Switch&gt;
+        &lt;Route exact path=&quot;/&quot; component={HomePage} /&gt;
+        &lt;Route exact path=&quot;/movies/add&quot; component={AddMovie} /&gt; {/* ADD this line */}
+      &lt;/Switch&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+</code></pre>
+<br>
+<br>
+<p>Now you can try to add the file to whatever you decide to create. To test your app, go to: <strong><a href="http://localhost:3000/movies/add">http://localhost:3000/movies/add</a></strong>.</p>
+<p><br><br></p>
+<div class="alert alert-success">
+<p>In the following link, you can find the full code created in this lesson: <a href="https://github.com/ironhack-labs/lesson-code-file-upload-m3">lesson-code-file-upload-m3</a>.</p>
+</div>
+<br />
+<h2 class="raw">Summary</h2>
+<p>Knowing how to upload photos or any other type of file could be necessary for some apps that you might work on in the future. In this lesson, we learned how to configure an Express server for uploading images to <strong>Cloudinary</strong> and how to send form data with an image file from our React app.</p>
+<br />
+<h2 class="raw">Extra Resources</h2>
+<ul>
+<li class="raw"><a href="https://academind.com/learn/react/snippets/image-upload/">React Image Upload Example</a></li>
+</ul>
